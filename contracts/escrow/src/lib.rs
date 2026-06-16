@@ -504,7 +504,7 @@ mod test {
         let env = Env::default();
         env.mock_all_auths();
 
-        let (admin, borrower, token_address, client) = setup_with_token(&env);
+        let (_admin, borrower, token_address, client) = setup_with_token(&env);
         let token = soroban_sdk::token::Client::new(&env, &token_address);
         let recipient = Address::generate(&env);
 
