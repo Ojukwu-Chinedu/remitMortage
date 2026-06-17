@@ -1,56 +1,91 @@
-# EventMesh
+# RemitMortgage
+A decentralized remittance-backed mortgage protocol built on Stellar.
 
-EventMesh is a decentralized event ticketing and vendor marketplace protocol built on the Stellar network. It uses Soroban smart contracts to handle ticket purchases, mint soulbound NFT attendance passes, and process vendor payments — all settled on-chain with near-instant finality and minimal fees.
+RemitMortgage enables diaspora communities to leverage their verified remittance-sending history as proof of creditworthiness to access property financing. By utilizing Soroban smart contracts, USDC escrow savings, milestone-gated construction disbursements, and multisig governance, it replaces inaccessible traditional mortgage systems with a transparent, on-chain alternative.
 
-Organizers create events and configure NFT ticketing parameters. Attendees buy tickets and receive non-transferable NFT passes as permanent proof of attendance. Vendors at events accept USDC payments directly through the protocol, eliminating the need for separate payment systems.
+It's the bridge between consistent remittance behavior and real homeownership.
 
-## Key Features
+## Motivation
+Millions of people in the global diaspora send money home every month — consistently, reliably, for years. Yet this financial track record is invisible to traditional lenders. Banks don't recognize cross-border remittance history as proof of creditworthiness, leaving hardworking families locked out of property ownership in their home countries.
 
-- **Soulbound NFT Passes** — Non-transferable, on-chain proof of attendance minted automatically on ticket purchase
-- **On-Chain Ticketing** — Ticket sales, pricing, and attendee tracking enforced by Soroban smart contracts
-- **Vendor Marketplace** — Food, merch, and services ordered and paid for with USDC at events
-- **Instant Settlement** — Stellar transactions confirm in 3–5 seconds with sub-cent fees
-- **Freighter Wallet Integration** — One-click wallet connection for signing transactions
-- **Responsive Dark Mode UI** — Glassmorphism design system built with Material Design 3 tokens
+RemitMortgage makes remittance history count:
 
-## Tech Stack
+*   **Prove Your Track Record:** Verify ownership of wallets used to send remittances and let the protocol analyze your Stellar payment history for consistency and reliability.
+*   **Save Toward Ownership:** Contribute 30% down payment over 6–12 months into a Soroban escrow contract, earning yield on pooled funds while you save.
+*   **Build With Accountability:** The remaining 70% is disbursed from a lending pool in milestone-based tranches to vetted contractors — gated by photo/video evidence on IPFS and multisig governance approval.
 
-| Layer           | Technology                                 |
-| --------------- | ------------------------------------------ |
-| Smart Contracts | Rust, Soroban SDK                          |
-| Frontend        | Next.js 16, TypeScript, Tailwind CSS v4    |
-| Blockchain      | Stellar Network (Soroban)                  |
-| Wallet          | Freighter (`@stellar/freighter-api`)       |
-| SDK             | `@stellar/stellar-sdk`                     |
-| Design          | Inter, Material Symbols, Material Design 3 |
+## Features
+*   **Remittance Verification** — Off-chain scoring service analyzes Stellar payment history for recurring amounts, regular intervals, and sustained sending patterns to establish borrower eligibility.
+*   **Escrow Savings Contract** — Soroban smart contract holds USDC contributions over 6–12 months, tracks individual balances, and enforces early withdrawal penalties (configurable basis points).
+*   **Lending Pool Contract** — Investor capital deposits, loan requesting/approval, milestone-based disbursement, and borrower repayment with simple interest — all on-chain.
+*   **Milestone Disbursement** — Construction funds released only when IPFS-hashed photo/video evidence is submitted and approved by a multisig governance committee.
+*   **Multisig Governance** — Stellar native multi-signature accounts gate milestone approvals, with configurable signer weights and thresholds.
+*   **Stablecoin Settlement** — All contributions, disbursements, and repayments settle in USDC on Stellar with sub-cent fees and 3–5 second finality.
+*   **Yield on Escrow** — Pooled escrow funds can be routed into Soroban-based lending protocols to earn passive yield while accumulating.
 
-## Getting Started
+## Stack
+*   **Frontend:** Next.js, TypeScript, Tailwind CSS
+*   **Wallet:** Freighter + `@stellar/freighter-api`
+*   **Smart Contracts:** Rust, Soroban SDK v22
+*   **Backend:** Node.js/TypeScript, Stellar SDK (`js-stellar-sdk`)
+*   **Database:** PostgreSQL (off-chain applicant records)
+*   **Storage:** IPFS via Pinata (milestone evidence)
+
+## Running it locally
 
 ### Prerequisites
+*   Node.js ≥ 18.0.0
+*   Rust (latest stable) + `wasm32-unknown-unknown` target
+*   Stellar CLI — `cargo install stellar-cli`
+*   [Freighter Wallet](https://www.freighter.app/) browser extension
 
-- Node.js 18+
-- Rust + `soroban-cli` (for contract development)
-- [Freighter Wallet](https://www.freighter.app/) browser extension
-
-### Install & Run
-
+### 1. Setup Frontend
 ```bash
-git clone https://github.com/AstronLabs/EventMesh.git
-cd EventMesh/frontend
+cd frontend
 npm install
+```
+
+Configure `frontend/.env.local`:
+```env
+NEXT_PUBLIC_ESCROW_CONTRACT_ID=your_escrow_contract_id
+NEXT_PUBLIC_LENDING_POOL_CONTRACT_ID=your_lending_pool_contract_id
+NEXT_PUBLIC_USDC_TOKEN_ID=your_usdc_token_id
+NEXT_PUBLIC_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
+NEXT_PUBLIC_HORIZON_URL=https://horizon-testnet.stellar.org
+```
+
+Run the dev server:
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and connect Freighter on Stellar Testnet.
+### 2. Setup Contracts
+To build and test the smart contracts:
+```bash
+cd contracts
+cargo build --target wasm32-unknown-unknown --release
+cargo test
+```
 
-## Contributing
+## How Remittance-Backed Mortgages Work
+RemitMortgage coordinates the entire homeownership journey on-chain through five phases:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/my-feature`)
-3. Commit your changes (`git commit -m 'feat: add my feature'`)
-4. Push your branch (`git push origin feat/my-feature`)
-5. Open a pull request
+1.  **Verification:** The borrower proves ownership of their remittance-sending wallet(s) by signing a message. The backend queries Stellar Horizon for their outgoing USDC payment history and scores it for consistency — recurring amounts, regular intervals, and sustained behavior.
+2.  **Savings:** The borrower contributes toward a 30% down payment over 6–12 months into the Soroban escrow contract in USDC. Pooled funds can earn yield via integrated lending protocols.
+3.  **Loan Approval:** Once the 30% target is met, the escrow releases funds and the borrower requests a loan from the lending pool for the remaining 70%. The admin (or governance committee) approves the loan after verifying pool liquidity.
+4.  **Construction:** The 70% is disbursed in milestone-based tranches to whitelisted contractors and suppliers. Each tranche requires IPFS-hashed photo/video evidence of completed work, reviewed and approved by a multisig governance committee.
+5.  **Repayment:** The borrower repays the 70% loan over time in USDC, settling instantly on Stellar with sub-cent transaction fees.
+
+## Roadmap
+*   **Verification Registry Contract:** On-chain anchor for borrower verification reports — store eligibility hashes for auditability without exposing private data.
+*   **Milestone Disbursement Contract:** Full implementation of IPFS evidence submission, multisig approval gating, and milestone-tracked fund releases.
+*   **Credit Scoring Engine:** Automated off-chain service that generates borrower eligibility scores from Stellar transaction history analysis.
+*   **Yield Integration:** Route idle escrow funds into Soroban lending protocols (e.g., Blend Capital) to earn passive yield during the savings phase.
+*   **Frontend Dashboard:** Borrower portal for savings tracking, loan status, repayment schedules, and milestone progress visualization.
+
+## Documentation
+*   [Technical Architecture](ARCHITECTURE.md): Core principle of separating verification from settlement, contract suite design, and end-to-end flow.
+*   [Contributing Guide](CONTRIBUTING.md): How to set up locally, branch conventions, commit standards, and PR guidelines.
 
 ## License
-
 MIT
