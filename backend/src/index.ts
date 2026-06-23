@@ -29,6 +29,7 @@ const verificationLimiter = rateLimit({
 app.use("/api/health", healthRouter);
 app.use("/api/verification", verificationLimiter, verificationRouter);
 app.use("/api/borrower", borrowerRouter);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Global error handler (must be after routes)
 app.use(errorHandler);
