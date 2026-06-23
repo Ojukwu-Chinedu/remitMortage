@@ -1,9 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 import { healthRouter } from "./routes/health.js";
 import { verificationRouter } from "./routes/verification.js";
 import { borrowerRouter } from "./routes/borrower.js";
+import { swaggerSpec } from "./docs/swagger.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -16,6 +18,7 @@ app.use(express.json());
 app.use("/api/health", healthRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/borrower", borrowerRouter);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ── Start Server ────────────────────────────────────────────────────────
 app.listen(PORT, () => {

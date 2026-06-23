@@ -3,11 +3,35 @@ import { Router } from "express";
 export const borrowerRouter = Router();
 
 /**
- * GET /api/borrower/:address/status
- *
- * Returns the on-chain status summary for a borrower:
- * escrow balance, loan status, repayment progress, etc.
- * (Placeholder — will integrate with Soroban contract queries)
+ * @openapi
+ * /api/borrower/{address}/status:
+ *   get:
+ *     summary: Get borrower status
+ *     description: Returns the current borrower escrow and loan status summary. Contract-backed values are placeholders until Soroban queries are integrated.
+ *     tags:
+ *       - Borrower
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         description: Borrower Stellar public key.
+ *         schema:
+ *           type: string
+ *           pattern: '^G[A-Z2-7]{55}$'
+ *         example: GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF
+ *     responses:
+ *       200:
+ *         description: Borrower status summary.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BorrowerStatusResponse'
+ *       500:
+ *         description: Borrower status lookup failed unexpectedly.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 borrowerRouter.get("/:address/status", async (req, res) => {
   try {

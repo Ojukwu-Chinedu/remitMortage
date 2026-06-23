@@ -4,13 +4,43 @@ import { analyzeRemittanceHistory } from "../services/stellar.js";
 export const verificationRouter = Router();
 
 /**
- * POST /api/verification/check
- *
- * Accepts a Stellar wallet address and a recipient address, then
- * queries Horizon for the sender's outgoing USDC payment history
- * to the recipient. Returns a verification summary.
- *
- * Body: { senderAddress: string, recipientAddress: string }
+ * @openapi
+ * /api/verification/check:
+ *   post:
+ *     summary: Analyze remittance payment history
+ *     description: Accepts a Stellar sender wallet and recipient address, queries Horizon for outgoing USDC payments, and returns a remittance eligibility summary.
+ *     tags:
+ *       - Verification
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerificationCheckRequest'
+ *           examples:
+ *             check:
+ *               value:
+ *                 senderAddress: GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF
+ *                 recipientAddress: GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBCJ
+ *     responses:
+ *       200:
+ *         description: Remittance analysis completed.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RemittanceAnalysis'
+ *       400:
+ *         description: Required request fields are missing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Verification service failed unexpectedly.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 verificationRouter.post("/check", async (req, res) => {
   try {
