@@ -14,7 +14,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
-    "express-rate-limit": "^6.10.0"
+    "express-rate-limit": "^6.10.0",
+    "swagger-ui-express": "^4.6.3",
+    "swagger-jsdoc": "^6.2.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
