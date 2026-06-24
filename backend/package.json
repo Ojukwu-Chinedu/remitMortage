@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/",
-    "docs:export": "tsx src/docs/export-openapi.ts"
+    "docs:export": "tsx src/docs/export-openapi.ts",
+    "test": "jest"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^13.1.0",
@@ -19,10 +20,22 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.15.3",
+    "@types/supertest": "^7.2.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
   }
 }

@@ -5,7 +5,7 @@ mod types;
 
 use crate::errors::PoolError;
 use crate::types::{DataKey, InvestorRecord, LoanRecord, LoanStatus, PoolConfig};
-use soroban_sdk::{contract, contractimpl, token, Address, BytesN, Env};
+use soroban_sdk::{contract, contractimpl, symbol_short, Symbol, token, Address, BytesN, Env, IntoVal};
 
 const INSTANCE_BUMP_AMOUNT: u32 = 518_400; // ~30 days
 const INSTANCE_LIFETIME_THRESHOLD: u32 = 129_600; // ~7.5 days
@@ -142,6 +142,11 @@ impl LendingPoolContract {
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
+        env.events().publish(
+            (symbol_short!("deposit"),),
+            (investor.clone(), amount, total),
+        );
+
         Ok(())
     }
 
@@ -198,6 +203,11 @@ impl LendingPoolContract {
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
+        env.events().publish(
+            (Symbol::new(&env, "loan_requested"),),
+            (borrower.clone(), loan_id.clone(), principal),
+        );
+
         Ok(())
     }
 
@@ -227,6 +237,11 @@ impl LendingPoolContract {
         env.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+
+        env.events().publish(
+            (Symbol::new(&env, "loan_approved"),),
+            (loan_id.clone(),),
+        );
 
         Ok(())
     }
@@ -282,6 +297,11 @@ impl LendingPoolContract {
         env.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+
+        env.events().publish(
+            (symbol_short!("disburse"),),
+            (loan_id.clone(), recipient.clone(), amount),
+        );
 
         Ok(())
     }
@@ -340,6 +360,11 @@ impl LendingPoolContract {
         env.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+
+        env.events().publish(
+            (symbol_short!("repay"),),
+            (borrower.clone(), loan_id.clone(), amount, remaining - amount),
+        );
 
         Ok(())
     }
@@ -473,6 +498,16 @@ mod test {
         assert_eq!(loan.status, LoanStatus::Requested);
         assert_eq!(loan.principal, 70_000_0000000i128);
         assert_eq!(loan.borrower, borrower);
+
+        // Verify request_loan event
+        let events = env.events().all();
+        let last_event = events.last().unwrap();
+        
+        let expected_topic: soroban_sdk::Vec<soroban_sdk::Val> = soroban_sdk::vec![&env, Symbol::new(&env, "loan_requested").into_val(&env)];
+        assert_eq!(last_event.1, expected_topic);
+        
+        let expected_data: soroban_sdk::Val = (borrower.clone(), loan_id.clone(), 70_000_0000000i128).into_val(&env);
+        assert_eq!(last_event.2, expected_data);
 
         // Admin approves.
         client.approve_loan(&loan_id);

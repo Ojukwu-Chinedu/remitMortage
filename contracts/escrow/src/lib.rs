@@ -7,7 +7,7 @@ mod types;
 use crate::errors::EscrowError;
 use crate::token_utils::get_token_client;
 use crate::types::{BorrowerRecord, DataKey, EscrowConfig};
-use soroban_sdk::{contract, contractimpl, Address, Env};
+use soroban_sdk::{contract, contractimpl, symbol_short, Address, Env, IntoVal};
 
 const INSTANCE_BUMP_AMOUNT: u32 = 518_400; // ~30 days
 const INSTANCE_LIFETIME_THRESHOLD: u32 = 129_600; // ~7.5 days
@@ -149,6 +149,11 @@ impl EscrowContract {
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
 
+        env.events().publish(
+            (symbol_short!("deposit"),),
+            (borrower.clone(), amount, record.deposited),
+        );
+
         Ok(())
     }
 
@@ -193,6 +198,11 @@ impl EscrowContract {
         env.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+
+        env.events().publish(
+            (symbol_short!("withdraw"),),
+            (borrower.clone(), refund, penalty),
+        );
 
         Ok(refund)
     }
@@ -245,6 +255,11 @@ impl EscrowContract {
         env.storage()
             .instance()
             .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+
+        env.events().publish(
+            (symbol_short!("release"),),
+            (borrower.clone(), amount),
+        );
 
         Ok(amount)
     }
@@ -386,6 +401,17 @@ mod test {
 
         let contract_balance = token.balance(&client.address);
         assert_eq!(contract_balance, 5_000_0000000i128);
+
+        // Verify deposit event
+        let events = env.events().all();
+        assert!(events.len() >= 2);
+        let last_event = events.last().unwrap();
+        
+        let expected_topic: soroban_sdk::Vec<soroban_sdk::Val> = soroban_sdk::vec![&env, symbol_short!("deposit").into_val(&env)];
+        assert_eq!(last_event.1, expected_topic);
+        
+        let expected_data: soroban_sdk::Val = (borrower.clone(), 3_000_0000000i128, 5_000_0000000i128).into_val(&env);
+        assert_eq!(last_event.2, expected_data);
     }
 
     #[test]

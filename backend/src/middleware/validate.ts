@@ -36,6 +36,17 @@ export function validateVerificationBody(req: Request, res: Response, next: Next
   return next();
 }
 
+export function validateWalletAddress(req: Request, res: Response, next: NextFunction) {
+  const { walletAddress } = req.body ?? {};
+  if (!walletAddress) {
+    return res.status(400).json({ error: "missing_field", field: "walletAddress", message: "walletAddress is required" });
+  }
+  if (!isValidGAddress(walletAddress)) {
+    return res.status(400).json({ error: "invalid_address", field: "walletAddress", message: "Invalid Stellar G-address" });
+  }
+  return next();
+}
+
 export function validateBorrowerParams(req: Request, res: Response, next: NextFunction) {
   const { address } = req.params ?? {};
 
