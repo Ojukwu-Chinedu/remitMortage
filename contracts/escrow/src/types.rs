@@ -14,6 +14,10 @@ pub struct EscrowConfig {
     pub max_duration_ledgers: u32,
     /// Early withdrawal penalty as basis points (e.g. 500 = 5%).
     pub early_withdrawal_penalty_bps: u32,
+    /// Minimum savings duration in ledgers that must elapse before release is
+    /// permitted (e.g. 518_400 ≈ 6 months at 5-second ledger time).
+    /// A value of 0 disables the lockup check.
+    pub min_duration_ledgers: u32,
 }
 
 /// Tracks an individual borrower's escrow balance and status.

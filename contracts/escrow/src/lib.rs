@@ -69,6 +69,9 @@ impl EscrowContract {
     /// - `savings_target` — The target amount each borrower must save (in token units).
     /// - `max_duration_ledgers` — Maximum number of ledgers for the savings period.
     /// - `early_withdrawal_penalty_bps` — Penalty for early withdrawal in basis points.
+    /// - `min_duration_ledgers` — Minimum ledgers that must elapse before release.
+    ///   Approximately 518,400 per 6 months (at 5-second ledger time).
+    ///   Pass 0 to disable the lockup check.
     pub fn initialize(
         env: Env,
         admin: Address,
@@ -76,6 +79,7 @@ impl EscrowContract {
         savings_target: i128,
         max_duration_ledgers: u32,
         early_withdrawal_penalty_bps: u32,
+        min_duration_ledgers: u32,
     ) -> Result<(), EscrowError> {
         // Prevent re-initialization.
         if env.storage().instance().has(&DataKey::Config) {
@@ -95,6 +99,7 @@ impl EscrowContract {
             savings_target,
             max_duration_ledgers,
             early_withdrawal_penalty_bps,
+            min_duration_ledgers,
         };
 
         env.storage().instance().set(&DataKey::Config, &config);
@@ -197,7 +202,8 @@ impl EscrowContract {
         Ok(refund)
     }
 
-    /// Release a borrower's escrowed funds once the savings target is met.
+    /// Release a borrower's escrowed funds once the savings target is met
+    /// and the minimum lockup duration has elapsed.
     ///
     /// Only callable by the admin. Transfers the borrower's full deposit
     /// to the specified recipient address (e.g., the lending pool or
@@ -225,6 +231,15 @@ impl EscrowContract {
         // Verify savings target is met.
         if record.deposited < config.savings_target {
             return Err(EscrowError::TargetNotReached);
+        }
+
+        // Enforce minimum lockup duration.
+        if config.min_duration_ledgers > 0 {
+            let current_ledger = env.ledger().sequence();
+            let elapsed = current_ledger.saturating_sub(record.start_ledger);
+            if elapsed < config.min_duration_ledgers {
+                return Err(EscrowError::LockupNotMet);
+            }
         }
 
         let amount = record.deposited;
@@ -272,6 +287,35 @@ impl EscrowContract {
         Self::read_total_pooled(&env)
     }
 
+    /// Returns the number of ledgers remaining before the borrower is eligible for
+    /// release based on the minimum lockup duration, or 0 if already eligible.
+    ///
+    /// Returns 0 if the borrower has no deposit or if no lockup is configured.
+    pub fn get_lockup_remaining(env: Env, borrower: Address) -> u32 {
+        let config = match Self::get_config(&env) {
+            Ok(c) => c,
+            Err(_) => return 0,
+        };
+
+        if config.min_duration_ledgers == 0 {
+            return 0;
+        }
+
+        let record = Self::get_borrower(&env, &borrower);
+        if record.deposited == 0 && !record.released {
+            return 0;
+        }
+
+        let current_ledger = env.ledger().sequence();
+        let elapsed = current_ledger.saturating_sub(record.start_ledger);
+
+        if elapsed >= config.min_duration_ledgers {
+            0
+        } else {
+            config.min_duration_ledgers - elapsed
+        }
+    }
+
     /// Returns the contract version.
     pub fn version(env: Env) -> u32 {
         env.storage()
@@ -309,6 +353,7 @@ mod test {
             &10_000_0000000i128, // 10,000 USDC target
             &518_400u32,
             &500u32,
+            &0u32, // no lockup by default in helper
         );
 
         (admin, borrower, token_address, client)
@@ -331,6 +376,7 @@ mod test {
             &10_000_0000000i128,
             &518_400u32,
             &500u32,
+            &0u32,
         );
 
         // Verify config was stored by reading from the contract's context.
@@ -346,6 +392,7 @@ mod test {
             assert_eq!(stored_config.savings_target, 10_000_0000000i128);
             assert_eq!(stored_config.max_duration_ledgers, 518_400u32);
             assert_eq!(stored_config.early_withdrawal_penalty_bps, 500u32);
+            assert_eq!(stored_config.min_duration_ledgers, 0u32);
         });
     }
 
@@ -362,7 +409,7 @@ mod test {
 
         client.initialize(&admin, &token, &10_000_0000000i128, &518_400u32, &500u32);
 
-        let result = client.try_initialize(&admin, &token, &10_000_0000000i128, &518_400u32, &500u32);
+        let result = client.try_initialize(&admin, &token, &10_000_0000000i128, &518_400u32, &500u32, &0u32);
         assert!(result.is_err());
     }
 
@@ -451,6 +498,7 @@ mod test {
         assert_eq!(config.token, token_address);
         assert_eq!(config.savings_target, 10_000_0000000i128);
         assert_eq!(config.early_withdrawal_penalty_bps, 500u32);
+        assert_eq!(config.min_duration_ledgers, 0u32);
     }
 
     #[test]
@@ -541,5 +589,166 @@ mod test {
         // Release should fail — target not reached.
         let result = client.try_release(&borrower, &recipient);
         assert!(result.is_err());
+    }
+
+    /// Test that release is blocked before the minimum lockup duration.
+    #[test]
+    fn test_release_blocked_before_lockup() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let borrower = Address::generate(&env);
+
+        let token_admin = Address::generate(&env);
+        let token_id = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_id.address();
+        let sac = soroban_sdk::token::StellarAssetClient::new(&env, &token_address);
+        sac.mint(&borrower, &50_000_0000000i128);
+
+        let contract_id = env.register(EscrowContract, ());
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        // Initialize with a 100-ledger lockup.
+        client.initialize(
+            &admin,
+            &token_address,
+            &10_000_0000000i128,
+            &518_400u32,
+            &500u32,
+            &100u32, // 100 ledger minimum
+        );
+
+        let recipient = Address::generate(&env);
+
+        // Deposit the full target amount.
+        client.deposit(&borrower, &10_000_0000000i128);
+
+        // Release should fail — lockup not elapsed (only 0 ledgers have passed).
+        let result = client.try_release(&borrower, &recipient);
+        assert!(result.is_err());
+
+        // get_lockup_remaining should return close to 100.
+        let remaining = client.get_lockup_remaining(&borrower);
+        assert!(remaining > 0, "lockup should still have ledgers remaining");
+    }
+
+    /// Test that release succeeds after the lockup period.
+    #[test]
+    fn test_release_succeeds_after_lockup() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let borrower = Address::generate(&env);
+
+        let token_admin = Address::generate(&env);
+        let token_id = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_id.address();
+        let sac = soroban_sdk::token::StellarAssetClient::new(&env, &token_address);
+        sac.mint(&borrower, &50_000_0000000i128);
+
+        let contract_id = env.register(EscrowContract, ());
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        // Initialize with 50-ledger minimum lockup.
+        client.initialize(
+            &admin,
+            &token_address,
+            &10_000_0000000i128,
+            &518_400u32,
+            &500u32,
+            &50u32,
+        );
+
+        let recipient = Address::generate(&env);
+
+        // Deposit the full target amount.
+        client.deposit(&borrower, &10_000_0000000i128);
+
+        // Advance ledger by 60 (beyond the 50-ledger lockup).
+        env.ledger().set_sequence_number(
+            env.ledger().sequence() + 60,
+        );
+
+        // get_lockup_remaining should now be 0.
+        let remaining = client.get_lockup_remaining(&borrower);
+        assert_eq!(remaining, 0, "lockup should be fully elapsed");
+
+        // Release should now succeed.
+        let released = client.release(&borrower, &recipient);
+        assert_eq!(released, 10_000_0000000i128);
+    }
+
+    /// Test that get_lockup_remaining returns accurate count mid-lockup.
+    #[test]
+    fn test_get_lockup_remaining_mid_lockup() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let borrower = Address::generate(&env);
+
+        let token_admin = Address::generate(&env);
+        let token_id = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_id.address();
+        let sac = soroban_sdk::token::StellarAssetClient::new(&env, &token_address);
+        sac.mint(&borrower, &50_000_0000000i128);
+
+        let contract_id = env.register(EscrowContract, ());
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        client.initialize(
+            &admin,
+            &token_address,
+            &10_000_0000000i128,
+            &518_400u32,
+            &500u32,
+            &200u32,
+        );
+
+        client.deposit(&borrower, &10_000_0000000i128);
+        let deposit_ledger = env.ledger().sequence();
+
+        // Advance 80 ledgers — 120 remain.
+        env.ledger().set_sequence_number(deposit_ledger + 80);
+        let remaining = client.get_lockup_remaining(&borrower);
+        assert_eq!(remaining, 120u32);
+    }
+
+    /// Test that early withdrawal (withdraw) is unaffected by lockup.
+    #[test]
+    fn test_withdraw_unaffected_by_lockup() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let borrower = Address::generate(&env);
+
+        let token_admin = Address::generate(&env);
+        let token_id = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_id.address();
+        let sac = soroban_sdk::token::StellarAssetClient::new(&env, &token_address);
+        sac.mint(&borrower, &50_000_0000000i128);
+
+        let contract_id = env.register(EscrowContract, ());
+        let client = EscrowContractClient::new(&env, &contract_id);
+
+        // Long lockup.
+        client.initialize(
+            &admin,
+            &token_address,
+            &10_000_0000000i128,
+            &518_400u32,
+            &500u32,
+            &518_400u32,
+        );
+
+        client.deposit(&borrower, &5_000_0000000i128);
+
+        // Withdraw should succeed regardless of lockup — penalty applies.
+        let refund = client.withdraw(&borrower);
+        // 5% penalty on 5,000 = 250, refund = 4,750.
+        assert_eq!(refund, 4_750_0000000i128);
     }
 }
