@@ -7,6 +7,8 @@ export interface Config {
   escrowContractId: string;
   lendingPoolContractId: string;
   usdcTokenId: string;
+  pinataApiKey: string;
+  pinataSecretApiKey: string;
 }
 
 export function loadConfig(): Config {
@@ -18,5 +20,7 @@ export function loadConfig(): Config {
     escrowContractId: process.env.ESCROW_CONTRACT_ID || "",
     lendingPoolContractId: process.env.LENDING_POOL_CONTRACT_ID || "",
     usdcTokenId: process.env.USDC_TOKEN_ID || "",
+    pinataApiKey: process.env.PINATA_API_KEY || "",
+    pinataSecretApiKey: process.env.PINATA_SECRET_API_KEY || "",
   };
 }
