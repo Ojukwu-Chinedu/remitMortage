@@ -9,6 +9,7 @@ import { verificationRouter } from "./routes/verification.js";
 import { borrowerRouter } from "./routes/borrower.js";
 import { loanRouter } from "./routes/loan.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { swaggerSpec } from "./docs/swagger.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
