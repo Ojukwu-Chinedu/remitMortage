@@ -174,6 +174,19 @@ impl LendingPoolContract {
             loan.outstanding_debt.saturating_mul(compound) / Self::INTEREST_SCALE;
         loan.last_interest_ledger = current;
     }
+
+    fn check_not_paused(env: &Env) -> Result<(), PoolError> {
+        let paused: bool = env
+            .storage()
+            .instance()
+            .get(&DataKey::Paused)
+            .unwrap_or(false);
+        if paused {
+            Err(PoolError::ContractPaused)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 #[contractimpl]
@@ -243,6 +256,7 @@ impl LendingPoolContract {
     /// Transfers USDC from the investor to this contract and updates the investor's
     /// record, per-tranche totals, and the pool's total liquidity.
     pub fn deposit(env: Env, investor: Address, amount: i128, tranche: Tranche) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         investor.require_auth();
 
         if amount <= 0 {
@@ -307,6 +321,7 @@ impl LendingPoolContract {
         loan_id: BytesN<32>,
         principal: i128,
     ) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         borrower.require_auth();
 
         if principal <= 0 {
@@ -365,6 +380,7 @@ impl LendingPoolContract {
     /// Verifies that pool has sufficient liquidity for the loan principal,
     /// then transitions the loan status from Requested to Approved.
     pub fn approve_loan(env: Env, loan_id: BytesN<32>) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         let config = Self::read_config(&env)?;
         config.admin.require_auth();
 
@@ -431,6 +447,7 @@ impl LendingPoolContract {
         recipient: Address,
         amount: i128,
     ) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         if amount <= 0 {
             return Err(PoolError::InvalidAmount);
         }
@@ -501,6 +518,7 @@ impl LendingPoolContract {
         loan_id: BytesN<32>,
         amount: i128,
     ) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         borrower.require_auth();
 
         if amount <= 0 {
@@ -686,6 +704,7 @@ impl LendingPoolContract {
     /// The outstanding loss is the difference between the disbursed amount
     /// and the amount already repaid.
     pub fn mark_default(env: Env, loan_id: BytesN<32>) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         let config = Self::read_config(&env)?;
         config.admin.require_auth();
 
@@ -732,6 +751,7 @@ impl LendingPoolContract {
         Self::set_loan(&env, &loan_id, &loan);
     /// Investor withdraws available capital.
     pub fn withdraw(env: Env, investor: Address, amount: i128) -> Result<(), PoolError> {
+        Self::check_not_paused(&env)?;
         investor.require_auth();
 
         if amount <= 0 {
@@ -780,6 +800,7 @@ impl LendingPoolContract {
 
     /// Investor claims their proportional share of repaid interest.
     pub fn claim_yield(env: Env, investor: Address) -> Result<i128, PoolError> {
+        Self::check_not_paused(&env)?;
         investor.require_auth();
 
         let mut record = Self::read_investor(&env, &investor);
@@ -914,6 +935,73 @@ impl LendingPoolContract {
             .instance()
             .get(&DataKey::Version)
             .unwrap_or(1u32)
+    }
+
+    // ── Emergency Pause ──────────────────────────────────────────────────
+
+    /// Halt all state-mutating operations. Admin-only.
+    pub fn pause(env: Env) -> Result<(), PoolError> {
+        let config = Self::read_config(&env)?;
+        config.admin.require_auth();
+        env.storage().instance().set(&DataKey::Paused, &true);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        Ok(())
+    }
+
+    /// Resume all operations after a pause. Admin-only.
+    pub fn unpause(env: Env) -> Result<(), PoolError> {
+        let config = Self::read_config(&env)?;
+        config.admin.require_auth();
+        env.storage().instance().set(&DataKey::Paused, &false);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        Ok(())
+    }
+
+    // ── Admin Transfer ─────────────────────────────────────────────────
+
+    /// Propose a new admin address. The current admin initiates the transfer.
+    /// The pending admin must then call `accept_admin` to finalize.
+    pub fn propose_new_admin(env: Env, new_admin: Address) -> Result<(), PoolError> {
+        let config = Self::read_config(&env)?;
+        config.admin.require_auth();
+        env.storage()
+            .instance()
+            .set(&DataKey::PendingAdmin, &new_admin);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        env.events().publish(
+            (symbol_short!("prop_admin"),),
+            (config.admin, new_admin),
+        );
+        Ok(())
+    }
+
+    /// Accept the admin role. Callable only by the pending admin address
+    /// that was previously proposed via `propose_new_admin`.
+    pub fn accept_admin(env: Env) -> Result<(), PoolError> {
+        let pending: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::PendingAdmin)
+            .ok_or(PoolError::NotPendingAdmin)?;
+        pending.require_auth();
+        let mut config = Self::read_config(&env)?;
+        config.admin = pending.clone();
+        env.storage().instance().set(&DataKey::Config, &config);
+        env.storage().instance().remove(&DataKey::PendingAdmin);
+        env.storage()
+            .instance()
+            .extend_ttl(INSTANCE_LIFETIME_THRESHOLD, INSTANCE_BUMP_AMOUNT);
+        env.events().publish(
+            (symbol_short!("accept_adm"),),
+            (pending,),
+        );
+        Ok(())
     }
 
     // ── Upgrade Functions ────────────────────────────────────────────────
@@ -1788,5 +1876,210 @@ mod test {
 
         let loan = client.get_loan_info(&loan_id);
         assert_eq!(loan.outstanding_debt, 0i128);
+    }
+
+    #[test]
+    fn test_deposit_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, _investor, _token_address, client) = setup_pool(&env);
+
+        client.pause();
+        let result = client.try_deposit(&Address::generate(&env), &10_000_0000000i128, &Tranche::Senior);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_withdraw_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.pause();
+
+        let result = client.try_withdraw(&investor, &10_000_0000000i128);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_request_loan_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+        let borrower = Address::generate(&env);
+        let loan_id = mock_loan_id(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.pause();
+
+        let result = client.try_request_loan(&borrower, &loan_id, &10_000_0000000i128);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_approve_loan_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+        let borrower = Address::generate(&env);
+        let loan_id = mock_loan_id(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.request_loan(&borrower, &loan_id, &10_000_0000000i128);
+        client.pause();
+
+        let result = client.try_approve_loan(&loan_id);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_disburse_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+        let borrower = Address::generate(&env);
+        let contractor = Address::generate(&env);
+        let loan_id = mock_loan_id(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.request_loan(&borrower, &loan_id, &10_000_0000000i128);
+        client.approve_loan(&loan_id);
+        client.pause();
+
+        let result = client.try_disburse(&loan_id, &contractor, &5_000_0000000i128);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_repay_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, token_address, client) = setup_pool(&env);
+        let borrower = Address::generate(&env);
+        let loan_id = mock_loan_id(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.request_loan(&borrower, &loan_id, &10_000_0000000i128);
+        client.approve_loan(&loan_id);
+        client.disburse(&loan_id, &borrower, &10_000_0000000i128);
+
+        let sac = StellarAssetClient::new(&env, &token_address);
+        sac.mint(&borrower, &20_000_0000000i128);
+
+        client.pause();
+
+        let result = client.try_repay(&borrower, &loan_id, &5_000_0000000i128);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_mark_default_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+        let borrower = Address::generate(&env);
+        let loan_id = mock_loan_id(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.request_loan(&borrower, &loan_id, &10_000_0000000i128);
+        client.approve_loan(&loan_id);
+        client.pause();
+
+        let result = client.try_mark_default(&loan_id);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_claim_yield_reverts_when_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, token_address, client) = setup_pool(&env);
+
+        client.deposit(&investor, &50_000_0000000i128, &Tranche::Senior);
+        client.pause();
+
+        let result = client.try_claim_yield(&investor);
+        assert_eq!(result.unwrap_err(), Ok(PoolError::ContractPaused));
+    }
+
+    #[test]
+    fn test_deposit_resumes_after_unpause() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+
+        client.pause();
+        client.unpause();
+
+        let result = client.try_deposit(&investor, &10_000_0000000i128, &Tranche::Senior);
+        assert!(result.is_ok());
+        assert_eq!(client.get_liquidity(), 10_000_0000000i128);
+    }
+
+    #[test]
+    fn test_query_functions_work_while_paused() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, investor, _token_address, client) = setup_pool(&env);
+
+        client.deposit(&investor, &25_000_0000000i128, &Tranche::Junior);
+        client.pause();
+
+        // Query functions must still work
+        let config = client.get_pool_config();
+        assert_eq!(config.admin, admin);
+        assert_eq!(client.get_liquidity(), 25_000_0000000i128);
+        let info = client.get_investor_info(&investor);
+        assert_eq!(info.deposited, 25_000_0000000i128);
+        let ti = client.get_tranche_info(&Tranche::Junior);
+        assert_eq!(ti.total_deposited, 25_000_0000000i128);
+    }
+
+    #[test]
+    fn test_admin_transfer_flow() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, _investor, _token_address, client) = setup_pool(&env);
+        let new_admin = Address::generate(&env);
+
+        client.propose_new_admin(&new_admin);
+        client.accept_admin();
+
+        let config = client.get_pool_config();
+        assert_eq!(config.admin, new_admin);
+    }
+
+    #[test]
+    fn test_accept_admin_without_proposal_fails() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (_admin, _investor, _token_address, client) = setup_pool(&env);
+
+        let result = client.try_accept_admin();
+        assert_eq!(result.unwrap_err(), Ok(PoolError::NotPendingAdmin));
+    }
+
+    #[test]
+    fn test_non_admin_cannot_pause() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let (admin, _investor, _token_address, client) = setup_pool(&env);
+        env.mock_all_auths();
+        let result = client.try_pause();
+        assert!(result.is_ok());
     }
 }

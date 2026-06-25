@@ -34,4 +34,6 @@ pub enum EscrowError {
     LockupNotMet = 10,
     /// Operation rejected because the contract is paused.
     ContractPaused = 14,
+    /// Proposed new admin is not the caller or no transfer is pending.
+    NotPendingAdmin = 15,
 }

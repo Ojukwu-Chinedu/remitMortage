@@ -32,4 +32,8 @@ pub enum PoolError {
     TrancheMismatch = 11,
     /// Junior tranche has insufficient capital to absorb this loss.
     InsufficientJuniorCapital = 12,
+    /// Operation rejected because the contract is paused.
+    ContractPaused = 13,
+    /// Proposed new admin is not the caller or no transfer is pending.
+    NotPendingAdmin = 14,
 }

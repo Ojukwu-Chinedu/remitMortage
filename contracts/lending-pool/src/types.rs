@@ -157,4 +157,8 @@ pub enum DataKey {
     PendingUpgrade,
     /// Number of ledgers the admin must wait between proposing and executing an upgrade.
     UpgradeDelay,
+    /// Emergency pause flag. When true, state-mutating operations are blocked.
+    Paused,
+    /// Pending new admin address for two-step admin transfer.
+    PendingAdmin,
 }
