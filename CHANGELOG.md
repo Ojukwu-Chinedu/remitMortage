@@ -1,4 +1,15 @@
 ## [unreleased]
+
+*Aug 21, 2026*
+
+### FEATURES
+
+- feat: add v8.4.0 emergency upgrade handler that blacklists the confirmed exploiter account  ([#680](https://github.com/MANTRA-Chain/mantrachain/pull/680))
+
+### DEPENDENCIES
+
+- *(deps)* bump mantra evm from v0.6.0-v8-mantra-4 to v0.6.0-v8-mantra-6 ([#679](https://github.com/MANTRA-Chain/mantrachain/pull/679))
+
 ## v8.3.0
 
 *Jul 28, 2026*
