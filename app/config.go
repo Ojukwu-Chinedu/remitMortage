@@ -23,7 +23,7 @@ var (
 		"mantra-canary-net-1": 7888,  // legacy devnet Chain ID
 	}
 
-	DefaultEVMChainID uint64 = 11199 // ArkConstellation default EVM Chain ID
+	DefaultEVMChainID uint64 = 11199             // ArkConstellation default EVM Chain ID
 	MANTRAChainID     uint64 = DefaultEVMChainID // alias for backwards compatibility
 )
 
