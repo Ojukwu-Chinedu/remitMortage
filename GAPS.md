@@ -35,7 +35,10 @@ MANTRA's inherited 2024-10-07 upstream tag. Downstream handoff marker at
   and must not be used. Day-1 state-machine decisions taken by Eng 1:
   bech32 prefix `ark`, base denom `aespees` (display `espees`, symbol
   `ESP`), and the `x/sanction`, `x/tax`, and `x/tokenfactory` modules
-  stripped. These are now reflected in the devnet templates and fixtures.
+  stripped. `aespees` cannot be dropped as the base: the vendored EVM
+  module's `SetGlobalConfigVariables` panics on `received unsupported
+  decimals: 0`, so the base `denom_unit` must carry >0 decimals, which
+  requires a separate base name. `espees` remains the public display name.
 - **`networks/mainnet/genesis-params.json` no longer carries `x/tax` or
   `x/tokenfactory` overrides** because those modules were removed by Eng 1.
 - **Only rehearsed against 2-4 dummy gentx files.** `collect-gentx.sh`'s
