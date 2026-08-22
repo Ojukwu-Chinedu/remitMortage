@@ -8,9 +8,10 @@ touches real validators or mainnet.
 
 **Binary target note.** This devnet now targets the `ark-v0.1.0-alpha` tag
 from Eng 1's state-machine track (PR #4). Eng 1 stripped the
-ESP-specific modules (`x/sanction`, `x/tax`, `x/tokenfactory`), set the
-bech32 prefix to `ark`, and named the token `espees` (`aespees` base,
-18 decimals, `ESP` symbol). Eng 2 re-verified the entire pipeline against
+MANTRA-specific modules (`x/tax`, `x/tokenfactory`), retained
+`x/sanction`, set the bech32 prefix to `ark`, and named the token `KASH`
+(`aesp` base,
+18 decimals, `KASH` symbol). Eng 2 re-verified the entire pipeline against
 that actual compiled binary rather than the previous `base-genesis` source
 build. See [`GAPS.md`](../../GAPS.md) for the full picture.
 
@@ -72,8 +73,8 @@ Cosmos SDK's proto-JSON unmarshalling rejects unknown fields).
 ## Parameter choices and why
 
 All values live in `genesis-template.json` / `pystarport.json`'s `genesis`
-key. The public token is `espees` (symbol `ESP`, 18 decimals), with base
-unit `aespees` (`1 espees = 1_000_000_000_000_000_000 aespees`). This was
+key. The public token is `KASH` (symbol `KASH`, 18 decimals), with base
+unit `aesp` (`1 KASH = 1_000_000_000_000_000_000 aesp`). This was
 set by Eng 1 in `ark-v0.1.0-alpha` (`app/params/config.go`) and confirmed
 by re-running the devnet against that binary.
 
@@ -85,13 +86,13 @@ by re-running the devnet against that binary.
 | `slashing.slash_fraction_downtime` | `0.001` | **Real value, kept as-is** | Same reasoning. |
 | `slashing.downtime_jail_duration` | `60s` | Reasonable production value already | No change needed. |
 | `mint.*` (inflation, goal_bonded, blocks_per_year) | Conservative, real-shaped economic values | **Real values, kept as-is** | Economic parameters worth rehearsing as plausible production numbers, not placeholders. Note: `blocks_per_year` assumes a target block cadence, not devnet's actual observed one — on this devnet the *wall-clock* inflation accrual will run at a different rate than intended since real blocks land faster/slower than the assumption baked into this constant. Harmless for a local rehearsal; flagged here so nobody mistakes devnet inflation behavior for the mainnet target. |
-| `gov.min_deposit` / `expedited_min_deposit` | `1 espees` / `5 espees` | **Devnet-fast** (a real mainnet target of tens-of-thousands of tokens is typical) | Need to submit and pass test proposals without needing to pre-fund huge dummy balances. |
+| `gov.min_deposit` / `expedited_min_deposit` | `1 KASH` / `5 KASH` | **Devnet-fast** (a real mainnet target of tens-of-thousands of tokens is typical) | Need to submit and pass test proposals without needing to pre-fund huge dummy balances. |
 | `gov.voting_period` / `expedited_voting_period` | `120s` / `60s` | **Devnet-fast** (mainnet-typical: 2 days / 3 hours) | Need to observe a full submit→vote→pass/reject→execute cycle inside a working session. |
 | `gov.quorum` / `threshold` / `veto_threshold` | `0.334` / `0.5` / `0.667` | **Real values, kept as-is** | These define governance safety properties — worth rehearsing as real. |
 | `consensus.params.block.{max_bytes,max_gas}` | `1000000` / `75000000` | Reasonable production values | Reused as-is; these aren't iteration-speed-sensitive. |
 | `consensus.params.evidence.max_bytes` | `1000000` | Must be ≤ `block.max_bytes` | The SDK's raw default (`1048576`) is *larger* than the block size chosen above and fails genesis validation once block size is shrunk to match; this bit us during rehearsal (see git history) and is exactly the kind of drift-from-defaults trap this file exists to catch. |
 | `consensus.params.abci.vote_extensions_enable_height` | `0` (disabled) | Deliberately left off | No oracle/price-feed module is registered in this app (`app_state` has no `oracle`/`marketmap` key as of this branch), so there's nothing that would use vote extensions today; leaving this at the binary's own default avoids inventing a value for a feature nothing consumes yet. |
-| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `aespees` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `aespees`, staking module expects `stake`). |
+| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `aesp` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `aesp`, staking module expects `stake`). |
 
 Everything not listed above (bank, auth, IBC, wasm, erc20, feemarket's EVM
 base-fee mechanics, etc.) is left at the binary's own compiled-in default —
@@ -105,15 +106,15 @@ something that needs fixing.
 
 Set in `pystarport.json`'s `validators[]`/`accounts[]`, all funded from
 nothing (no external faucet, no real funds) — this is a from-scratch local
-genesis. Amounts below are in whole `espees` (18 decimals, so e.g. 100,000
-espees = `100000` followed by eighteen zeros = `100000000000000000000000`
-`aespees` in the actual config):
+genesis. Amounts below are in whole `KASH` (18 decimals, so e.g. 100,000
+KASH = `100000` followed by eighteen zeros = `100000000000000000000000`
+`aesp` in the actual config):
 
-- `validator-0`, `validator-1`: 100,000 espees each, self-delegate 50,000 espees each (bonded)
-- `sentry-0`, `sentry-1`: 10,000 espees each (never bonded — see topology below)
-- `community` (devnet-only, fixed mnemonic — see table above): 500,000 espees
-- `faucet`: 1,000,000 espees, for later manual transaction testing
-- `alice`, `bob`: 1,000 espees each, generic test users
+- `validator-0`, `validator-1`: 100,000 KASH each, self-delegate 50,000 KASH each (bonded)
+- `sentry-0`, `sentry-1`: 10,000 KASH each (never bonded — see topology below)
+- `community` (devnet-only, fixed mnemonic — see table above): 500,000 KASH
+- `faucet`: 1,000,000 KASH, for later manual transaction testing
+- `alice`, `bob`: 1,000 KASH each, generic test users
 
 All mnemonics except `community`'s are freshly auto-generated by pystarport
 on every `devnet-up` and written to `data/arkdevnet_9000-1/accounts.json`

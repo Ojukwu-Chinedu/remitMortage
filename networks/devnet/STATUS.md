@@ -14,7 +14,7 @@ Last full re-verification: 2026-08-22 (UTC), on `track/2-consensus-genesis`
 | Both validators signing commits (`block_id_flag: 2`) | PASS | `proof/sentry-isolation.log` |
 | TMKMS remote signing for validator-0, live against the running chain | PASS | `remote-signing/proof/live-signing-evidence.log` |
 | Gentx validation pipeline (tampered sig + overclaim fixtures rejected, valid accepted) | PASS | `scripts/genesis/rehearsal/transcript.log` |
-| Address prefix `ark` and token `espees` (`aespees` base) live in `MsgSend` | PASS | transaction confirmed against the running devnet |
+| Address prefix `ark` and token `KASH` (`aesp` base) live in `MsgSend` | PASS | transaction confirmed against the running devnet |
 
 ## How to use it
 
@@ -28,8 +28,8 @@ make devnet-down           # stop
 
 - Chain-id: `arkdevnet_9000-1`
 - Bech32 prefix: `ark` (e.g. `ark1...`, `arkvaloper1...`)
-- Denom: `espees` (18-decimal base unit `aespees`; `1 espees = 10^18 aespees`)
-- Symbol: `ESP`
+- Denom: `KASH` (18-decimal base unit `aesp`; `1 KASH = 10^18 aesp`)
+- Symbol: `KASH`
 - RPC endpoints: `127.0.0.1:26657` (sentry-0), `:26667` (validator-0),
   `:26677` (sentry-1), `:26687` (validator-1)
 - Eng 4: index against the **sentry** RPCs (26657/26677) — that mirrors the

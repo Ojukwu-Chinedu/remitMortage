@@ -6,12 +6,12 @@
     "validators": [
       {
         "moniker": "sentry-0",
-        "coins": "10000000000000000000000aespees"
+        "coins": "10000000000000000000000aesp"
       },
       {
         "moniker": "validator-0",
-        "coins": "100000000000000000000000aespees",
-        "staked": "50000000000000000000000aespees",
+        "coins": "100000000000000000000000aesp",
+        "staked": "50000000000000000000000aesp",
         "min_self_delegation": "1",
         "commission_rate": "0.05",
         "commission_max_rate": "0.20",
@@ -19,12 +19,12 @@
       },
       {
         "moniker": "sentry-1",
-        "coins": "10000000000000000000000aespees"
+        "coins": "10000000000000000000000aesp"
       },
       {
         "moniker": "validator-1",
-        "coins": "100000000000000000000000aespees",
-        "staked": "50000000000000000000000aespees",
+        "coins": "100000000000000000000000aesp",
+        "staked": "50000000000000000000000aesp",
         "min_self_delegation": "1",
         "commission_rate": "0.05",
         "commission_max_rate": "0.20",
@@ -35,20 +35,20 @@
     "accounts": [
       {
         "name": "community",
-        "coins": "500000000000000000000000aespees",
+        "coins": "500000000000000000000000aesp",
         "mnemonic": "daring bulb helmet sponsor basket view trash then eternal what kiss label flag save much regular shrimp captain buzz supply arctic drastic coast canyon"
       },
       {
         "name": "faucet",
-        "coins": "1000000000000000000000000aespees"
+        "coins": "1000000000000000000000000aesp"
       },
       {
         "name": "alice",
-        "coins": "1000000000000000000000aespees"
+        "coins": "1000000000000000000000aesp"
       },
       {
         "name": "bob",
-        "coins": "1000000000000000000000aespees"
+        "coins": "1000000000000000000000aesp"
       }
     ],
 
@@ -65,7 +65,7 @@
     },
 
     "app-config": {
-      "minimum-gas-prices": "0.01aespees"
+      "minimum-gas-prices": "0.01aesp"
     },
 
     "genesis": {
@@ -82,13 +82,14 @@
             {
               "description": "The native staking and governance token.",
               "denom_units": [
-                { "denom": "aespees", "exponent": 0 },
-                { "denom": "espees", "exponent": 18 }
+                { "denom": "aesp", "exponent": 0 },
+                { "denom": "esp", "exponent": 12 },
+                { "denom": "KASH", "exponent": 18 }
               ],
-              "base": "aespees",
-              "display": "espees",
-              "name": "Espees",
-              "symbol": "ESP"
+              "base": "aesp",
+              "display": "KASH",
+              "name": "KASH",
+              "symbol": "KASH"
             }
           ]
         },
@@ -96,7 +97,7 @@
           "params": {
             "unbonding_time": "300s",
             "max_validators": 11,
-            "bond_denom": "aespees"
+            "bond_denom": "aesp"
           }
         },
         "slashing": {
@@ -110,7 +111,7 @@
         },
         "mint": {
           "params": {
-            "mint_denom": "aespees",
+            "mint_denom": "aesp",
             "inflation_rate_change": "0.001000000000000000",
             "inflation_max": "0.000100000000000000",
             "inflation_min": "0.000100000000000000",
@@ -120,13 +121,13 @@
         },
         "evm": {
           "params": {
-            "evm_denom": "aespees",
-            "extended_denom_options": { "extended_denom": "aespees" }
+            "evm_denom": "aesp",
+            "extended_denom_options": { "extended_denom": "aesp" }
           }
         },
         "gov": {
           "params": {
-            "min_deposit": [{ "denom": "aespees", "amount": "1000000000000000000" }],
+            "min_deposit": [{ "denom": "aesp", "amount": "1000000000000000000" }],
             "max_deposit_period": "120s",
             "voting_period": "120s",
             "quorum": "0.334000000000000000",
@@ -134,11 +135,11 @@
             "veto_threshold": "0.667000000000000000",
             "expedited_voting_period": "60s",
             "expedited_threshold": "0.667000000000000000",
-            "expedited_min_deposit": [{ "denom": "aespees", "amount": "5000000000000000000" }]
+            "expedited_min_deposit": [{ "denom": "aesp", "amount": "5000000000000000000" }]
           }
         },
         "crisis": {
-          "constant_fee": { "denom": "aespees", "amount": "8000000000000000" }
+          "constant_fee": { "denom": "aesp", "amount": "8000000000000000" }
         }
       }
     }

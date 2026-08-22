@@ -14,7 +14,7 @@ the day it counts for real.
 re-checked from scratch against the `ark-v0.1.0-alpha` binary rather than
 trusted from the prior session. Binary from the Eng 1 tag, gentx fixtures
 regenerated and re-run (tampered sig + overclaim still rejected, canonical
-hash reproduced), devnet re-deployed with `ark` prefix and `espees`/`aespees`
+hash reproduced), devnet re-deployed with `ark` prefix and `KASH`/`aesp`
 denom (`make devnet-up` with `DEVNET_BIN` set to the alpha artifact), sentry
 isolation re-verified against the *running* network via `net_info`
 (validators: exactly 1 peer = own sentry, `pex=false`; new evidence in
@@ -33,12 +33,12 @@ MANTRA's inherited 2024-10-07 upstream tag. Downstream handoff marker at
   this track's devnet was re-verified against. The `v1.0.0-rc1` git tag
   visible in this repo is still MANTRA's inherited 2024-10-07 upstream tag
   and must not be used. Day-1 state-machine decisions taken by Eng 1:
-  bech32 prefix `ark`, base denom `aespees` (display `espees`, symbol
-  `ESP`), and the `x/sanction`, `x/tax`, and `x/tokenfactory` modules
-  stripped. `aespees` cannot be dropped as the base: the vendored EVM
-  module's `SetGlobalConfigVariables` panics on `received unsupported
-  decimals: 0`, so the base `denom_unit` must carry >0 decimals, which
-  requires a separate base name. `espees` remains the public display name.
+  bech32 prefix `ark`, base denom `aesp` (display `KASH`, symbol
+  `KASH`), `x/tax` and `x/tokenfactory` stripped, and `x/sanction`
+  retained. The EVM module's `LoadEvmCoinInfo` looks up the denom
+  metadata for `evm_denom` (`aesp`) and then uses the `denom_unit`
+  matching `display` (`KASH`) to set its 18 decimals, so the base can
+  remain `aesp` while the public display name is `KASH`.
 - **`networks/mainnet/genesis-params.json` no longer carries `x/tax` or
   `x/tokenfactory` overrides** because those modules were removed by Eng 1.
 - **Only rehearsed against 2-4 dummy gentx files.** `collect-gentx.sh`'s
@@ -73,13 +73,13 @@ assumes `mantrachaind init` does what that function's name implies.**
 ## A second discovered requirement: `bank.denom_metadata` is not cosmetic
 
 The EVM module's `InitGenesis` panics at node startup —
-`"error initializing evm coin info: denom metadata aespees could not be
+`"error initializing evm coin info: denom metadata aesp could not be
 found"` — if `app_state.bank.denom_metadata` has no entry for the
 bond/mint/evm denom. This isn't caught by `mantrachaind genesis
 validate-genesis` (a structural/proto check only) — it only surfaces when
 a node actually boots. `genesis-template.json` and `genesis-params.json`
-both include a correct `denom_metadata` entry now (`aespees` base,
-`espees` display, `ESP` symbol).
+both include a correct `denom_metadata` entry now (`aesp` base,
+`KASH` display, `KASH` symbol).
 
 ## Needs real infrastructure, not just config
 

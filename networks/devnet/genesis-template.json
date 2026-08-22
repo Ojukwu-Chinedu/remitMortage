@@ -16,20 +16,19 @@
     "the same override values without this key. `make devnet-check-genesis-sync`",
     "verifies the two stay identical everywhere except this comment.",
     "",
-    "Eng 1 update (ark-v0.1.0-alpha): the state-machine track stripped the",
-    "MANTRA-specific modules (x/tax, x/tokenfactory, x/sanction) and renamed",
-    "the bech32 prefix to `ark`. The public token is Espees (symbol ESP), with",
-    "the 18-decimal base unit `aespees` (the conventional Cosmos atto-denom",
-    "pattern: 1 espees = 1_000_000_000_000_000_000 aespees). This template",
-    "targets the `ark-v0.1.0-alpha` binary. Base `mantrachaind init` still has",
-    "staking/mint denom `stake` and evm denom `aatom`, so the denom and",
+    "Eng 1 update (ark-v0.1.0-alpha): the state-machine track strips",
+    "MANTRA-specific modules (x/tax, x/tokenfactory) but retains x/sanction,",
+    "and renames the bech32 prefix to `ark`. The public token is KASH, with",
+    "the 18-decimal display unit `KASH`, the intermediate unit `esp`, and the",
+    "cosmic atto base `aesp` (1 KASH = 1_000_000 esp = 1_000_000_000_000_000_000 aesp).",
+    "This template targets the `ark-v0.1.0-alpha` binary. Base `mantrachaind init`",
+    "still has staking/mint denom `stake` and evm denom `aatom`, so the denom and",
     "metadata overrides below remain load-bearing.",
     "",
-    "bank.denom_metadata for aespees is REQUIRED, not cosmetic: the evm",
-    "module's InitGenesis calls a coin-info lookup that panics at node",
-    "startup ('error initializing evm coin info: denom metadata aespees",
-    "could not be found') if this is missing. This was inherited from the",
-    "amantra rehearsal and applies identically to aespees.",
+    "bank.denom_metadata for aesp is REQUIRED, not cosmetic: the evm module's",
+    "InitGenesis calls a coin-info lookup that panics at node startup if the",
+    "denom metadata for evm_denom (aesp) cannot be found. The 18 decimals are",
+    "taken from the KASH denom_unit in the same metadata record.",
     "",
     "feemarket.params.base_fee's raw default (10^9 atto-units, roughly a",
     "'1 gwei' analog at 18 decimals) is a normal EVM gas price and is NOT",
@@ -55,13 +54,14 @@
         {
           "description": "The native staking and governance token.",
           "denom_units": [
-            { "denom": "aespees", "exponent": 0 },
-            { "denom": "espees", "exponent": 18 }
+            { "denom": "aesp", "exponent": 0 },
+            { "denom": "esp", "exponent": 12 },
+            { "denom": "KASH", "exponent": 18 }
           ],
-          "base": "aespees",
-          "display": "espees",
-          "name": "Espees",
-          "symbol": "ESP"
+          "base": "aesp",
+          "display": "KASH",
+          "name": "KASH",
+          "symbol": "KASH"
         }
       ]
     },
@@ -69,7 +69,7 @@
       "params": {
         "unbonding_time": "300s",
         "max_validators": 11,
-        "bond_denom": "aespees"
+        "bond_denom": "aesp"
       }
     },
     "slashing": {
@@ -83,7 +83,7 @@
     },
     "mint": {
       "params": {
-        "mint_denom": "aespees",
+        "mint_denom": "aesp",
         "inflation_rate_change": "0.001000000000000000",
         "inflation_max": "0.000100000000000000",
         "inflation_min": "0.000100000000000000",
@@ -93,13 +93,13 @@
     },
     "evm": {
       "params": {
-        "evm_denom": "aespees",
-        "extended_denom_options": { "extended_denom": "aespees" }
+        "evm_denom": "aesp",
+        "extended_denom_options": { "extended_denom": "aesp" }
       }
     },
     "gov": {
       "params": {
-        "min_deposit": [{ "denom": "aespees", "amount": "1000000000000000000" }],
+        "min_deposit": [{ "denom": "aesp", "amount": "1000000000000000000" }],
         "max_deposit_period": "120s",
         "voting_period": "120s",
         "quorum": "0.334000000000000000",
@@ -107,11 +107,11 @@
         "veto_threshold": "0.667000000000000000",
         "expedited_voting_period": "60s",
         "expedited_threshold": "0.667000000000000000",
-        "expedited_min_deposit": [{ "denom": "aespees", "amount": "5000000000000000000" }]
+        "expedited_min_deposit": [{ "denom": "aesp", "amount": "5000000000000000000" }]
       }
     },
     "crisis": {
-      "constant_fee": { "denom": "aespees", "amount": "8000000000000000" }
+      "constant_fee": { "denom": "aesp", "amount": "8000000000000000" }
     }
   }
 }
