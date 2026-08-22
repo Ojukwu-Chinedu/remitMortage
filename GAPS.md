@@ -43,29 +43,16 @@ MANTRA's inherited 2024-10-07 upstream tag. Downstream handoff marker at
   validator cohort this is still fine (a few minutes, one-time, high
   stakes) but hasn't been load-tested at real scale.
 
-## A real, load-bearing codebase bug discovered this session (Eng 1's domain)
+## A real, load-bearing codebase bug — resolved by Eng 1
 
-**`app/genesis.go`'s `NewDefaultGenesisState()` is never called anywhere in
-`cmd/`** — verified by grepping the whole tree for its name; only the
-function's own definition matches. It looks like it's meant to wire
-`evm.params.evm_denom`, a native `erc20` token pair, and the EVM
-feemarket's base fee to `amantra` automatically whenever `mantrachaind
-init` runs. It doesn't run at all — `init` goes through the plain SDK
-basic-module-manager path instead, so the raw default genesis has
+**`app/genesis.go`'s `NewDefaultGenesisState()` was dead and broken** and
+was removed by Eng 1 in `ark-v0.1.0-alpha`. `mantrachaind init` uses the
+plain SDK basic-module-manager path, so the raw default genesis has
 `evm.params.evm_denom: "aatom"`, `mint`/`staking` denom `"stake"`, and an
-**empty** `erc20.token_pairs` list. Worse: if this function ever *were*
-wired in, `erc20State.TokenPairs[0].Denom = FeeDenom` would panic on index
-0 of an empty slice, since `erc20types.DefaultGenesisState()` always
-returns `TokenPairs: []TokenPair{}` (verified in the vendored `cosmos/evm`
-fork's `x/erc20/types/genesis.go`). This repo's `genesis-template.json`
-overrides the denom fields directly instead of relying on that function,
-and deliberately does **not** attempt to construct a native ERC20 token
-pair — that needs a real precompile/contract address, which is squarely
-Eng 1's `app`/`x` domain to wire correctly, not something to improvise a
-value for from the genesis/consensus track. **Recommend Eng 1 either fix
-`NewDefaultGenesisState()` and wire it into `cmd/`, or delete it if it's
-dead/superseded — as written it's a landmine for the next person who
-assumes `mantrachaind init` does what that function's name implies.**
+empty `erc20.token_pairs` list. This repo's `genesis-template.json`
+overrides the denom fields directly and does **not** attempt to construct
+a native ERC20 token pair (needs a real precompile/contract address from
+Eng 1).
 
 ## A second discovered requirement: `bank.denom_metadata` is not cosmetic
 
@@ -172,21 +159,9 @@ both include a correct `denom_metadata` entry now (`aespees` base,
   whoever owns the root `Makefile`. Not fixed in this PR — out of this
   track's scope (`networks/`, `scripts/genesis/`) and not
   genesis/consensus related.
-- **`x/tax`'s `Params` proto schema changed** between the pre-reset and
-  post-reset codebase — the `max_mca_tax` field this session originally
-  included in the devnet override no longer exists (`x/tax/types/
-  params.pb.go` now only has `mca_tax`/`mca_address`), and including it
-  fails genesis with `unknown field "max_mca_tax" in types.Params`. Fixed
-  in the current `genesis-template.json`; noted here since it's a good
-  example of exactly the kind of drift this whole pipeline exists to
-  catch before it becomes a real-genesis-day surprise.
+
 - **The CI `validate-genesis` job was broken before this branch touched
   it** (missing `libwasmvm.x86_64.so` on the runner, so it errored before
   ever reaching genesis content) — fixed in `.github/workflows/build.yml`
   as part of this PR.
-- **`x/tax`'s module-level Go code hardcodes a real MANTRA mainnet address
-  as its default `mca_address`** (`mantra15m77x4pe6w9vtpuqm22qxu0ds7vn4ehzwx8pls`)
-  — inherited from upstream, not introduced by this branch. Every devnet
-  genesis in this repo overrides it to a dedicated devnet-only test
-  address specifically to avoid ever accidentally carrying that real
-  address into a rehearsal artifact.
+
