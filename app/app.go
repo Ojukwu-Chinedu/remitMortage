@@ -690,13 +690,11 @@ func New(
 		Create Transfer Stack
 
 		transfer stack (outermost to innermost, i.e. call-entry order for RecvPacket):
-			- UnwrapERC20 middleware (recv-only)
+			- UnwrapERC20 middleware (MANTRA/Ark memo unwrap)
 			- ICS Provider middleware
 			- IBC RateLimit middleware (guard: checks rate limit BEFORE calling next, blocks if exceeded)
-			- TokenFactory middleware (pass-through on RecvPacket)
 			- IBC Callbacks middleware (with EVM ContractKeeper)
 			- ERC-20 middleware
-			- MigrateUom middleware
 			- IBC Transfer
 
 		SendPacket, since it is originating from the application to core IBC:
@@ -705,16 +703,14 @@ func New(
 
 		RecvPacket, actual logic execution order (note: ratelimit runs its check BEFORE calling next,
 		all others call next before their own logic):
-			channel.RecvPacket -> ratelimit.OnRecvPacket (guard, aborts if exceeded) -> transfer.OnRecvPacket -> migrateuom.OnRecvPacket
+			channel.RecvPacket -> ratelimit.OnRecvPacket (guard, aborts if exceeded) -> transfer.OnRecvPacket
 			-> erc20.OnRecvPacket -> callbacks.OnRecvPacket -> icsprovider.OnRecvPacket -> unwraperc20.OnRecvPacket
-			(tokenfactory is pass-through on RecvPacket)
 	*/
 
 	// create IBC module from top to bottom of stack
 	var transferStack porttypes.IBCModule
 
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = ibc_middleware.NewMigrateUomIBCModule(transferStack, app.BankKeeper, app.AccountKeeper.AddressCodec())
 	maxCallbackGas := uint64(1_000_000)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 	app.CallbackKeeper = ibccallbackskeeper.NewKeeper(
@@ -1168,29 +1164,6 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
 func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	// v8.4.0 is the emergency, self-scheduled upgrade fixing the delegate
-	// precompile balance-drain exploit. No governance proposal; all
-	// validators must agree on this binary and height before restarting.
-	const name = "v8.4.0"
-
-	// upgradeHeight is chain-specific: the real halt height on mainnet,
-	// or a low height on dukong so the fix can be rehearsed on testnet first.
-	var upgradeHeight int64
-	switch ctx.ChainID() {
-	case "mantra-1":
-		upgradeHeight = 17449399
-	case "mantra-dukong-1":
-		upgradeHeight = 16107460
-	}
-
-	if upgradeHeight != 0 && ctx.BlockHeight() == upgradeHeight {
-		if _, err := app.UpgradeKeeper.GetUpgradePlan(ctx); err != nil { // no plan scheduled yet
-			_ = app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
-				Name:   name,
-				Height: ctx.BlockHeight(),
-			})
-		}
-	}
 	return app.ModuleManager.PreBlock(ctx)
 }
 
