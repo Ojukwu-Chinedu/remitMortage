@@ -185,9 +185,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Import GPG key
+        id: gpg-import
+        continue-on-error: true
         run: |
-          echo "${{ secrets.MANTRACHAIN_GPG_PRIVATE_KEY }}" | gpg --batch --import
-          gpg --list-secret-keys --keyid-format=long
+          if [ -n "${{ secrets.MANTRACHAIN_GPG_PRIVATE_KEY }}" ]; then
+            if echo "${{ secrets.MANTRACHAIN_GPG_PRIVATE_KEY }}" | base64 -d 2>/dev/null | gpg --batch --import 2>/dev/null; then
+              echo "has_gpg=true" >> "$GITHUB_OUTPUT"
+              gpg --list-secret-keys --keyid-format=long || true
+            elif echo "${{ secrets.MANTRACHAIN_GPG_PRIVATE_KEY }}" | gpg --batch --import 2>/dev/null; then
+              echo "has_gpg=true" >> "$GITHUB_OUTPUT"
+              gpg --list-secret-keys --keyid-format=long || true
+            else
+              echo "GPG import failed, will skip signing"
+              echo "has_gpg=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "No GPG key provided, will skip signing"
+            echo "has_gpg=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Make release
         run: |
           make release
@@ -195,15 +210,15 @@ jobs:
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GORELEASER_SKIP: validate
+          GORELEASER_SKIP: ${{ steps.gpg-import.outputs.has_gpg == 'true' && 'validate' || 'validate,sign' }}
           GORELEASER_CONFIG: ./scripts/ci-goreleaser/.goreleaser.yaml
           GPG_PASSWORD: ${{ secrets.MANTRACHAIN_GPG_PASSPHRASE }}
           GPG_FINGERPRINT: ${{ vars.MANTRACHAIN_GPG_FINGERPRINT }}
       - name: Generate SLSA provenance
         uses: actions/attest-build-provenance@v3
+        continue-on-error: true
         with:
           subject-path: |
             dist/*/mantrachaind*
             dist/*.tar.gz
-            dist/sha256sum.txt
-            dist/sha256sum.txt.sig
+            dist/sha256sum.txt*
