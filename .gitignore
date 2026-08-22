@@ -12,21 +12,12 @@ build/
 swagger-proto
 tmp-swagger-gen
 client/docs/node_modules
-
-# Devnet: generated node homes/keys/logs, never hand-edited or committed.
-networks/devnet/data/
-networks/devnet/.venv-pystarport/
-# ...except the captured block-time proof logs, which ARE the evidence.
-!networks/devnet/proof/*.log
-
-# tmkms: imported/generated private key material and signing state - never
-# committed, regenerated fresh by networks/devnet/remote-signing/README.md.
-networks/devnet/remote-signing/secrets/
-networks/devnet/remote-signing/state/
-networks/devnet/remote-signing/*.log
-!networks/devnet/remote-signing/proof/*.log
-
-# Gentx rehearsal transcript: captured evidence referenced by
-# scripts/genesis/rehearsal/README.md - must be committed despite the
-# blanket *.log rule above (which silently excluded it until this line).
-!scripts/genesis/rehearsal/transcript.log
+build
+exclusive.lock
+coverage.txt
+mise.toml
+# Yarn Berry/PnP
+client/docs/.pnp.cjs
+client/docs/.pnp.loader.mjs
+client/docs/.yarn/
+.agent
