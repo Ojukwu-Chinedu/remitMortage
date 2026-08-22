@@ -96,13 +96,11 @@ For more information on the architecture and design decisions, please refer to t
 
 ## Modules
 
-Mantrachain includes several custom modules:
-
-- `x/sanction`: Blacklisting of addresses to prevent transactions from sanctioned entities.
-- `x/tokenfactory`: Allows for the creation and management of new tokens (based on Neutron's implementation).
-- `x/tax`: Handles tax-related operations within the chain.
-
-For detailed information on each module, please refer to their respective README files in the `x/` directory.
+As of `track/1-state-machine`, Ark strips the MANTRA-specific custom modules
+this codebase inherited (`x/sanction`, `x/tokenfactory`, `x/tax`) - see
+`STATUS.md` and `GAPS.md` for what was removed and why. `x/` is otherwise
+empty; Ark relies on the standard Cosmos SDK + CosmWasm + `cosmos/evm` module
+set only.
 
 ## Security
 

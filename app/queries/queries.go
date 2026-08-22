@@ -6,7 +6,6 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -25,9 +24,10 @@ import (
 var stargateResponsePools = make(map[string]*sync.Pool)
 
 func init() {
-	// Whitelist specific queries
-	setWhitelistedQuery("/osmosis.tokenfactory.v1beta1.Query/Params", &tokenfactorytypes.QueryParamsResponse{})
-	setWhitelistedQuery("/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata", &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{})
+	// Whitelist specific queries here as needed (see setWhitelistedQuery below).
+	// Previously whitelisted the tokenfactory module's queries; that module has
+	// been removed, so nothing is whitelisted by default until a contract-facing
+	// query need is identified.
 }
 
 // setWhitelistedQuery sets the whitelisted query at the provided path.

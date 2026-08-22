@@ -26,11 +26,6 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		AccountsToBlacklist := []string{"mantra13n9sk3p8x7tpq9adgxvzv9q0qev953mld0hwva"}
-		if err := keepers.SanctionKeeper.AddToBlacklist(ctx, AccountsToBlacklist); err != nil {
-			return vm, err
-		}
-
 		ctx.Logger().Info("Upgrade v8.4.0 complete")
 		return vm, nil
 	}

@@ -55,15 +55,6 @@ import (
 	"github.com/MANTRA-Chain/mantrachain/v8/app/upgrades"
 	"github.com/MANTRA-Chain/mantrachain/v8/app/upgrades/v8_4"
 	"github.com/MANTRA-Chain/mantrachain/v8/client/docs"
-	sanctionkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/keeper"
-	sanction "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/module"
-	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
-	taxkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/tax/keeper"
-	tax "github.com/MANTRA-Chain/mantrachain/v8/x/tax/module"
-	taxtypes "github.com/MANTRA-Chain/mantrachain/v8/x/tax/types"
-	"github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory"
-	tokenfactorykeeper "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -183,7 +174,7 @@ import (
 var EVMCoinInfo = evmtypes.EvmCoinInfo{
 	Denom:         FeeDenom,
 	ExtendedDenom: FeeDenom,
-	DisplayDenom:  "mantra",
+	DisplayDenom:  "espees",
 	Decimals:      evmtypes.EighteenDecimals.Uint32(),
 }
 
@@ -231,9 +222,6 @@ var maccPerms = map[string][]string{
 	providertypes.ConsumerRewardsPool: nil,
 	ratelimittypes.ModuleName:         nil,
 	wasmtypes.ModuleName:              {authtypes.Burner},
-	tokenfactorytypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
-	taxtypes.ModuleName:               nil,
-	sanctiontypes.ModuleName:          nil,
 
 	// Cosmos EVM modules
 	evmtypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
@@ -280,7 +268,7 @@ type App struct {
 	FeeGrantKeeper        feegrantkeeper.Keeper
 	NFTKeeper             nftkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
-	CircuitKeeper         circuitkeeper.Keeper
+	CircuitKeeper         circuitkeeper.Keeper // emergency pause: cosmossdk.io/x/circuit, wired via SetCircuitBreaker below
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -293,11 +281,6 @@ type App struct {
 
 	// ICS
 	ProviderKeeper icsproviderkeeper.Keeper
-
-	// MANTRAChain keepers
-	TokenFactoryKeeper tokenfactorykeeper.Keeper
-	TaxKeeper          taxkeeper.Keeper
-	SanctionKeeper     sanctionkeeper.Keeper
 
 	// Cosmos EVM keepers
 	FeeMarketKeeper feemarketkeeper.Keeper
@@ -363,7 +346,6 @@ func New(
 		ibcexported.StoreKey, ibctransfertypes.StoreKey,
 		wasmtypes.StoreKey,
 		ratelimittypes.StoreKey,
-		tokenfactorytypes.StoreKey, taxtypes.StoreKey, sanctiontypes.StoreKey,
 		icacontrollertypes.StoreKey, icahosttypes.StoreKey, providertypes.StoreKey,
 
 		// Cosmos EVM store keys
@@ -532,35 +514,6 @@ func New(
 		),
 	)
 
-	sortedKnownModules := make([]string, 0, len(maccPerms))
-	for moduleName := range maccPerms {
-		sortedKnownModules = append(sortedKnownModules, moduleName)
-	}
-	sort.Strings(sortedKnownModules)
-
-	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[tokenfactorytypes.StoreKey]),
-		sortedKnownModules,
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.WasmKeeper,
-		&app.Erc20Keeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	app.SanctionKeeper = sanctionkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[sanctiontypes.StoreKey]),
-		logger,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	app.BankKeeper.BaseSendKeeper = app.BankKeeper.SetHooks(
-		banktypes.NewMultiBankHooks(
-			app.TokenFactoryKeeper.Hooks(),
-		))
-
 	govConfig := govtypes.DefaultConfig()
 	/*
 		Example of setting gov params:
@@ -607,16 +560,6 @@ func New(
 		&app.ProviderKeeper,
 		app.GetSubspace(providertypes.ModuleName),
 		app.keys[providertypes.StoreKey],
-	)
-
-	app.TaxKeeper = taxkeeper.NewKeeper(
-		appCodec,
-		app.AccountKeeper.AddressCodec(),
-		runtime.NewKVStoreService(keys[taxtypes.StoreKey]),
-		logger,
-		app.AccountKeeper,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
 	)
 
 	// ICA Host keeper
@@ -768,8 +711,6 @@ func New(
 	)
 	callbacksMiddleware := ibccallbacks.NewIBCMiddleware(transferStack, app.RateLimitKeeper, app.CallbackKeeper, maxCallbackGas)
 	transferStack = &callbacksMiddleware
-	// register escrow address for tokenfactory when channel opens
-	transferStack = tokenfactory.NewIBCModule(transferStack, app.TokenFactoryKeeper)
 	transferStack = ratelimit.NewIBCMiddleware(app.RateLimitKeeper, transferStack)
 	transferStack = icsprovider.NewIBCMiddleware(transferStack, app.ProviderKeeper)
 	transferStack = ibc_middleware.NewUnwrapERC20IBCModule(transferStack, &app.Erc20Keeper, app.EVMKeeper)
@@ -923,11 +864,6 @@ func New(
 		// sdk
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil), //nolint:staticcheck
 
-		// mantrachain modules
-		tokenfactory.NewAppModule(appCodec, app.TokenFactoryKeeper),
-		tax.NewAppModule(appCodec, app.TaxKeeper),
-		sanction.NewAppModule(appCodec, app.SanctionKeeper),
-
 		// Cosmos EVM modules
 		vm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.BankKeeper, app.AccountKeeper.AddressCodec()),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
@@ -964,8 +900,6 @@ func New(
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.ModuleManager.SetOrderBeginBlockers(
 		minttypes.ModuleName,
-		// mca tax before distribution
-		taxtypes.ModuleName,
 
 		// IBC modules
 		ibcexported.ModuleName, ibctransfertypes.ModuleName,
@@ -986,8 +920,6 @@ func New(
 		icatypes.ModuleName,
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
 	)
 
@@ -1003,16 +935,12 @@ func New(
 		erc20types.ModuleName,
 		feemarkettypes.ModuleName,
 		feegrant.ModuleName,
-		// burn fees from fee collector
-		taxtypes.ModuleName,
 		// additional non simd modules
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
 	)
 
@@ -1059,9 +987,6 @@ func New(
 		// wasm after ibc transfer
 
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		taxtypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
 
 		// crisis needs to be last so that the genesis state is consistent when it checks invariants
@@ -1194,7 +1119,6 @@ func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.No
 		WasmKeeper:            &app.WasmKeeper,
 		TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
 		CircuitKeeper:         &app.CircuitKeeper,
-		SanctionKeeper:        &app.SanctionKeeper,
 		Codec:                 app.appCodec,
 	}
 
@@ -1521,7 +1445,6 @@ func (app *App) setupUpgradeHandlers() {
 					DistrKeeper:           app.DistrKeeper,
 					ProviderKeeper:        app.ProviderKeeper,
 					ConsensusParamsKeeper: app.ConsensusParamsKeeper,
-					SanctionKeeper:        app.SanctionKeeper,
 				},
 				app.keys,
 			),

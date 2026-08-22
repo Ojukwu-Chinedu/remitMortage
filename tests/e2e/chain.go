@@ -11,8 +11,6 @@ import (
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/MANTRA-Chain/mantrachain/v8/app"
 	"github.com/MANTRA-Chain/mantrachain/v8/app/params"
-	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -57,11 +55,9 @@ func init() {
 
 	upgradetypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	distribtypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	sanctiontypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	ratelimittypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	feemarkettypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	wasmTypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	tokenfactorytypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	cdc = encodingConfig.Codec
 	txConfig = encodingConfig.TxConfig

@@ -36,7 +36,7 @@ var (
 	_ porttypes.PacketDataUnmarshaler = UnwrapERC20IBCModule{}
 )
 
-// UnwrapERC20IBCModule optionally unwraps ERC20 wrappers on IBC recv when memo is `{"mantra":{"unwrap":true}}`.
+// UnwrapERC20IBCModule optionally unwraps ERC20 wrappers on IBC recv when memo is `{"ark":{"unwrap":true}}`.
 type UnwrapERC20IBCModule struct {
 	app         porttypes.IBCModule
 	erc20Keeper *erc20keeper.Keeper
@@ -193,14 +193,14 @@ func shouldUnwrapFromIBCMemo(memo string) bool {
 		return false
 	}
 	var parsed struct {
-		Mantra struct {
+		Ark struct {
 			Unwrap bool `json:"unwrap"`
-		} `json:"mantra"`
+		} `json:"ark"`
 	}
 	if err := json.Unmarshal([]byte(memo), &parsed); err != nil {
 		return false
 	}
-	return parsed.Mantra.Unwrap
+	return parsed.Ark.Unwrap
 }
 
 func (im UnwrapERC20IBCModule) tryUnwrap(ctx sdk.Context, denom string, receiver common.Address, wrapper common.Address, amountWad *big.Int) {

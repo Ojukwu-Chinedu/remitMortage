@@ -11,8 +11,6 @@ import (
 	"cosmossdk.io/math"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
@@ -428,61 +426,6 @@ func queryRateLimitsByChainID(endpoint, channelID string) ([]ratelimittypes.Rate
 	return res.RateLimits, nil
 }
 
-func queryTokenfactoryDenomCreationFee(endpoint string) (amt sdk.Coin, err error) {
-	params, err := queryTokenfactoryParams(endpoint)
-	if err != nil {
-		return amt, err
-	}
-
-	if params.Params.DenomCreationFee == nil || params.Params.DenomCreationFee.Len() == 0 {
-		return amt, nil
-	}
-
-	return params.Params.DenomCreationFee[0], nil
-}
-
-func queryTokenfactoryParams(endpoint string) (tokenfactorytypes.QueryParamsResponse, error) {
-	body, err := httpGet(fmt.Sprintf("%s/osmosis/tokenfactory/v1beta1/params", endpoint))
-	if err != nil {
-		return tokenfactorytypes.QueryParamsResponse{}, fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var params tokenfactorytypes.QueryParamsResponse
-	if err := cdc.UnmarshalJSON(body, &params); err != nil {
-		return tokenfactorytypes.QueryParamsResponse{}, err
-	}
-
-	return params, nil
-}
-
-func queryTokenfactoryDenomMetadata(endpoint, denom string) (banktypes.Metadata, error) {
-	body, err := httpGet(fmt.Sprintf("%s/cosmos/bank/v1beta1/denoms_metadata_by_query_string?denom=%s", endpoint, denom))
-	if err != nil {
-		return banktypes.Metadata{}, fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var metadataResp banktypes.QueryDenomMetadataResponse
-	if err := cdc.UnmarshalJSON(body, &metadataResp); err != nil {
-		return banktypes.Metadata{}, err
-	}
-
-	return metadataResp.Metadata, nil
-}
-
-func queryTokenfactoryDenomAuthorityMetadata(endpoint, creator, denom string) (tokenfactorytypes.DenomAuthorityMetadata, error) {
-	body, err := httpGet(fmt.Sprintf("%s/osmosis/tokenfactory/v1beta1/denoms/factory/%s/%s/authority_metadata", endpoint, creator, denom))
-	if err != nil {
-		return tokenfactorytypes.DenomAuthorityMetadata{}, fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var metadataResp tokenfactorytypes.QueryDenomAuthorityMetadataResponse
-	if err := cdc.UnmarshalJSON(body, &metadataResp); err != nil {
-		return tokenfactorytypes.DenomAuthorityMetadata{}, err
-	}
-
-	return metadataResp.AuthorityMetadata, nil
-}
-
 func queryIBCEscrowAddress(endpoint, channelID string) (string, error) {
 	body, err := httpGet(fmt.Sprintf("%s/ibc/apps/transfer/v1/channels/%s/ports/transfer/escrow_address", endpoint, channelID))
 	if err != nil {
@@ -495,20 +438,6 @@ func queryIBCEscrowAddress(endpoint, channelID string) (string, error) {
 	}
 
 	return resp.EscrowAddress, nil
-}
-
-func queryBlacklist(endpoint string) ([]string, error) {
-	body, err := httpGet(fmt.Sprintf("%s/MANTRA-Chain/mantrachain/sanction/v1/blacklist", endpoint))
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var resp sanctiontypes.QueryBlacklistResponse
-	if err := cdc.UnmarshalJSON(body, &resp); err != nil {
-		return nil, err
-	}
-
-	return resp.BlacklistedAccounts, nil
 }
 
 func queryICAAccountAddress(endpoint, owner, connectionID string) (string, error) {

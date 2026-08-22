@@ -8,7 +8,6 @@ import (
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	sanctionkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -29,7 +28,6 @@ type HandlerOptions struct {
 	WasmKeeper            *wasmkeeper.Keeper
 	TXCounterStoreService corestoretypes.KVStoreService
 	CircuitKeeper         *circuitkeeper.Keeper
-	SanctionKeeper        *sanctionkeeper.Keeper
 	Codec                 codec.Codec
 }
 
@@ -52,9 +50,6 @@ func (options HandlerOptions) Validate() error {
 	}
 	if options.CircuitKeeper == nil {
 		return errors.New("circuit keeper is required for ante builder")
-	}
-	if options.SanctionKeeper == nil {
-		return errors.New("sanction keeper is required for ante builder")
 	}
 	if options.Codec == nil {
 		return errors.New("codec is required for ante builder")
@@ -81,7 +76,6 @@ func newCosmosAnteHandler(ctx sdk.Context, options HandlerOptions) sdk.AnteHandl
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),
 		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),
-		sanctionkeeper.NewBlacklistCheckDecorator(*options.SanctionKeeper, options.Codec),
 		ante.NewExtensionOptionsDecorator(options.EvmOptions.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
