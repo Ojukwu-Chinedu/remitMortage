@@ -46,12 +46,12 @@ func (m mockTx) ValidateBasic() error                                 { return n
 
 // newTestCodec builds a ProtoCodec whose signing context can resolve MsgSend signers.
 func newTestCodec() codec.Codec {
-	addrCodec := addresscodec.NewBech32Codec("mantra")
+	addrCodec := addresscodec.NewBech32Codec("ark")
 	registry, err := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
 		ProtoFiles: gogoproto.HybridResolver,
 		SigningOptions: txsigning.Options{
 			AddressCodec:          addrCodec,
-			ValidatorAddressCodec: addresscodec.NewBech32Codec("mantravaloper"),
+			ValidatorAddressCodec: addresscodec.NewBech32Codec("arkvaloper"),
 		},
 	})
 	if err != nil {
@@ -76,7 +76,7 @@ func TestBlacklistCheckDecorator_AnteHandle(t *testing.T) {
 	require.NoError(t, k.BlacklistAccounts.Set(ctx, bad.String()))
 
 	msgSendFrom := func(from sdk.AccAddress) *banktypes.MsgSend {
-		return banktypes.NewMsgSend(from, other, sdk.NewCoins(sdk.NewInt64Coin("amantra", 1)))
+		return banktypes.NewMsgSend(from, other, sdk.NewCoins(sdk.NewInt64Coin("aesp", 1)))
 	}
 
 	tests := []struct {

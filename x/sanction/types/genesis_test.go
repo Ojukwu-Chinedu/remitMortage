@@ -24,7 +24,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
 				// this line is used by starport scaffolding # types/genesis/validField
-				BlacklistAccounts: []string{"mantra1hz88lcv4xmfzsrsvmtynhc2medke0m20zq0tex", "mantra1nmefvq9aa7t5p85vp8weuuwrmrppjgm6r9ccpa"},
+				BlacklistAccounts: []string{"ark1hz88lcv4xmfzsrsvmtynhc2medke0m20e327mu", "ark1nmefvq9aa7t5p85vp8weuuwrmrppjgm6c5adr8"},
 			},
 			valid: true,
 		},
