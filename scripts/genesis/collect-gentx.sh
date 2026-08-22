@@ -47,6 +47,21 @@ command -v jq >/dev/null || fail "jq is required"
 CHAIN_ID="$(jq -r '.chain_id' "$BASE_GENESIS")"
 [ -n "$CHAIN_ID" ] && [ "$CHAIN_ID" != "null" ] || fail "base genesis has no chain_id: $BASE_GENESIS"
 
+# Derive the bech32 account prefix from an address already funded in the
+# base genesis, instead of hardcoding one - a hardcoded prefix silently
+# breaks the very first time the chain's bech32 prefix changes (this
+# happened once already: a hardcoded "ark" here would have made this
+# script produce wrong delegator addresses for any prefix other than
+# "ark", with no error, since bech32_reencode.py can re-encode into ANY
+# prefix it's told to and has no way to know it's the wrong one).
+# "1" is excluded from bech32's data charset (BIP-173) specifically to be
+# an unambiguous separator, so the substring before it is always the HRP.
+ACCOUNT_ADDR_SAMPLE="$(jq -r '(.app_state.bank.balances[0].address // .app_state.auth.accounts[0].address // empty)' "$BASE_GENESIS")"
+[ -n "$ACCOUNT_ADDR_SAMPLE" ] || fail "base genesis has no funded bank balances or auth accounts to derive the bech32 account prefix from: $BASE_GENESIS"
+ACCOUNT_PREFIX="${ACCOUNT_ADDR_SAMPLE%1*}"
+[ -n "$ACCOUNT_PREFIX" ] || fail "could not derive a bech32 prefix from address: $ACCOUNT_ADDR_SAMPLE"
+echo "collect-gentx.sh: derived account bech32 prefix '$ACCOUNT_PREFIX' from $ACCOUNT_ADDR_SAMPLE in base genesis"
+
 WORK="$(mktemp -d)"
 cleanup() {
   local pids
@@ -124,7 +139,7 @@ for f in "${GENTX_FILES[@]}"; do
   # "Bech32 Acc:"/"Bech32 Val:" lines to raw EVM hex when it moved to
   # ethsecp256k1 keys), so this re-encodes bech32 directly instead of
   # depending on that CLI output shape.
-  del_addr="$(python3 "$(dirname "${BASH_SOURCE[0]}")/bech32_reencode.py" "$val_addr" ark 2>/dev/null || true)"
+  del_addr="$(python3 "$(dirname "${BASH_SOURCE[0]}")/bech32_reencode.py" "$val_addr" "$ACCOUNT_PREFIX" 2>/dev/null || true)"
   if [ -z "$del_addr" ]; then
     reject "$name" "could not resolve delegator address from validator_address=$val_addr"
     continue

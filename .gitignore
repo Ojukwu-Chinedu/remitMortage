@@ -34,5 +34,6 @@ networks/devnet/.venv-pystarport/
 # committed, regenerated fresh by networks/devnet/remote-signing/README.md.
 networks/devnet/remote-signing/secrets/
 networks/devnet/remote-signing/state/
+networks/devnet/remote-signing/tmkms.local.toml
 networks/devnet/remote-signing/*.log
 !networks/devnet/remote-signing/proof/*.log

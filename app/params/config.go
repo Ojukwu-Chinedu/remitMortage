@@ -14,7 +14,7 @@ import (
 // Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
 //
 //	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
-//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	espees = intermediate unit (exponent 9, 1 gwei equivalent)
 //	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
 	HumanCoinUnit = "KASH"

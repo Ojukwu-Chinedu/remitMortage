@@ -105,16 +105,16 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 
 ---
 
-### 8. Native Token Denomination & Symbol — 🔒 `esp` / `espes` / `KASH`
+### 8. Native Token Denomination & Symbol — 🔒 `esp` / `espees` / `KASH`
 
 **Decision:**
 - **Base unit (smallest integer unit in Cosmos Bank & EVM state):** `esp` (1 Wei equivalent, exponent 0)
-- **Intermediate unit (gas pricing):** `espes` = 10⁹ `esp` (1 Gwei equivalent, exponent 9)
-- **Display denom (what wallets and MetaMask show):** `KASH` = 10¹⁸ `esp` = 10⁹ `espes` (1 Ether equivalent, exponent 18)
+- **Intermediate unit (gas pricing):** `espees` = 10⁹ `esp` (1 Gwei equivalent, exponent 9)
+- **Display denom (what wallets and MetaMask show):** `KASH` = 10¹⁸ `esp` = 10⁹ `espees` (1 Ether equivalent, exponent 18)
 
 **This satisfies exact Ethereum decimal parity:**
 - 1 `esp` = 1 Wei
-- 1 `espes` = 1 Gwei
+- 1 `espees` = 1 Gwei
 - 1 `KASH` = 1 Ether (18 decimal places)
 
 **Cosmos bank denom metadata to configure in genesis:**
@@ -126,7 +126,7 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
   "symbol": "KASH",
   "denom_units": [
     { "denom": "esp",   "exponent": 0,  "aliases": ["wei"] },
-    { "denom": "espes", "exponent": 9,  "aliases": ["gwei", "nano-kash"] },
+    { "denom": "espees", "exponent": 9,  "aliases": ["gwei", "nano-kash"] },
     { "denom": "KASH",  "exponent": 18, "aliases": ["ether"] }
   ]
 }
@@ -151,7 +151,7 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 | Parameter | Value | Notes |
 |-----------|-------|-------|
 | Double-sign slash | 5% | SDK default — do not modify under time pressure |
-| Downtime slash | 0.01% | SDK default — do not modify under time pressure |
+| Downtime slash | 1% | SDK default — do not modify under time pressure. (Corrected from an earlier "0.01%" here: verified against the vendored `x/slashing/types/params.go`, `DefaultSlashFractionDowntime = 1/100 = 0.01` as a raw decimal fraction, i.e. 1%, not 0.01%.) |
 | Downtime jail duration | 10 minutes | SDK default |
 
 ---

@@ -60,7 +60,7 @@
         "timeout_prevote_delta": "500ms",
         "timeout_precommit": "1s",
         "timeout_precommit_delta": "500ms",
-        "timeout_commit": "1s"
+        "timeout_commit": "2s"
       }
     },
 
@@ -82,8 +82,9 @@
             {
               "description": "The native staking and governance token.",
               "denom_units": [
-                { "denom": "esp", "exponent": 0 },
-                { "denom": "KASH", "exponent": 18 }
+                { "denom": "esp", "exponent": 0, "aliases": ["wei"] },
+                { "denom": "espees", "exponent": 9, "aliases": ["gwei", "nano-kash"] },
+                { "denom": "KASH", "exponent": 18, "aliases": ["ether"] }
               ],
               "base": "esp",
               "display": "KASH",
@@ -95,7 +96,7 @@
         "staking": {
           "params": {
             "unbonding_time": "300s",
-            "max_validators": 11,
+            "max_validators": 10,
             "bond_denom": "esp"
           }
         },
@@ -105,7 +106,7 @@
             "min_signed_per_window": "0.500000000000000000",
             "downtime_jail_duration": "60s",
             "slash_fraction_double_sign": "0.050000000000000000",
-            "slash_fraction_downtime": "0.001000000000000000"
+            "slash_fraction_downtime": "0.010000000000000000"
           }
         },
         "mint": {
@@ -121,7 +122,7 @@
         "evm": {
           "params": {
             "evm_denom": "esp",
-            "extended_denom_options": { "extended_denom": "esp" }
+            "extended_denom_options": { "extended_denom": "espees" }
           }
         },
         "gov": {

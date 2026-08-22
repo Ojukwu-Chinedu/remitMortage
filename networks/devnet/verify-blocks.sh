@@ -55,7 +55,8 @@ echo "" | tee -a "$OUT_FILE"
 echo "Computing inter-block time from block headers directly (more precise than RPC polling interval)..." | tee -a "$OUT_FILE"
 
 latest_height="$(curl -sS -m 5 "$RPC/status" | jq -r '.result.sync_info.latest_block_height')"
-start_height=$((latest_height > 10 ? latest_height - 10 : 1))
+start_height=$((latest_height - 10))
+start_height=$((start_height < 2 ? 2 : start_height))
 
 python3 - "$RPC" "$start_height" "$latest_height" <<'PYEOF' | tee -a "$OUT_FILE"
 import sys

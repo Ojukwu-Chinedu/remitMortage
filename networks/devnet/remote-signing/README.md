@@ -49,11 +49,12 @@ rm "$NODE1/config/priv_validator_key.json"
 # tmkms.toml's comment for why unix, not tcp)
 sed -i.bak 's#priv_validator_laddr = ""#priv_validator_laddr = "unix://'"$(pwd)"'/networks/devnet/remote-signing/privval.sock"#' \
   "$NODE1/config/config.toml" && rm "$NODE1/config/config.toml.bak"
-# expand the socket-path placeholder in the committed tmkms.toml
-sed -i.bak 's#__TMKMS_SOCKET_PATH__#'"$(pwd)"'/networks/devnet/remote-signing/privval.sock#' \
-  networks/devnet/remote-signing/tmkms.toml && rm networks/devnet/remote-signing/tmkms.toml.bak
+# expand the socket-path placeholder into an untracked local tmkms config
+sed 's#__TMKMS_SOCKET_PATH__#'"$(pwd)"'/networks/devnet/remote-signing/privval.sock#' \
+  networks/devnet/remote-signing/tmkms.toml \
+  > networks/devnet/remote-signing/tmkms.local.toml
 
-cd networks/devnet/remote-signing && tmkms start -c tmkms.toml -v & cd -
+cd networks/devnet/remote-signing && tmkms start -c tmkms.local.toml -v & cd -
 ./networks/devnet/.venv-pystarport/bin/pystarport start --data networks/devnet/data --quiet &
 
 sleep 8

@@ -19,7 +19,26 @@
     "Eng 1 update (ark-v0.1.0-alpha): the state-machine track strips",
     "MANTRA-specific modules (x/tax, x/tokenfactory) but retains x/sanction,",
     "renames the bech32 prefix to `ark`, and settles the token as `esp` base",
-    "with `KASH` as the 18-decimal display (1 KASH = 1_000_000_000_000_000_000 esp).",
+    "with `espees` (10^9 esp) and `KASH` (10^18 esp) as the denom units",
+    "(1 KASH = 1_000_000_000_000_000_000 esp = 1_000_000_000 espees). Spelling",
+    "is `espees` per docs/decisions/module-and-config-decisions.md",
+    "#8 - the denom_units entry below must match that exactly.",
+    "",
+    "extended_denom_options.extended_denom is set to `espees` below purely as",
+    "accurate documentation of intent. Verified against the real vendored",
+    "source (x/vm/keeper/coin_info.go LoadEvmCoinInfo): because our display",
+    "denom is exactly 18 decimals, the `decimals == 18` branch fires and",
+    "ExtendedDenom is hardcoded to EvmDenom - this field is NEVER READ in",
+    "this configuration, only for chains with a non-18-decimal display.",
+    "",
+    "Devnet intentionally keeps unbonding_time/voting_period/gov-deposit",
+    "FAST rather than mirroring the decisions doc's locked mainnet figures",
+    "(21-day unbonding #10, 7-day voting #13) - see networks/devnet/README.md's",
+    "deviation table for the per-field rationale. The SLASH FRACTIONS below",
+    "(not just durations) match the real SDK-default values from decision",
+    "#11 on both networks: testing the wrong fraction on devnet would defeat",
+    "the purpose of testing it. timeout_commit=2s (decision #12) is set in",
+    "pystarport.json's node config and applies to both networks.",
     "This template targets the `ark-v0.1.0-alpha` binary. Base `mantrachaind init`",
     "still has staking/mint denom `stake` and evm denom `aatom`, so the denom and",
     "metadata overrides below remain load-bearing.",
@@ -53,8 +72,9 @@
         {
           "description": "The native staking and governance token.",
           "denom_units": [
-            { "denom": "esp", "exponent": 0 },
-            { "denom": "KASH", "exponent": 18 }
+            { "denom": "esp", "exponent": 0, "aliases": ["wei"] },
+            { "denom": "espees", "exponent": 9, "aliases": ["gwei", "nano-kash"] },
+            { "denom": "KASH", "exponent": 18, "aliases": ["ether"] }
           ],
           "base": "esp",
           "display": "KASH",
@@ -66,7 +86,7 @@
     "staking": {
       "params": {
         "unbonding_time": "300s",
-        "max_validators": 11,
+        "max_validators": 10,
         "bond_denom": "esp"
       }
     },
@@ -76,7 +96,7 @@
         "min_signed_per_window": "0.500000000000000000",
         "downtime_jail_duration": "60s",
         "slash_fraction_double_sign": "0.050000000000000000",
-        "slash_fraction_downtime": "0.001000000000000000"
+        "slash_fraction_downtime": "0.010000000000000000"
       }
     },
     "mint": {
@@ -92,7 +112,7 @@
     "evm": {
       "params": {
         "evm_denom": "esp",
-        "extended_denom_options": { "extended_denom": "esp" }
+        "extended_denom_options": { "extended_denom": "espees" }
       }
     },
     "gov": {

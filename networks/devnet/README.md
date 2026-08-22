@@ -74,25 +74,37 @@ Cosmos SDK's proto-JSON unmarshalling rejects unknown fields).
 
 All values live in `genesis-template.json` / `pystarport.json`'s `genesis`
 key. The public token is `KASH` (symbol `KASH`, 18 decimals), with base
-unit `esp` (`1 KASH = 1_000_000_000_000_000_000 esp`). This was
-set by Eng 1 in `ark-v0.1.0-alpha` (`app/params/config.go`) and confirmed
-by re-running the devnet against that binary.
+unit `esp` (1 wei-equivalent) and intermediate unit `espees` (10^9 esp, 1
+gwei-equivalent, gas-price display only). `1 KASH = 1_000_000_000_000_000_000
+esp = 1_000_000_000 espees`. This is the exact three-tier scheme locked in
+`docs/decisions/module-and-config-decisions.md` #8, set by Eng 1 in
+`ark-v0.1.0-alpha` (`app/params/config.go`) and confirmed by re-running the
+devnet against that binary.
+
+Every value below is now reconciled against the decisions doc's locked
+figures where one exists — see that doc for the authoritative rationale on
+each 🔒 item; this table only explains where and why *this devnet*
+deliberately diverges from the mainnet-locked number for iteration speed.
 
 | Param | Devnet value | Mainnet-shaped or devnet-fast? | Why |
 |---|---|---|---|
-| `staking.unbonding_time` | `300s` (5 min) | **Devnet-fast** (a real mainnet target of ~8 days is typical for this ecosystem) | Need to actually exercise unbonding/redelegation/slashing-during-unbonding scenarios inside a working session. An 8-day real unbonding period makes that untestable locally. |
-| `slashing.signed_blocks_window` | `100` | **Devnet-fast** (mainnet-typical: `1000`) | At ~1-2s/block, a 1000-block window takes ~20-30 min to fill; 100 blocks makes downtime-jailing observable in ~2-3 min. |
-| `slashing.slash_fraction_double_sign` | `0.05` | **Real value, kept as-is** | Security-critical economic parameter — rehearsing a fake number here would defeat the point of a rehearsal. |
-| `slashing.slash_fraction_downtime` | `0.001` | **Real value, kept as-is** | Same reasoning. |
-| `slashing.downtime_jail_duration` | `60s` | Reasonable production value already | No change needed. |
+| `staking.unbonding_time` | `300s` (5 min) | **Devnet-fast** (mainnet-locked: 21 days / `1814400s`, decision #10) | Need to actually exercise unbonding/redelegation/slashing-during-unbonding scenarios inside a working session. A 21-day real unbonding period makes that untestable locally. |
+| `slashing.signed_blocks_window` | `100` | **Devnet-fast** (mainnet value: `1000`, not itself part of the locked table) | At ~1-2s/block, a 1000-block window takes ~20-30 min to fill; 100 blocks makes downtime-jailing observable in ~2-3 min. |
+| `slashing.slash_fraction_double_sign` | `0.05` (5%) | **Real value, kept as-is** | Security-critical economic parameter — rehearsing a fake number here would defeat the point of a rehearsal. Matches the real cosmos-sdk default (verified against `x/slashing/types/params.go`). |
+| `slashing.slash_fraction_downtime` | `0.01` (1%) | **Real value, kept as-is** | Same reasoning. Note: decision #11's own table originally mislabeled this as "0.01%" — the real cosmos-sdk default (`DefaultSlashFractionDowntime = 1/100`) is 1%, not 0.01%. Verified against the vendored source, not copied from the table; the decision doc has been corrected to match. |
+| `slashing.downtime_jail_duration` | `60s` | **Devnet-fast** (mainnet-locked: 10 min / `600s`, decision #11) | Faster jail/unjail cycle for observing the full flow inside a session; mainnet uses the real SDK default. |
 | `mint.*` (inflation, goal_bonded, blocks_per_year) | Conservative, real-shaped economic values | **Real values, kept as-is** | Economic parameters worth rehearsing as plausible production numbers, not placeholders. Note: `blocks_per_year` assumes a target block cadence, not devnet's actual observed one — on this devnet the *wall-clock* inflation accrual will run at a different rate than intended since real blocks land faster/slower than the assumption baked into this constant. Harmless for a local rehearsal; flagged here so nobody mistakes devnet inflation behavior for the mainnet target. |
-| `gov.min_deposit` / `expedited_min_deposit` | `1 KASH` / `5 KASH` | **Devnet-fast** (a real mainnet target of tens-of-thousands of tokens is typical) | Need to submit and pass test proposals without needing to pre-fund huge dummy balances. |
-| `gov.voting_period` / `expedited_voting_period` | `120s` / `60s` | **Devnet-fast** (mainnet-typical: 2 days / 3 hours) | Need to observe a full submit→vote→pass/reject→execute cycle inside a working session. |
+| `gov.min_deposit` / `expedited_min_deposit` | `1 KASH` / `5 KASH` | **Devnet-fast, and mainnet's own number is not final** | Need to submit and pass test proposals without pre-funding huge dummy balances. Decision #15 explicitly blocks the real mainnet `min_deposit` on a total-supply decision that hasn't been made yet — `networks/mainnet/genesis-params.json`'s current figure is a placeholder, not a reviewed value. |
+| `gov.voting_period` / `expedited_voting_period` | `120s` / `60s` | **Devnet-fast** (mainnet-locked voting_period: 7 days / `604800s`, decision #13; expedited period is engineering judgment, not locked - mainnet uses 3h) | Need to observe a full submit→vote→pass/reject→execute cycle inside a working session. |
 | `gov.quorum` / `threshold` / `veto_threshold` | `0.334` / `0.5` / `0.667` | **Real values, kept as-is** | These define governance safety properties — worth rehearsing as real. |
+| **Governance timelock** | **Not implemented** | **Gap, not a devnet/mainnet split** | Decision #14 locks a mandatory ≥48h timelock on governance execution. Stock cosmos-sdk `x/gov` has no such field or hook — this needs a custom module or msg-service wrapper that doesn't exist yet on either network. Tracked in `GAPS.md`; do not assume this is enforced anywhere in the current genesis. |
 | `consensus.params.block.{max_bytes,max_gas}` | `1000000` / `75000000` | Reasonable production values | Reused as-is; these aren't iteration-speed-sensitive. |
 | `consensus.params.evidence.max_bytes` | `1000000` | Must be ≤ `block.max_bytes` | The SDK's raw default (`1048576`) is *larger* than the block size chosen above and fails genesis validation once block size is shrunk to match; this bit us during rehearsal (see git history) and is exactly the kind of drift-from-defaults trap this file exists to catch. |
 | `consensus.params.abci.vote_extensions_enable_height` | `0` (disabled) | Deliberately left off | No oracle/price-feed module is registered in this app (`app_state` has no `oracle`/`marketmap` key as of this branch), so there's nothing that would use vote extensions today; leaving this at the binary's own default avoids inventing a value for a feature nothing consumes yet. |
-| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `esp` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `esp`, staking module expects `stake`). |
+| `config.consensus.timeout_commit` (pystarport node config, not genesis) | `2s` | **Same on both networks** | Decision #12 locks a 1-2s block time target and explicitly calls out Eng 2 setting this in the devnet pystarport config. |
+| `staking.max_validators` | `10` | **Same on both networks** (decision #16) | Only 2 real validators run in this 4-node devnet topology (2 validators + 2 sentries), so the cap itself is inert here; kept equal to the mainnet-locked figure rather than an arbitrary devnet number to avoid a second, unexplained divergence. |
+| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom` | `esp` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `esp`, staking module expects `stake`). |
+| `evm.params.extended_denom_options.extended_denom` | `espees` | **Set for documentation only - not functionally read** | Verified against the vendored source (`x/vm/keeper/coin_info.go`, `LoadEvmCoinInfo`): this field is only consulted when the display denom's exponent is *not* 18. Since `KASH` is exactly 18 decimals, the `decimals == 18` branch fires instead and hardcodes `ExtendedDenom = EvmDenom` — this override has no effect on chain behavior today, but is set to the correct intermediate denom so a future decimal change doesn't silently pick up a stale value. |
 
 Everything not listed above (bank, auth, IBC, wasm, erc20, feemarket's EVM
 base-fee mechanics, etc.) is left at the binary's own compiled-in default —

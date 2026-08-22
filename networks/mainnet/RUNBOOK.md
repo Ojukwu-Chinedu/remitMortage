@@ -53,10 +53,10 @@ patch.pop('_comment', None)
 # found') - discovered empirically standing up the devnet, see
 # networks/devnet/genesis-template.json's _comment for the full story.
 # The denom_metadata below must match whatever denom actually ended up
-# in genesis-params.json above (esp base, KASH display).
+# in genesis-params.json above (esp base, espees intermediate, KASH display).
 patch.setdefault('app_state', {}).setdefault('bank', {})['denom_metadata'] = [{
     'description': 'The native staking and governance token.',
-    'denom_units': [{'denom': 'esp', 'exponent': 0}, {'denom': 'KASH', 'exponent': 18}],
+    'denom_units': [{'denom': 'esp', 'exponent': 0}, {'denom': 'espees', 'exponent': 9}, {'denom': 'KASH', 'exponent': 18}],
     'base': 'esp', 'display': 'KASH', 'name': 'KASH', 'symbol': 'KASH',
 }]
 def merge(a, b):
