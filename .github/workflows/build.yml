@@ -47,10 +47,18 @@ jobs:
         # shared object file". Pull the exact version pinned in go.mod and drop
         # it on the linker path before we try to run the binary.
         run: |
-          WASMVM_VERSION=$(grep 'github.com/CosmWasm/wasmvm/v2 ' go.mod | awk '{print $2}')
-          curl -sSL -o /usr/lib/x86_64-linux-gnu/libwasmvm.x86_64.so \
+          # Match any wasmvm major (v2 -> v3 happened once already; don't
+          # silently break again on the next bump) and fail loudly if the
+          # pattern stops matching rather than curl-ing an empty version.
+          WASMVM_VERSION=$(grep -E 'github.com/CosmWasm/wasmvm/v[0-9]+ ' go.mod | awk '{print $2}')
+          if [ -z "$WASMVM_VERSION" ]; then
+            echo "::error::could not determine wasmvm version from go.mod" >&2
+            exit 1
+          fi
+          echo "Installing libwasmvm ${WASMVM_VERSION}"
+          sudo curl -fsSL -o /usr/lib/x86_64-linux-gnu/libwasmvm.x86_64.so \
             "https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm.x86_64.so"
-          ldconfig
+          sudo ldconfig
       - name: Validate genesis files
         run: |
           found=0
