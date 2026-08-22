@@ -1,35 +1,27 @@
-# RoundStepPropose timeout evidence — why observed block time (~1.93s) sits above the
-# predicted ~1.1-1.3s: the proposer regularly consumes its FULL 1s timeout_propose,
-# consistent with CPU contention from 4 concurrent CGO/wasmvm-linked nodes on one dev laptop.
-# Captured 2026-08-22T08:41:16Z from a live run (binary commit 8fcceae6, TMKMS remote-signing active on validator-0)
-# System load at sample time: { 7.65 7.34 7.10 }
-
-9:39AM INF Timed out dur=1000 height=163 module=consensus round=0 server=node step=RoundStepPropose
-9:39AM INF Timed out dur=1000 height=165 module=consensus round=0 server=node step=RoundStepPropose
-9:39AM INF Timed out dur=1000 height=167 module=consensus round=0 server=node step=RoundStepPropose
-9:39AM INF Timed out dur=1000 height=169 module=consensus round=0 server=node step=RoundStepPropose
-9:39AM INF Timed out dur=1000 height=171 module=consensus round=0 server=node step=RoundStepPropose
-9:39AM INF Timed out dur=1000 height=173 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=175 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=177 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=179 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=181 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=183 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=185 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=187 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=189 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=191 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=193 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=195 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=197 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=199 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=201 module=consensus round=0 server=node step=RoundStepPropose
-9:40AM INF Timed out dur=1000 height=203 module=consensus round=0 server=node step=RoundStepPropose
-9:41AM INF Timed out dur=1000 height=205 module=consensus round=0 server=node step=RoundStepPropose
-9:41AM INF Timed out dur=1000 height=207 module=consensus round=0 server=node step=RoundStepPropose
-9:41AM INF Timed out dur=1000 height=209 module=consensus round=0 server=node step=RoundStepPropose
-9:41AM INF Timed out dur=1000 height=211 module=consensus round=0 server=node step=RoundStepPropose
-
-# Not every height times out — alternating pattern tracks which validator proposes:
-# node1 (validator-0, remote-signed) propose timeouts: 107
-# node3 (validator-1, local-signed)  propose timeouts: 105
+# RoundStepPropose timeout evidence — captured 2026-08-22T12:16:26Z from ark-v0.1.0-alpha devnet with TMKMS remote signing
+# Load avg: { 9.51 9.56 8.69 }
+1:14PM INF Timed out dur=1000 height=31 module=consensus round=0 server=node step=RoundStepPropose
+1:14PM INF Timed out dur=1000 height=33 module=consensus round=0 server=node step=RoundStepPropose
+1:14PM INF Timed out dur=1000 height=35 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=37 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=39 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=41 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=43 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=45 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=47 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=49 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=51 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=53 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=55 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=57 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=59 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=61 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=63 module=consensus round=0 server=node step=RoundStepPropose
+1:15PM INF Timed out dur=1000 height=65 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=67 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=69 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=71 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=73 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=75 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=77 module=consensus round=0 server=node step=RoundStepPropose
+1:16PM INF Timed out dur=1000 height=79 module=consensus round=0 server=node step=RoundStepPropose

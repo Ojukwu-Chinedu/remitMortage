@@ -5,7 +5,7 @@
 
 [[chain]]
 id = "arkdevnet_9000-1"
-key_format = { type = "bech32", account_key_prefix = "mantrapub", consensus_key_prefix = "mantravalconspub" }
+key_format = { type = "bech32", account_key_prefix = "arkpub", consensus_key_prefix = "arkvalconspub" }
 state_file = "state/arkdevnet_9000-1-consensus.json"
 
 [[providers.softsign]]

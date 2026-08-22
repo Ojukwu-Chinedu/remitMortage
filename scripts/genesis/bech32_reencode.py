@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Re-encode a bech32 address under a different human-readable prefix,
-e.g. `mantravaloper1...` -> `mantra1...`. Same underlying data, different
+e.g. `arkvaloper1...` -> `ark1...`. Same underlying data, different
 HRP - this is exactly how a validator operator address and its underlying
 account address relate in the Cosmos SDK.
 

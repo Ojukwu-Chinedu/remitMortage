@@ -6,18 +6,13 @@ rehearse genesis parameterization, consensus timing, and sentry-node
 topology against the actual compiled `mantrachaind` binary before any of it
 touches real validators or mainnet.
 
-**Binary target note.** The original task brief for this track assumed a
-tagged `v1.0.0-rc1` binary already existed. It doesn't — checked, not
-assumed. `origin/base-genesis` was reset mid-session from a `v1.0.1` pin to
-a `v8.4.0` pin (see `git log`; `git describe` on the current tip reads
-`v8.4.0-1-g026e64c8`), which happens to already carry `cosmos/evm`
-integration inherited from that upstream tag. But per `CONTRIBUTING.md`,
-`v1.0.0-rc1` is specifically *ArkConstellation's own* "EVM wiring complete"
-milestone — no ArkConstellation-specific tag exists yet, and
-`CONTRIBUTING.md`'s "Key Decisions" checklist (module keep-or-strip,
-chain-id, token allocations, validator identities) is still entirely open.
-Everything here targets current `base-genesis` HEAD as it actually compiles
-today. See [`GAPS.md`](../../GAPS.md) for the full picture.
+**Binary target note.** This devnet now targets the `ark-v0.1.0-alpha` tag
+from Eng 1's state-machine track (PR #4). Eng 1 stripped the
+ESP-specific modules (`x/sanction`, `x/tax`, `x/tokenfactory`), set the
+bech32 prefix to `ark`, and named the token `espees` (`aespees` base,
+18 decimals, `ESP` symbol). Eng 2 re-verified the entire pipeline against
+that actual compiled binary rather than the previous `base-genesis` source
+build. See [`GAPS.md`](../../GAPS.md) for the full picture.
 
 ---
 
@@ -52,10 +47,10 @@ re-run `make devnet-up`.
 ## Why there's no hand-authored full `genesis.json` here
 
 A real chain's `genesis.json` is the union of every registered module's
-`DefaultGenesis()` — 31 modules on this app as of this branch (`auth`,
-`bank`, `staking`, `slashing`, `mint`, `gov`, `tax`, `tokenfactory`,
-`sanction`, `evm`, `erc20`, `feemarket`, `interchainaccounts`, `provider`,
-`wasm`, `ibc`, ... — see `app/app.go`), plus account balances, plus
+`DefaultGenesis()` — the Ark modules after Eng 1's strip include `auth`,
+`bank`, `staking`, `slashing`, `mint`, `gov`, `evm`, `erc20`, `feemarket`,
+`interchainaccounts`, `provider`, `wasm`, `ibc`, ... — see `app/app.go`),
+plus account balances, plus
 collected `gentx`s. Hand-writing that from scratch invites silent drift the
 moment a module changes its schema or a new one gets registered, and it's
 exactly the kind of file where "looks plausible" and "is byte-correct" are
@@ -77,12 +72,10 @@ Cosmos SDK's proto-JSON unmarshalling rejects unknown fields).
 ## Parameter choices and why
 
 All values live in `genesis-template.json` / `pystarport.json`'s `genesis`
-key. Denom is `amantra` (18 decimals, display unit `mantra`) — forced by
-`app/params/config.go`, not a choice available at the genesis-parameter
-level. **This is the codebase's current default, inherited from the
-`v8.4.0` baseline — `CONTRIBUTING.md` still lists "native token name,
-symbol, and initial allocations" as an open Day-1 decision, so treat
-`amantra`/`mantra` as "what the binary does today," not a final answer.**
+key. The public token is `espees` (symbol `ESP`, 18 decimals), with base
+unit `aespees` (`1 espees = 1_000_000_000_000_000_000 aespees`). This was
+set by Eng 1 in `ark-v0.1.0-alpha` (`app/params/config.go`) and confirmed
+by re-running the devnet against that binary.
 
 | Param | Devnet value | Mainnet-shaped or devnet-fast? | Why |
 |---|---|---|---|
@@ -92,14 +85,13 @@ symbol, and initial allocations" as an open Day-1 decision, so treat
 | `slashing.slash_fraction_downtime` | `0.001` | **Real value, kept as-is** | Same reasoning. |
 | `slashing.downtime_jail_duration` | `60s` | Reasonable production value already | No change needed. |
 | `mint.*` (inflation, goal_bonded, blocks_per_year) | Conservative, real-shaped economic values | **Real values, kept as-is** | Economic parameters worth rehearsing as plausible production numbers, not placeholders. Note: `blocks_per_year` assumes a target block cadence, not devnet's actual observed one — on this devnet the *wall-clock* inflation accrual will run at a different rate than intended since real blocks land faster/slower than the assumption baked into this constant. Harmless for a local rehearsal; flagged here so nobody mistakes devnet inflation behavior for the mainnet target. |
-| `gov.min_deposit` / `expedited_min_deposit` | `1 mantra` / `5 mantra` | **Devnet-fast** (a real mainnet target of tens-of-thousands of tokens is typical) | Need to submit and pass test proposals without needing to pre-fund huge dummy balances. |
+| `gov.min_deposit` / `expedited_min_deposit` | `1 espees` / `5 espees` | **Devnet-fast** (a real mainnet target of tens-of-thousands of tokens is typical) | Need to submit and pass test proposals without needing to pre-fund huge dummy balances. |
 | `gov.voting_period` / `expedited_voting_period` | `120s` / `60s` | **Devnet-fast** (mainnet-typical: 2 days / 3 hours) | Need to observe a full submit→vote→pass/reject→execute cycle inside a working session. |
 | `gov.quorum` / `threshold` / `veto_threshold` | `0.334` / `0.5` / `0.667` | **Real values, kept as-is** | These define governance safety properties — worth rehearsing as real. |
 | `consensus.params.block.{max_bytes,max_gas}` | `1000000` / `75000000` | Reasonable production values | Reused as-is; these aren't iteration-speed-sensitive. |
 | `consensus.params.evidence.max_bytes` | `1000000` | Must be ≤ `block.max_bytes` | The SDK's raw default (`1048576`) is *larger* than the block size chosen above and fails genesis validation once block size is shrunk to match; this bit us during rehearsal (see git history) and is exactly the kind of drift-from-defaults trap this file exists to catch. |
 | `consensus.params.abci.vote_extensions_enable_height` | `0` (disabled) | Deliberately left off | No oracle/price-feed module is registered in this app (`app_state` has no `oracle`/`marketmap` key as of this branch), so there's nothing that would use vote extensions today; leaving this at the binary's own default avoids inventing a value for a feature nothing consumes yet. |
-| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `amantra` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `amantra`, staking module expects `stake`). |
-| `x/tax.mca_address`, `x/tokenfactory.fee_collector_address` | A dedicated devnet-only test address (`mantra14mmu4gfznp8drpdp304tq9kfx88wuxpf0uqjua`, known mnemonic in `pystarport.json`'s `accounts[].community`) | **Devnet placeholder** | `x/tax`'s own Go-code default genesis hardcodes a *real* MANTRA mainnet address for `mca_address` (`x/tax/types/params.go`). `x/tax` is explicitly listed as an open "keep or strip?" decision in `CONTRIBUTING.md` — shipping a real mainnet address into a devnet rehearsal file risked exactly the kind of copy-paste-into-the-real-thing mistake this pipeline is supposed to prevent. |
+| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `aespees` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `aespees`, staking module expects `stake`). |
 
 Everything not listed above (bank, auth, IBC, wasm, erc20, feemarket's EVM
 base-fee mechanics, etc.) is left at the binary's own compiled-in default —
@@ -113,21 +105,21 @@ something that needs fixing.
 
 Set in `pystarport.json`'s `validators[]`/`accounts[]`, all funded from
 nothing (no external faucet, no real funds) — this is a from-scratch local
-genesis. Amounts below are in whole `mantra` (18 decimals, so e.g. 100,000
-mantra = `100000` followed by eighteen zeros = `100000000000000000000000`
-`amantra` in the actual config):
+genesis. Amounts below are in whole `espees` (18 decimals, so e.g. 100,000
+espees = `100000` followed by eighteen zeros = `100000000000000000000000`
+`aespees` in the actual config):
 
-- `validator-0`, `validator-1`: 100,000 mantra each, self-delegate 50,000 mantra each (bonded)
-- `sentry-0`, `sentry-1`: 10,000 mantra each (never bonded — see topology below)
-- `community` (devnet-only, fixed mnemonic — see table above): 500,000 mantra
-- `faucet`: 1,000,000 mantra, for later manual transaction testing
-- `alice`, `bob`: 1,000 mantra each, generic test users
+- `validator-0`, `validator-1`: 100,000 espees each, self-delegate 50,000 espees each (bonded)
+- `sentry-0`, `sentry-1`: 10,000 espees each (never bonded — see topology below)
+- `community` (devnet-only, fixed mnemonic — see table above): 500,000 espees
+- `faucet`: 1,000,000 espees, for later manual transaction testing
+- `alice`, `bob`: 1,000 espees each, generic test users
 
 All mnemonics except `community`'s are freshly auto-generated by pystarport
 on every `devnet-up` and written to `data/arkdevnet_9000-1/accounts.json`
 (gitignored — see below) — never committed, never reused across runs.
 `community` uses a fixed, publicly-known devnet-only mnemonic so the
-`x/tax`/`x/tokenfactory` addresses above stay stable across regenerations
+funded account address is stable across `devnet-up` regenerations,
 instead of needing runtime placeholder substitution. **This mnemonic must
 never be reused for anything beyond this local devnet.**
 
@@ -250,8 +242,8 @@ make devnet-up
 
 Under the hood (`scripts/makefiles/devnet.mk`):
 
-1. `make build` — compiles `mantrachaind` from source (native, not the CI
-   artifact — see "Known gaps" below for why).
+1. `devnet-bin` check — `devnet-up` uses the binary at `build/mantrachaind`
+   (or the path set via `DEVNET_BIN`); it does not force a local source build.
 2. `devnet-venv` — creates `.venv-pystarport` (Python **3.9**, not whatever
    `python3` defaults to — see "Known gaps"), installs `pystarport`, and
    applies `patch-pystarport-cli.py`.
@@ -264,23 +256,14 @@ Under the hood (`scripts/makefiles/devnet.mk`):
 
 ## Known gaps / non-obvious things a future operator needs to know
 
-- **`app/genesis.go`'s `NewDefaultGenesisState()` is never actually
-  called anywhere in `cmd/`** — verified by grepping the whole tree for
-  its name; only its own definition matches. It looks like it's meant to
-  wire `evm.params.evm_denom`, a native `erc20` token pair, and the EVM
-  feemarket's base fee to `amantra`, but `mantrachaind init` goes through
-  the plain SDK basic-module-manager path instead, so none of that
-  actually happens — the raw default genesis has `evm_denom: "aatom"` and
-  an *empty* `erc20.token_pairs` list. Worse: if this function *were*
-  wired in, `erc20State.TokenPairs[0].Denom = FeeDenom` would panic on
-  index 0 of an empty slice, since `erc20types.DefaultGenesisState()`
-  always returns `TokenPairs: []TokenPair{}` (verified in the vendored
-  `cosmos/evm` fork's `x/erc20/types/genesis.go`). This repo's
-  `genesis-template.json` fixes the denom fields directly rather than
-  relying on that function; it does **not** attempt to construct a native
-  ERC20 token pair (needs a real precompile/contract address, which is
-  Eng 1's `app`/`x` domain to wire correctly, not something to improvise
-  a value for here — see `GAPS.md`).
+- **`app/genesis.go`'s `NewDefaultGenesisState()` was dead and broken** and
+  was removed by Eng 1 in `ark-v0.1.0-alpha`. `mantrachaind init` uses the
+  plain SDK basic-module-manager defaults, so the raw default genesis still
+  has `evm_denom: "aatom"` and an *empty* `erc20.token_pairs` list. This
+  repo's `genesis-template.json` fixes the denom fields directly and does
+  **not** attempt to construct a native ERC20 token pair (needs a real
+  precompile/contract address, which is Eng 1's `app`/`x` domain to wire
+  correctly).
 - **This machine's Homebrew-installed Go (1.27, latest) is newer than a
   transitive dependency expects**, and that matters here specifically:
   a `sonic/ast` JSON library (pulled in transitively) prints a
@@ -292,7 +275,7 @@ Under the hood (`scripts/makefiles/devnet.mk`):
   used via its full `/opt/homebrew/opt/go@1.25/bin` path) instead of the
   default `go` formula — which also happens to be the exact version
   `go.mod` specifies (`go 1.25.0`), so this is the more correct choice
-  independent of the warning. If `make build` ever fails downstream tools
+  independent of the warning. If the binary build ever fails downstream tools
   with unparseable-JSON errors again, check `go version` first.
 - **pystarport 0.2.5 (latest on PyPI) predates Cosmos SDK v0.50's `genesis`
   subcommand nesting.** It calls `add-genesis-account`/`gentx`/

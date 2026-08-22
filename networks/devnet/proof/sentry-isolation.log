@@ -1,5 +1,5 @@
-# Live sentry-isolation evidence — captured 2026-08-22T08:35:16Z from a running devnet
-# binary: track-2-consensus-genesis-8fcceae6, commit 8fcceae6
+# Live sentry-isolation evidence — captured 2026-08-22T12:16:25Z from a running devnet
+# binary: ark-v0.1.0-alpha, commit 4ef500fa
 == net_info :26657 ==
 moniker: sentry-0
 {"n_peers":"2","peers":["sentry-1","validator-0"]}
@@ -14,24 +14,24 @@ moniker: validator-1
 {"n_peers":"1","peers":["sentry-1"]}
 == pex/private_peer_ids from live config ==
 -- node0:
-persistent_peers = "tcp://028b6b62123f32ec2644260c2002d6589e177b88@127.0.0.1:26660,tcp://140e6822867b6c2c84859bfc8c531bd99c6448d0@127.0.0.1:26670"
-unconditional_peer_ids = "028b6b62123f32ec2644260c2002d6589e177b88"
+persistent_peers = "tcp://6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f@127.0.0.1:26660,tcp://d408e9877984ae288d42ee70546a1485df81a7ab@127.0.0.1:26670"
+unconditional_peer_ids = "6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f"
 pex = true
-private_peer_ids = "028b6b62123f32ec2644260c2002d6589e177b88"
+private_peer_ids = "6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f"
 -- node1:
-persistent_peers = "tcp://692a1621726abf7b5fecc98660f7071ebfef38d6@127.0.0.1:26650"
+persistent_peers = "tcp://e17a35a3122e1efaa31d155e3ae1e4392f26259c@127.0.0.1:26650"
 unconditional_peer_ids = ""
 pex = false
 private_peer_ids = ""
 -- node2:
-persistent_peers = "tcp://12f5a4fc29d682642cce831bacfaa006a55392e9@127.0.0.1:26680,tcp://692a1621726abf7b5fecc98660f7071ebfef38d6@127.0.0.1:26650"
-unconditional_peer_ids = "12f5a4fc29d682642cce831bacfaa006a55392e9"
+persistent_peers = "tcp://2bca60d04173f71d0eb135529921c45c35f2710d@127.0.0.1:26680,tcp://e17a35a3122e1efaa31d155e3ae1e4392f26259c@127.0.0.1:26650"
+unconditional_peer_ids = "2bca60d04173f71d0eb135529921c45c35f2710d"
 pex = true
-private_peer_ids = "12f5a4fc29d682642cce831bacfaa006a55392e9"
+private_peer_ids = "2bca60d04173f71d0eb135529921c45c35f2710d"
 -- node3:
-persistent_peers = "tcp://140e6822867b6c2c84859bfc8c531bd99c6448d0@127.0.0.1:26670"
+persistent_peers = "tcp://d408e9877984ae288d42ee70546a1485df81a7ab@127.0.0.1:26670"
 unconditional_peer_ids = ""
 pex = false
 private_peer_ids = ""
 == commit signatures at latest height (both validators signing) ==
-{"height":"38","sigs":[{"addr":"BEDF7D5BFD9C524507336957771FD98DAE13E4B6","flag":2},{"addr":"D08925E6924C993622E6DF510EA9E9DEA5CFB421","flag":2}]}
+{"height":"80","sigs":[{"addr":"73F10452E8E84D564A98972524B9D93BF262EFC4","flag":2},{"addr":"B8A09BB39D009D1136952BC17398BE9CF0FC0BA3","flag":2}]}

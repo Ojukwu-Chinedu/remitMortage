@@ -10,7 +10,7 @@ DEVNET_DATA      := $(DEVNET_DIR)/data
 DEVNET_VENV      := $(DEVNET_DIR)/.venv-pystarport
 DEVNET_CHAIN_ID  := arkdevnet_9000-1
 DEVNET_BASE_PORT := 26650
-DEVNET_BIN       := $(CURDIR)/build/mantrachaind
+DEVNET_BIN       ?= $(CURDIR)/build/mantrachaind
 # node0 (sentry-0) RPC port = base_port + 7 (pystarport's ports.rpc_port offset)
 DEVNET_RPC       := http://127.0.0.1:26657
 
@@ -29,7 +29,12 @@ devnet-venv:
 devnet-check-genesis-sync:
 	@python3 $(DEVNET_DIR)/check-genesis-sync.py
 
-devnet-init: build devnet-venv devnet-check-genesis-sync
+devnet-init: devnet-venv devnet-check-genesis-sync
+	@if [ ! -x "$(DEVNET_BIN)" ]; then \
+		echo "!!! DEVNET_BIN not found or not executable: $(DEVNET_BIN)" >&2; \
+		echo "    Build/copy the mantrachaind binary there, or set DEVNET_BIN to a release binary path." >&2; \
+		exit 1; \
+	fi
 	@echo ">>> Wiping previous devnet state at $(DEVNET_DATA)"
 	@rm -rf $(DEVNET_DATA)
 	@mkdir -p $(DEVNET_DATA)

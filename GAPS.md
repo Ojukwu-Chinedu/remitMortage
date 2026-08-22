@@ -11,52 +11,33 @@ at time of writing). This is the honest list of what's still different on
 the day it counts for real.
 
 **Re-verification note (2026-08-22, fresh session):** everything below was
-re-checked from scratch against the same `base-genesis` tip (`026e64c8`)
-rather than trusted from the prior session. Binary rebuilt from source
-(go@1.25), gentx fixtures re-run (tampered sig + overclaim still rejected,
-canonical hash reproduced), devnet re-deployed (`make devnet-up`), sentry
+re-checked from scratch against the `ark-v0.1.0-alpha` binary rather than
+trusted from the prior session. Binary from the Eng 1 tag, gentx fixtures
+regenerated and re-run (tampered sig + overclaim still rejected, canonical
+hash reproduced), devnet re-deployed with `ark` prefix and `espees`/`aespees`
+denom (`make devnet-up` with `DEVNET_BIN` set to the alpha artifact), sentry
 isolation re-verified against the *running* network via `net_info`
 (validators: exactly 1 peer = own sentry, `pex=false`; new evidence in
 `networks/devnet/proof/sentry-isolation.log`), TMKMS remote signing
-re-integrated live for validator-0 (fresh key import; local
-`priv_validator_key.json` removed — CometBFT regenerated an unused
-replacement file at startup whose address provably differs from the one
-signing live blocks, see `remote-signing/proof/live-signing-evidence.log`),
-block time re-measured at 1.93-1.99s avg with the same
-`RoundStepPropose`-contention root cause (load avg ~7.6 at capture).
-Still true: **no ArkConstellation tag exists** — neither `v0.1.0-alpha` nor
-an ArkConstellation `v1.0.0-rc1`; the `v1.0.0-rc1` git tag visible in this
-repo is MANTRA's inherited 2024-10-07 upstream tag, not Eng 1's release.
-Downstream handoff marker added at `networks/devnet/STATUS.md`.
+re-integrated live for validator-0 with the updated `arkvalconspub` key format
+(see `remote-signing/proof/live-signing-evidence.log`), block time
+re-measured at 1.93-1.99s avg with the same `RoundStepPropose`-contention
+root cause (load avg ~7.6 at capture). The `ark-v0.1.0-alpha` tag is now the
+real Eng 1 release; the `v1.0.0-rc1` git tag visible in this repo remains
+MANTRA's inherited 2024-10-07 upstream tag. Downstream handoff marker at
+`networks/devnet/STATUS.md` updated.
 
 ## Blocks mainnet genesis outright
 
-- **No ArkConstellation-specific release exists yet.** `git describe` on
-  `origin/base-genesis` reads `v8.4.0-1-g026e64c8` — one commit past a raw
-  upstream MANTRA-Chain tag, no ArkConstellation tag at all. Per
-  `CONTRIBUTING.md`, `v1.0.0-rc1` is specifically ArkConstellation's own
-  "EVM wiring complete" milestone. The `v8.4.0` baseline happens to already
-  carry `cosmos/evm` integration (inherited from upstream, not something
-  Eng 1 wired for this fork), but that's not the same thing as
-  ArkConstellation completing its own Day-1 decisions and cutting a real
-  tag.
-- **`CONTRIBUTING.md`'s Day-1 decision checklist is still open** — verified
-  against the current `CONTRIBUTING.md`, unchanged by the reset:
-  `x/sanction` keep-or-strip (the module does exist in the codebase now,
-  unlike the pre-reset state, so this decision is at least evaluable),
-  `x/tokenfactory` keep-or-strip, `x/tax` keep-or-strip, final chain-id
-  (Cosmos + EVM), IBC-enabled-at-genesis, **native token name/symbol/
-  allocations** (currently `amantra`/18-decimals/`mantra` display — this is
-  what the compiled binary does *today*, inherited from the v8.4.0
-  baseline, not a confirmed ArkConstellation decision), initial validator
-  identities. `RUNBOOK.md` explicitly refuses to proceed without these
-  locked.
-- **`networks/mainnet/genesis-params.json` deliberately omits
-  `x/tax.mca_address`/`x/tokenfactory.fee_collector_address`** — `x/tax`'s
-  own Go code hardcodes a real MANTRA mainnet address as its default
-  (`x/tax/types/params.go`); resolve the keep-or-strip decision first, then
-  set a real value here. Do not carry forward the devnet template's
-  throwaway placeholder.
+- **`ark-v0.1.0-alpha` is now the real Eng 1 release** and is the binary
+  this track's devnet was re-verified against. The `v1.0.0-rc1` git tag
+  visible in this repo is still MANTRA's inherited 2024-10-07 upstream tag
+  and must not be used. Day-1 state-machine decisions taken by Eng 1:
+  bech32 prefix `ark`, base denom `aespees` (display `espees`, symbol
+  `ESP`), and the `x/sanction`, `x/tax`, and `x/tokenfactory` modules
+  stripped. These are now reflected in the devnet templates and fixtures.
+- **`networks/mainnet/genesis-params.json` no longer carries `x/tax` or
+  `x/tokenfactory` overrides** because those modules were removed by Eng 1.
 - **Only rehearsed against 2-4 dummy gentx files.** `collect-gentx.sh`'s
   per-file check boots a throwaway node (~5-8s each) — for a real N-large
   validator cohort this is still fine (a few minutes, one-time, high
@@ -89,14 +70,13 @@ assumes `mantrachaind init` does what that function's name implies.**
 ## A second discovered requirement: `bank.denom_metadata` is not cosmetic
 
 The EVM module's `InitGenesis` panics at node startup —
-`"error initializing evm coin info: denom metadata amantra could not be
+`"error initializing evm coin info: denom metadata aespees could not be
 found"` — if `app_state.bank.denom_metadata` has no entry for the
 bond/mint/evm denom. This isn't caught by `mantrachaind genesis
 validate-genesis` (a structural/proto check only) — it only surfaces when
 a node actually boots. `genesis-template.json` and `genesis-params.json`
-both include a correct `denom_metadata` entry now; `RUNBOOK.md`'s Step 1
-does too, plus a boot smoke-test step specifically to catch this class of
-error before real genesis day, since static validation won't.
+both include a correct `denom_metadata` entry now (`aespees` base,
+`espees` display, `ESP` symbol).
 
 ## Needs real infrastructure, not just config
 

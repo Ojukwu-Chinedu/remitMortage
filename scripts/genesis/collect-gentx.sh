@@ -124,7 +124,7 @@ for f in "${GENTX_FILES[@]}"; do
   # "Bech32 Acc:"/"Bech32 Val:" lines to raw EVM hex when it moved to
   # ethsecp256k1 keys), so this re-encodes bech32 directly instead of
   # depending on that CLI output shape.
-  del_addr="$(python3 "$(dirname "${BASH_SOURCE[0]}")/bech32_reencode.py" "$val_addr" mantra 2>/dev/null || true)"
+  del_addr="$(python3 "$(dirname "${BASH_SOURCE[0]}")/bech32_reencode.py" "$val_addr" ark 2>/dev/null || true)"
   if [ -z "$del_addr" ]; then
     reject "$name" "could not resolve delegator address from validator_address=$val_addr"
     continue
