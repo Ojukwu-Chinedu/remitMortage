@@ -52,6 +52,18 @@ func baseBlacklistValidateTestcases() []blacklistValidateTestcase {
 			accounts:  []string{"not_bech32"},
 			wantErr:   true,
 		},
+		{
+			name:      "valid hex account accepted",
+			authority: randomSanctionAddress(),
+			accounts:  []string{"0x1111111111111111111111111111111111111111"},
+			wantErr:   false,
+		},
+		{
+			name:      "invalid hex account rejected",
+			authority: randomSanctionAddress(),
+			accounts:  []string{"0xinvalid_hex_address"},
+			wantErr:   true,
+		},
 	}
 }
 

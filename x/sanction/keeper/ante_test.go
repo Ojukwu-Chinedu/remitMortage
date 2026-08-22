@@ -20,6 +20,8 @@ import (
 	sdktxsigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authz "github.com/cosmos/cosmos-sdk/x/authz"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 // mockTx implements authsigning.Tx with stub methods for fields unused by the decorator.
@@ -76,7 +78,7 @@ func TestBlacklistCheckDecorator_AnteHandle(t *testing.T) {
 	require.NoError(t, k.BlacklistAccounts.Set(ctx, bad.String()))
 
 	msgSendFrom := func(from sdk.AccAddress) *banktypes.MsgSend {
-		return banktypes.NewMsgSend(from, other, sdk.NewCoins(sdk.NewInt64Coin("aesp", 1)))
+		return banktypes.NewMsgSend(from, other, sdk.NewCoins(sdk.NewInt64Coin("esp", 1)))
 	}
 
 	tests := []struct {
@@ -174,6 +176,71 @@ func TestBlacklistCheckDecorator_AnteHandle(t *testing.T) {
 						outerExec := authz.NewMsgExec(clean, []sdk.Msg{&innerExec})
 						return &outerExec
 					}(),
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := dec.AnteHandle(ctx, tc.tx, false, passThrough)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestEVMBlacklistCheckDecorator_AnteHandle(t *testing.T) {
+	k, ctx, _ := keepertest.SanctionKeeper(t)
+	dec := sanctionkeeper.NewEVMBlacklistCheckDecorator(k)
+
+	cleanAddr := ethcommon.HexToAddress("0x1111111111111111111111111111111111111111")
+	badAddr := ethcommon.HexToAddress("0x2222222222222222222222222222222222222222")
+
+	badAcc := sdk.AccAddress(badAddr.Bytes())
+	require.NoError(t, k.BlacklistAccounts.Set(ctx, badAcc.String()))
+
+	tests := []struct {
+		name    string
+		tx      mockTx
+		wantErr bool
+	}{
+		{
+			name:    "empty msgs pass",
+			tx:      mockTx{msgs: []sdk.Msg{}},
+			wantErr: false,
+		},
+		{
+			name: "clean EVM sender passes",
+			tx: mockTx{
+				msgs: []sdk.Msg{
+					&evmtypes.MsgEthereumTx{
+						From: cleanAddr.Bytes(),
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "blacklisted EVM sender blocked",
+			tx: mockTx{
+				msgs: []sdk.Msg{
+					&evmtypes.MsgEthereumTx{
+						From: badAddr.Bytes(),
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "non-EVM msg returns error during unpack",
+			tx: mockTx{
+				msgs: []sdk.Msg{
+					&banktypes.MsgSend{},
 				},
 			},
 			wantErr: true,
