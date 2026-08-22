@@ -14,6 +14,7 @@ const (
 	runVestingTest                = true
 	runRestInterfacesTest         = true
 	runRateLimitTest              = true
+	runSanctionTest               = true
 	runWasmTest                   = true
 )
 
@@ -114,6 +115,16 @@ func (s *IntegrationTestSuite) TestRateLimit() {
 	s.testIBCTransfer(false)
 	s.testResetRateLimit()
 	s.testRemoveRateLimit()
+}
+
+func (s *IntegrationTestSuite) TestSanction() {
+	if !runSanctionTest {
+		s.T().Skip()
+	}
+	s.testAddToBlacklist()
+	s.testRemoveFromBlacklist()
+	s.testAuthzGranterBlacklist()
+	s.testFeeGranterBlacklist()
 }
 
 func (s *IntegrationTestSuite) TestWasm() {

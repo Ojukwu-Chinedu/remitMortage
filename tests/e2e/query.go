@@ -21,6 +21,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
 )
 
 func queryTx(endpoint, txHash string) error {
@@ -409,6 +410,20 @@ func queryRateLimitsByChainID(endpoint, channelID string) ([]ratelimittypes.Rate
 		return []ratelimittypes.RateLimit{}, err
 	}
 	return res.RateLimits, nil
+}
+
+func queryBlacklist(endpoint string) ([]string, error) {
+	body, err := httpGet(fmt.Sprintf("%s/mantrachain/sanction/v1/blacklist", endpoint))
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute HTTP request: %w", err)
+	}
+
+	var resp sanctiontypes.QueryBlacklistResponse
+	if err := cdc.UnmarshalJSON(body, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.BlacklistedAccounts, nil
 }
 
 func queryICAAccountAddress(endpoint, owner, connectionID string) (string, error) {

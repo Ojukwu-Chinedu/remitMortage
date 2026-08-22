@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/x/feegrant"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -219,6 +220,36 @@ func (s *IntegrationTestSuite) execUnjail(
 // 	s.executeTxCommand(ctx, c, mantraCommand, valIdx, s.defaultExecValidation(c, valIdx))
 // }
 
+func (s *IntegrationTestSuite) execFeeGrant(c *chain, valIdx int, granter, grantee, spendLimit string, opt ...flagOption) {
+	opt = append(opt, withKeyValue(flagFrom, granter))
+	opt = append(opt, withKeyValue(flagSpendLimit, spendLimit))
+	opts := applyOptions(c.id, opt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	s.T().Logf("granting %s fee from %s on chain %s", grantee, granter, c.id)
+
+	mantraCommand := []string{
+		mantrachaindBinary,
+		txCommand,
+		feegrant.ModuleName,
+		"grant",
+		granter,
+		grantee,
+		fmt.Sprintf("--%s=%s", flags.FlagChainID, c.id),
+		fmt.Sprintf("--%s=%s", flags.FlagGas, "300000"), // default 200000 isn't enough
+		"--keyring-backend=test",
+		"--output=json",
+		"-y",
+	}
+	for flag, value := range opts {
+		mantraCommand = append(mantraCommand, fmt.Sprintf("--%s=%s", flag, value))
+	}
+
+	s.executeTxCommand(ctx, c, mantraCommand, valIdx, s.defaultExecValidation(c, valIdx))
+}
+
 func (s *IntegrationTestSuite) execBankSend(
 	c *chain,
 	valIdx int,
@@ -227,11 +258,10 @@ func (s *IntegrationTestSuite) execBankSend(
 	amt,
 	fees string,
 	expectErr bool,
+	opt ...flagOption,
 ) {
-	opt := []flagOption{
-		withKeyValue(flagFees, fees),
-		withKeyValue(flagFrom, from),
-	}
+	opt = append(opt, withKeyValue(flagFees, fees))
+	opt = append(opt, withKeyValue(flagFrom, from))
 	opts := applyOptions(c.id, opt)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
