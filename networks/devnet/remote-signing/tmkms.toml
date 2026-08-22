@@ -25,7 +25,7 @@ chain_id = "arkdevnet_9000-1"
 # affected. This is realistic for tmkms/validator co-located on one host;
 # see README.md for what a genuinely remote (separate-host) signer needs
 # instead.
-addr = "unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock"
+addr = "unix://__TMKMS_SOCKET_PATH__"
 secret_key = "secrets/kms-identity.key"
 protocol_version = "v0.38"
 reconnect = true

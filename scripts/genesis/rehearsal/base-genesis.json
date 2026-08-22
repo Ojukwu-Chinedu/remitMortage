@@ -449,6 +449,10 @@
       "codes": [],
       "contracts": [],
       "sequences": []
+    },
+    "sanction": {
+      "params": {},
+      "blacklist_accounts": []
     }
   },
   "consensus": {

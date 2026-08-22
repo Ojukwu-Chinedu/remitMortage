@@ -49,6 +49,9 @@ rm "$NODE1/config/priv_validator_key.json"
 # tmkms.toml's comment for why unix, not tcp)
 sed -i.bak 's#priv_validator_laddr = ""#priv_validator_laddr = "unix://'"$(pwd)"'/networks/devnet/remote-signing/privval.sock"#' \
   "$NODE1/config/config.toml" && rm "$NODE1/config/config.toml.bak"
+# expand the socket-path placeholder in the committed tmkms.toml
+sed -i.bak 's#__TMKMS_SOCKET_PATH__#'"$(pwd)"'/networks/devnet/remote-signing/privval.sock#' \
+  networks/devnet/remote-signing/tmkms.toml && rm networks/devnet/remote-signing/tmkms.toml.bak
 
 cd networks/devnet/remote-signing && tmkms start -c tmkms.toml -v & cd -
 ./networks/devnet/.venv-pystarport/bin/pystarport start --data networks/devnet/data --quiet &
@@ -57,10 +60,11 @@ sleep 8
 curl -s http://127.0.0.1:26657/status | jq '.result.sync_info.latest_block_height'
 ```
 
-(Note: unlike the TCP approach this replaced, the unix-socket `addr` in
-`tmkms.toml` needs no node ID at all — see "Known gap" below for why.
-Re-running `make devnet-init` regenerates node keys fresh; the socket path
-stays the same either way, so `tmkms.toml` itself never needs editing.)
+(Note: the committed `tmkms.toml` carries the placeholder
+`__TMKMS_SOCKET_PATH__`; the reproduce step above expands it to an
+absolute path with `$(pwd)` before tmkms starts. The placeholder is used
+so the file is not tied to any one checkout directory, while the Unix
+socket `addr` still needs no node ID — see "Known gap" below for why.)
 
 ## Known gap discovered, not just assumed: TCP transport doesn't work as configured
 
