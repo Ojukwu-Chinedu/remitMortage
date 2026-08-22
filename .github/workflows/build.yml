@@ -38,14 +38,19 @@ jobs:
         with:
           name: chain-binary
           path: build/
-      - name: Install libwasmvm
-        run: |
-          WASMVM_VERSION=$(grep "github.com/CosmWasm/wasmvm" go.mod | head -n 1 | awk '{print $2}')
-          echo "Installing libwasmvm ${WASMVM_VERSION}..."
-          sudo wget "https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm.x86_64.so" -O /lib/libwasmvm.x86_64.so
-          sudo chmod +x /lib/libwasmvm.x86_64.so
       - name: Make binary executable
         run: chmod +x build/mantrachaind
+      - name: Install libwasmvm shared library
+        # The binary is dynamically linked against libwasmvm (CosmWasm) but the
+        # `build` job never installs it on the runner, so any attempt to execute
+        # the downloaded binary fails with "libwasmvm.x86_64.so: cannot open
+        # shared object file". Pull the exact version pinned in go.mod and drop
+        # it on the linker path before we try to run the binary.
+        run: |
+          WASMVM_VERSION=$(grep 'github.com/CosmWasm/wasmvm/v2 ' go.mod | awk '{print $2}')
+          curl -sSL -o /usr/lib/x86_64-linux-gnu/libwasmvm.x86_64.so \
+            "https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm.x86_64.so"
+          ldconfig
       - name: Validate genesis files
         run: |
           found=0

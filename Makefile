@@ -3,6 +3,7 @@
 # the subcommands are located in the specific makefiles
 include scripts/makefiles/lint.mk
 include scripts/makefiles/proto.mk
+include scripts/makefiles/devnet.mk
 
 .DEFAULT_GOAL := help
 help:
@@ -15,6 +16,9 @@ help:
 	@echo "  make lint                  Show available lint commands"
 	@echo "  make test                  Show available test commands"
 	@echo "  make proto                 Show available proto commands"
+	@echo "  make devnet-up             Build, init and start the local 4-node devnet"
+	@echo "  make devnet-verify         Sample the running devnet and prove block production"
+	@echo "  make devnet-down           Stop the local devnet"
 	@echo ""
 	@echo "Run 'make [subcommand]' to see the available commands for each subcommand."
 
@@ -22,6 +26,7 @@ LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 DOCKER := $(shell which docker)
+PACKAGES_NOSIMULATION=$(shell go list ./... | grep -v '/simulation')
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2> /dev/null)
 BRANCH_PRETTY := $(subst /,-,$(BRANCH))
@@ -46,18 +51,13 @@ GO_MODULE := $(shell cat go.mod | grep "module " | cut -d ' ' -f 2)
 ###############################################################################
 
 build_tags = netgo
-LEDGER_ZEMU ?= false
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
     ifeq ($(GCCEXE),)
       $(error gcc.exe not installed for ledger support, please install or set LEDGER_ENABLED=false)
     else
-      ifeq ($(LEDGER_ZEMU),true)
-        build_tags += ledger ledger_zemu pebbledb
-      else
-        build_tags += ledger pebbledb
-      endif
+      build_tags += ledger pebbledb
     endif
   else
     UNAME_S = $(shell uname -s)
@@ -68,11 +68,7 @@ ifeq ($(LEDGER_ENABLED),true)
       ifeq ($(GCC),)
         $(error gcc not installed for ledger support, please install or set LEDGER_ENABLED=false)
       else
-        ifeq ($(LEDGER_ZEMU),true)
-          build_tags += ledger ledger_zemu pebbledb
-        else
-          build_tags += ledger pebbledb
-        endif
+        build_tags += ledger pebbledb
       endif
     endif
   endif
@@ -132,7 +128,7 @@ build-arm:
 build-linux:
 	GOOS=linux GOARCH=$(if $(findstring aarch64,$(shell uname -m)) || $(findstring arm64,$(shell uname -m)),arm64,amd64) $(MAKE) build
 build-image:
-	DOCKER_BUILDKIT=1 docker build -f Dockerfile -t mantra-chain/mantrachain .
+	docker build -f Dockerfile -t mantra-chain/mantrachain:local .
 
 $(BUILD_TARGETS): go.sum $(BUILDDIR)/
 	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) $(GO_MODULE)/cmd/mantrachaind
@@ -140,45 +136,30 @@ $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
 
 ###############################################################################
-###                           Tests                            		        ###
+###                           Tests                            		    ###
 ###############################################################################
 
-PACKAGES_UNIT=$(shell go list ./... | grep -v -e '/tests/e2e' | grep -v '/simulation')
-PACKAGES_E2E=$(shell cd tests/e2e && go list ./... | grep '/e2e')
-TEST_PACKAGES=./...
-TEST_TARGETS := test-unit test-e2e test-cover
+test: test-unit
 
-DIR=$(CURDIR)
-test-unit: ARGS=-timeout=5m -tags='norace'
-test-unit: TEST_PACKAGES=$(PACKAGES_UNIT)
-test-e2e: ARGS=-timeout=35m -v
-test-e2e: TEST_PACKAGES=$(PACKAGES_E2E)
-test-e2e: build-image
-test-cover: ARGS=-timeout=30m -coverprofile=coverage.txt -covermode=atomic -tags='norace'
-test-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
-$(TEST_TARGETS): run-tests
+test-unit:
+	@VERSION=$(VERSION) go test ./x/... -mod=readonly -vet=all -tags='norace' $(PACKAGES_NOSIMULATION)
 
-run-tests:
-ifneq (,$(shell which tparse 2>/dev/null))
-	@echo "--> Running tests"
-	@cd $(DIR) && go test -mod=readonly -json $(ARGS) $(TEST_PACKAGES) | tparse
-else
-	@echo "--> Running tests"
-	cd $(DIR) && go test -mod=readonly $(ARGS) $(TEST_PACKAGES)
-endif
+test-cover:
+	@VERSION=$(VERSION) go test ./x/... -mod=readonly -timeout 30m -coverprofile=coverage.txt -covermode=atomic -tags='norace' $(PACKAGES_NOSIMULATION)
+
+test-connect: build-image
+	@VERSION=$(VERSION) cd tests/connect && go test -v -race .
 
 ###############################################################################
 ###                                Release                                  ###
 ###############################################################################
 ifeq ($(strip $(GORELEASER_CROSS_DISABLE)),true)
-GORELEASER_IMAGE := goreleaser/goreleaser:v2.15.3
+GORELEASER_IMAGE := goreleaser/goreleaser:v2.3.1
 else
-GORELEASER_CROSS := ghcr.io/goreleaser/goreleaser-cross
-GO_VERSION_FALLBACK := 1.25.5
-GORELEASER_IMAGE := $(shell docker manifest inspect $(GORELEASER_CROSS):v$(GO_VERSION) > /dev/null 2>&1 && echo $(GORELEASER_CROSS):v$(GO_VERSION) || echo $(GORELEASER_CROSS):v$(GO_VERSION_FALLBACK))
+GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(GO_VERSION)
 endif
 GORELEASER_PLATFORM ?= linux/amd64
-COSMWASM_VERSION := $(shell go list -m github.com/CosmWasm/wasmvm/v3 | sed 's/.* //')
+COSMWASM_VERSION := $(shell go list -m github.com/CosmWasm/wasmvm/v2 | sed 's/.* //')
 REPO_OWNER ?= MANTRA-Chain
 REPO_NAME ?= mantrachain
 
@@ -193,13 +174,10 @@ release:
 		--rm \
 		-e GITHUB_TOKEN=$(GITHUB_TOKEN) \
 		-e COSMWASM_VERSION=$(COSMWASM_VERSION) \
-		-e GPG_PASSWORD=$(GPG_PASSWORD) \
-		-e GPG_FINGERPRINT=$(GPG_FINGERPRINT) \
 		-e CMT_VERSION=$(CMT_VERSION) \
 		-e REPO_OWNER=$(REPO_OWNER) \
 		-e REPO_NAME=$(REPO_NAME) \
 		-v `pwd`:/go/src/mantrachaind \
-		-v $(HOME)/.gnupg:/root/.gnupg:rw \
 		-w /go/src/mantrachaind \
 		--platform=$(GORELEASER_PLATFORM) \
 		$(GORELEASER_IMAGE) \
@@ -246,14 +224,13 @@ mocks:
 build-and-run-single-node: build
 	@echo "Building and running a single node for testing..."
 	@mkdir -p .mantrasinglenodetest
-	@if [ ! -f .mantrasinglenodetest/config/config.toml ]; then \
-		./build/mantrachaind init single-node-test --chain-id test-chain --home .mantrasinglenodetest --default-denom amantra; \
+	@if [ ! -f .mantrasinglenodetest/config.toml ]; then \
+		./build/mantrachaind init single-node-test --chain-id test-chain --home .mantrasinglenodetest; \
 		./build/mantrachaind keys add validator --keyring-backend test --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis add-genesis-account $$(./build/mantrachaind keys show validator -a --keyring-backend test --home .mantrasinglenodetest) 100000000000000000000000000amantra --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis gentx validator 100000000000000000000amantra --chain-id test-chain --keyring-backend test --home .mantrasinglenodetest; \
+		./build/mantrachaind genesis add-genesis-account $$(./build/mantrachaind keys show validator -a --keyring-backend test --home .mantrasinglenodetest) 100000000stake --home .mantrasinglenodetest; \
+		./build/mantrachaind genesis gentx validator 100000000stake --chain-id test-chain --keyring-backend test --home .mantrasinglenodetest; \
 		./build/mantrachaind genesis collect-gentxs --home .mantrasinglenodetest; \
-		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "amantra"/' .mantrasinglenodetest/config/genesis.json; \
 	fi
-	./build/mantrachaind start --home .mantrasinglenodetest --minimum-gas-prices 0amantra
+	./build/mantrachaind start --home .mantrasinglenodetest --minimum-gas-prices 0stake
 
 .PHONY: build-and-run-single-node
