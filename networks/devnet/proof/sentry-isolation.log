@@ -1,37 +1,66 @@
-# Live sentry-isolation evidence — captured 2026-08-22T12:16:25Z from a running devnet
-# binary: ark-v0.1.0-alpha, commit 4ef500fa
-== net_info :26657 ==
-moniker: sentry-0
-{"n_peers":"2","peers":["sentry-1","validator-0"]}
-== net_info :26667 ==
-moniker: validator-0
-{"n_peers":"1","peers":["sentry-0"]}
-== net_info :26677 ==
-moniker: sentry-1
-{"n_peers":"2","peers":["sentry-0","validator-1"]}
-== net_info :26687 ==
-moniker: validator-1
-{"n_peers":"1","peers":["sentry-1"]}
-== pex/private_peer_ids from live config ==
--- node0:
-persistent_peers = "tcp://6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f@127.0.0.1:26660,tcp://d408e9877984ae288d42ee70546a1485df81a7ab@127.0.0.1:26670"
-unconditional_peer_ids = "6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f"
-pex = true
-private_peer_ids = "6ece87ff8f1e8d11bbb4680bdbfce9cd25ecec5f"
--- node1:
-persistent_peers = "tcp://e17a35a3122e1efaa31d155e3ae1e4392f26259c@127.0.0.1:26650"
-unconditional_peer_ids = ""
-pex = false
-private_peer_ids = ""
--- node2:
-persistent_peers = "tcp://2bca60d04173f71d0eb135529921c45c35f2710d@127.0.0.1:26680,tcp://e17a35a3122e1efaa31d155e3ae1e4392f26259c@127.0.0.1:26650"
-unconditional_peer_ids = "2bca60d04173f71d0eb135529921c45c35f2710d"
-pex = true
-private_peer_ids = "2bca60d04173f71d0eb135529921c45c35f2710d"
--- node3:
-persistent_peers = "tcp://d408e9877984ae288d42ee70546a1485df81a7ab@127.0.0.1:26670"
-unconditional_peer_ids = ""
-pex = false
-private_peer_ids = ""
-== commit signatures at latest height (both validators signing) ==
-{"height":"80","sigs":[{"addr":"73F10452E8E84D564A98972524B9D93BF262EFC4","flag":2},{"addr":"B8A09BB39D009D1136952BC17398BE9CF0FC0BA3","flag":2}]}
+Sentry isolation check — 2026-08-22T20:21:28Z
+
+== sentry-0 (127.0.0.1:26657) ==
+{
+  "n_peers": null,
+  "peers": [
+    {
+      "node_id": "3dc1feb0ef6e99c4585f3b5a70440ebf94133837",
+      "is_outbound": true
+    },
+    {
+      "node_id": "474cbc5f37e9fe879335a72b99832f97e55ca131",
+      "is_outbound": false
+    }
+  ]
+}
+
+== validator-0 (127.0.0.1:26667) ==
+{
+  "n_peers": null,
+  "peers": [
+    {
+      "node_id": "5bf6da3da1d8a19ab8e230c7e503b8966861dd75",
+      "is_outbound": true
+    }
+  ]
+}
+
+== sentry-1 (127.0.0.1:26677) ==
+{
+  "n_peers": null,
+  "peers": [
+    {
+      "node_id": "5bf6da3da1d8a19ab8e230c7e503b8966861dd75",
+      "is_outbound": false
+    },
+    {
+      "node_id": "0c7e2ba88c9ef34f9a8ecc8cd29b032394853455",
+      "is_outbound": true
+    }
+  ]
+}
+
+== validator-1 (127.0.0.1:26687) ==
+{
+  "n_peers": null,
+  "peers": [
+    {
+      "node_id": "3dc1feb0ef6e99c4585f3b5a70440ebf94133837",
+      "is_outbound": false
+    }
+  ]
+}
+
+pex config check:
+  node1 (validator-0): pex = false
+  node3 (validator-1): pex = false
+
+Both validators bonded and signing:
+  validator-0 voting_power: 50000
+  validator-1 voting_power: 50000
+  latest_block_height: 13
+
+PASS: validator-0 and validator-1 each peer with exactly their own sentry (1 peer each);
+sentries peer with their validator + the other sentry (2 peers each); pex=false on both
+validators; both validators have non-zero voting power and the chain is producing blocks.

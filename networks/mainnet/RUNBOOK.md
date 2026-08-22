@@ -22,12 +22,24 @@ any on faith:
       `networks/mainnet/genesis-params.json` and the account-allocation
       list, and has confirmed their intended self-delegation amount and
       moniker.
+- [ ] `gov.min_deposit`/`expedited_min_deposit` in `genesis-params.json` are
+      NOT the reviewed final numbers as of this writing - decision #15 in
+      `docs/decisions/module-and-config-decisions.md` blocks them on a total
+      supply figure that hasn't been set. Confirm this has since been
+      resolved and the file updated; do not launch mainnet on the
+      placeholder figures currently in that file.
+- [ ] Governance timelock (decision #14, locked, minimum 48h) is **not
+      implemented anywhere in this codebase** - stock cosmos-sdk `x/gov` has
+      no timelock field or hook. If launch is proceeding without it, that is
+      a conscious, documented risk acceptance, not an oversight; confirm
+      someone has actually made that call rather than assuming it's handled.
 
 ## Step 1 — Assemble the base genesis
 
 ```bash
-BIN=./build/mantrachaind     # the tagged v1.0.0 binary, not a local rebuild
-CHAIN_ID=<final chain-id>    # from the locked Day-1 decision, not devnet's
+BIN=./build/mantrachaind      # the tagged binary, not a local rebuild
+CHAIN_ID=arkconstellation-1   # locked, decision #6 in docs/decisions/module-and-config-decisions.md
+                               # cannot change after genesis without a full chain migration
 
 $BIN init <moniker> --chain-id "$CHAIN_ID" --home /tmp/mainnet-genesis
 
@@ -36,29 +48,35 @@ $BIN init <moniker> --chain-id "$CHAIN_ID" --home /tmp/mainnet-genesis
 # prospective validator's self-delegation funding account. A validator
 # whose account isn't funded here will be rejected in Step 2, correctly.
 $BIN genesis add-genesis-account <address> <amount>esp --home /tmp/mainnet-genesis
-# esp is the base unit, KASH is the 18-decimal display (1 KASH = 1 followed by 18 zeros esp). This is
-# the codebase's CURRENT denom (app/params/config.go) - CONTRIBUTING.md still
-# lists "native token name, symbol, and initial allocations" as an open
-# Day-1 decision, so confirm this hasn't changed before running for real.
+# esp is the base unit (1 wei-equivalent), espees the intermediate unit
+# (10^9 esp, 1 gwei-equivalent, gas-price display only), KASH the
+# 18-decimal display unit (1 KASH = 10^18 esp = 10^9 espees). Locked,
+# decision #8 - do not use amounts in any other denom here.
 # ... repeat for every account ...
+
+# EVM chain-id (decision #7, locked to 11199) does NOT need a separate
+# app.toml setting for mainnet: app/config.go's EVMChainIDMap already maps
+# "arkconstellation-1" -> 11199 as a package-level default, and its init()
+# reads the Cosmos chain-id straight out of genesis.json at node startup to
+# resolve it - verified by reading that source directly, not assumed. Only
+# an operator running a NON-standard chain-id would ever need to set
+# `evm.evm-chain-id` in app.toml manually.
 
 python3 -c "
 import json
 g = json.load(open('/tmp/mainnet-genesis/config/genesis.json'))
 patch = json.load(open('networks/mainnet/genesis-params.json'))
 patch.pop('_comment', None)
-# REQUIRED, not optional: the evm module's InitGenesis panics at node
-# startup without a bank.denom_metadata entry for the bond/mint/evm denom
-# ('error initializing evm coin info: denom metadata <denom> could not be
-# found') - discovered empirically standing up the devnet, see
+# bank.denom_metadata is REQUIRED, not optional: the evm module's
+# InitGenesis panics at node startup without an entry for the bond/mint/evm
+# denom ('error initializing evm coin info: denom metadata <denom> could
+# not be found') - discovered empirically standing up the devnet, see
 # networks/devnet/genesis-template.json's _comment for the full story.
-# The denom_metadata below must match whatever denom actually ended up
-# in genesis-params.json above (esp base, espees intermediate, KASH display).
-patch.setdefault('app_state', {}).setdefault('bank', {})['denom_metadata'] = [{
-    'description': 'The native staking and governance token.',
-    'denom_units': [{'denom': 'esp', 'exponent': 0}, {'denom': 'espees', 'exponent': 9}, {'denom': 'KASH', 'exponent': 18}],
-    'base': 'esp', 'display': 'KASH', 'name': 'KASH', 'symbol': 'KASH',
-}]
+# genesis-params.json above already carries the correct, current
+# denom_metadata (esp/espees/KASH with aliases) - it is NOT redefined here.
+# Do not hand-roll a second copy of it in this script: two copies of the
+# same value drift, and only genesis-params.json is reviewed as the source
+# of truth for the denom scheme.
 def merge(a, b):
     for k, v in b.items():
         if isinstance(v, dict) and isinstance(a.get(k), dict): merge(a[k], v)

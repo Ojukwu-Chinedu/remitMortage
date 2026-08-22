@@ -1,35 +1,33 @@
-# Verbatim transcript — re-captured 2026-08-22T12:06:51Z, binary: ark-v0.1.0-alpha
-$ ./scripts/genesis/collect-gentx.sh scripts/genesis/rehearsal/gentx scripts/genesis/rehearsal/base-genesis.json /tmp/rehearsal-out/genesis-template.json
+collect-gentx.sh: derived account bech32 prefix 'ark' from ark180s3e35u7s2tgtlf7hhyuyhd5seeahv0mtjt89 in base genesis
 collect-gentx.sh: validating gentxs in scripts/genesis/rehearsal/gentx against scripts/genesis/rehearsal/base-genesis.json (chain-id=arkmainnet_9001-1)
 
 REJECT  bad-overclaim.json
-        -> insufficient self-delegation funds: account ark19xpv2nxu0w6gwtyd3vl8amh4tqc25r8vyj8wt8 has 100000000000000000000000aespees, gentx claims 999999999999999999999999999aespees
+        -> insufficient self-delegation funds: account ark180s3e35u7s2tgtlf7hhyuyhd5seeahv0mtjt89 has 10000000000000000000esp, gentx claims 99999999999999999999999999esp
 REJECT  bad-tampered.json
         -> signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-1): (unable to verify single signer signature): unauthorized, signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-evm-1): (unable to verify single signer signature): unauthorized
-ACCEPT  valid-0.json  (moniker=base, self-delegation=50000000000000000000000aespees)
-ACCEPT  valid-1.json  (moniker=base, self-delegation=50000000000000000000000aespees)
+ACCEPT  valid-0.json  (moniker=v0, self-delegation=9000000000000000000esp)
+ACCEPT  valid-1.json  (moniker=v1, self-delegation=9000000000000000000esp)
 
 Summary: 2 accepted, 2 rejected
-File at /var/folders/ym/kkqv45r10mq_mn0589pkthhh0000gn/T/tmp.lvK0uCZT2i/compile/config/genesis.json is a valid genesis file
+WARNING: sonic/ast only supports (go1.17~1.26 and amd64 CPU) or (go1.20~1.26 and arm64 CPU), but your environment is not suitable and will fallback to encoding/json
+File at /var/folders/ym/kkqv45r10mq_mn0589pkthhh0000gn/T/tmp.cBh80clewr/compile/config/genesis.json is a valid genesis file
 
 Compiled genesis written to: /tmp/rehearsal-out/genesis-template.json
 Validators included: 2
 
 2 gentx file(s) were rejected and are NOT in the compiled genesis:
-  - bad-overclaim.json: insufficient self-delegation funds: account ark19xpv2nxu0w6gwtyd3vl8amh4tqc25r8vyj8wt8 has 100000000000000000000000aespees, gentx claims 999999999999999999999999999aespees
+  - bad-overclaim.json: insufficient self-delegation funds: account ark180s3e35u7s2tgtlf7hhyuyhd5seeahv0mtjt89 has 10000000000000000000esp, gentx claims 99999999999999999999999999esp
   - bad-tampered.json: signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-1): (unable to verify single signer signature): unauthorized, signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-evm-1): (unable to verify single signer signature): unauthorized
 
 Resolve these with the submitters before treating this genesis as final.
 exit: 1
 
-$ ./scripts/genesis/hash-genesis.sh /tmp/rehearsal-out/genesis-template.json
 file:             /tmp/rehearsal-out/genesis-template.json
 chain_id:         arkmainnet_9001-1
-genesis_time:     2026-08-22T12:05:48.544131Z
+genesis_time:     2026-08-22T20:10:11.421154Z
 
-raw bytes sha256:       a313ef169a98db7a466acbd0d81e303603be9b5616630641c0b60fceb8331d10
+raw bytes sha256:       1e83fb5ad69ab32dc31f5bf424e64e5c066ce1680666dde1cf301e2e65b5619f
   (what 'shasum -a 256 /tmp/rehearsal-out/genesis-template.json' gives you - fragile to formatting)
 
-canonical sha256:       eea29d9a3082c4c2477f5fc1608f8103f4b148ae9b962aa5b5008f2c90bc1390
+canonical sha256:       d0e283f6595fb07cb6fd973f68762f78b783d2ad7a63e074782ea5ee96316d61
   (jq -S -c . | sha256 - THIS is the value to publish and cross-check)
-exit: 0

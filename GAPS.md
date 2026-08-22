@@ -9,7 +9,7 @@ What's still open, blocking, or needs a follow-up decision. See `STATUS.md` for 
 
 ## Decisions made this session that need explicit sign-off, not silent adoption
 
-- **Mainnet EVM chain-id proposed as `ark_9001-1`** (distinct from devnet's `9000` to avoid replay/collision risk) — this was **not** explicitly confirmed by the user, only devnet's `arkdevnet_9000-1` was. Confirm before it's load-bearing anywhere real.
+- ~~Mainnet EVM chain-id proposed as `ark_9001-1`~~ — **superseded.** `docs/decisions/module-and-config-decisions.md` #7 locks mainnet EVM chain-id to `11199` (Cosmos chain-id `arkconstellation-1`, #6). This is already correctly wired in code, not just documented: `app/config.go`'s `EVMChainIDMap["arkconstellation-1"] = 11199`, resolved automatically at node startup from the genesis chain-id (`init()` in that file) — no manual `app.toml` step needed for a standard mainnet node. Devnet's `arkdevnet_9000-1` maps to EVM chain-id `9000`, also already present in that same map.
 - **Precompile audit recommends enabling all 10** (see `STATUS.md`'s table) — reasoned, but review-and-agree, not rubber-stamp, especially Staking and ICS20 (flagged for Eng 3 chaos coverage specifically).
 - **`skip-mev/feemarket` config kept at vendored defaults** rather than tuned — reasoned against the gasless/Paymaster goal, but never load-tested against real Paymaster relay traffic patterns.
 
@@ -41,6 +41,42 @@ script/config in this PR, reflects the post-reset state (`v8.4.0-1-g026e64c8`
 at time of writing). This is the honest list of what's still different on
 the day it counts for real.
 
+**Reconciliation note (2026-08-22, post track/1-state-machine merge):**
+`track/1-state-machine` merged to `base-genesis` and brought in
+`docs/decisions/module-and-config-decisions.md`, an authoritative, evolving
+team decision record that refines several values this track had used —
+notably `x/sanction` is now **kept** (not stripped, superseding this
+track's original brief), the denom scheme is the three-tier
+`esp`/`espees`/`KASH` (base/intermediate/display, not just `esp`/`KASH`),
+and several genesis parameters got real locked numbers for the first time
+(21-day unbonding, 7-day voting period, 10 validators, SDK-default slashing
+fractions). This session merged that base into `track/2-consensus-genesis`,
+rebuilt the binary, and reconciled every genesis file/script/doc in this
+track against the locked decisions — see the diff on `networks/devnet/
+genesis-template.json`, `networks/devnet/pystarport.json`,
+`networks/mainnet/genesis-params.json`, `networks/mainnet/RUNBOOK.md`, and
+`networks/devnet/README.md`'s parameter table for the specifics. Two real
+findings from that pass:
+
+- **`docs/decisions/module-and-config-decisions.md` #11 mislabeled the real
+  cosmos-sdk downtime slash default as "0.01%"** — verified against the
+  vendored `x/slashing/types/params.go`, `DefaultSlashFractionDowntime =
+  1/100 = 0.01` as a raw decimal fraction, which is **1%**, not 0.01%. The
+  doc and every genesis file in this repo now use the code-verified value
+  (1%). Worth a sanity-check by whoever wrote that table originally, in
+  case the same off-by-100x slipped in anywhere else it was copied from.
+- **`scripts/genesis/collect-gentx.sh` hardcoded `"ark"` as the target
+  bech32 prefix** when re-encoding a validator's `valoper` address to its
+  `acc` equivalent for balance lookup. Harmless only by coincidence (it
+  happened to match the prefix in use at the time it was written) — any
+  future prefix change would have silently produced wrong addresses with
+  no error, since `bech32_reencode.py` will re-encode into *any* HRP it's
+  told to and has no way to detect it's the wrong one. Fixed to derive the
+  prefix from an address already present in the base genesis file instead
+  (`ACCOUNT_PREFIX="${ACCOUNT_ADDR_SAMPLE%1*}"`) — round-trip tested against
+  a real devnet genesis address (`ark1rvl2cva8w...` → derives `ark` →
+  round-trips a synthetic `arkvaloper1...` back to the original correctly).
+
 **Re-verification note (2026-08-22, fresh session):** everything below was
 re-checked from scratch against the `ark-v0.1.0-alpha` binary rather than
 trusted from the prior session. Binary from the Eng 1 tag, gentx fixtures
@@ -63,13 +99,20 @@ MANTRA's inherited 2024-10-07 upstream tag. Downstream handoff marker at
 - **`ark-v0.1.0-alpha` is now the real Eng 1 release** and is the binary
   this track's devnet was re-verified against. The `v1.0.0-rc1` git tag
   visible in this repo is still MANTRA's inherited 2024-10-07 upstream tag
-  and must not be used. Day-1 state-machine decisions taken by Eng 1:
-  bech32 prefix `ark`, base denom `esp` (display `KASH`, symbol
-  `KASH`), `x/tax` and `x/tokenfactory` stripped, and `x/sanction`
-  retained. The EVM module's `LoadEvmCoinInfo` looks up the denom
-  metadata for `evm_denom` (`esp`) and then uses the `denom_unit`
-  matching `display` (`KASH`) to set its 18 decimals, so the base can
-  remain `esp` while the public display name is `KASH`.
+  and must not be used. Day-1 state-machine decisions taken by Eng 1 and
+  since locked in `docs/decisions/module-and-config-decisions.md`: bech32
+  prefix `ark`, three-tier denom `esp` (base, 1 wei-equiv.) / `espees`
+  (intermediate, 10^9 esp, 1 gwei-equiv., gas-price display only) / `KASH`
+  (display, 10^18 esp, symbol `KASH`), `x/tax` and `x/tokenfactory`
+  stripped, and `x/sanction` retained. The EVM module's `LoadEvmCoinInfo`
+  looks up the denom metadata for `evm_denom` (`esp`) and then uses the
+  `denom_unit` matching `display` (`KASH`) to set its 18 decimals, so the
+  base can remain `esp` while the public display name is `KASH`. Verified
+  directly against `x/vm/keeper/coin_info.go`: because our display denom is
+  exactly 18 decimals, `evm.params.extended_denom_options.extended_denom`
+  is never actually read at runtime (only relevant for non-18-decimal
+  chains) — it's set to `espees` in every genesis file purely for accurate
+  self-documentation, not because anything consumes it today.
 - **`networks/mainnet/genesis-params.json` no longer carries `x/tax` or
   `x/tokenfactory` overrides** because those modules were removed by Eng 1.
 - **Only rehearsed against 2-4 dummy gentx files.** `collect-gentx.sh`'s
@@ -109,8 +152,11 @@ found"` — if `app_state.bank.denom_metadata` has no entry for the
 bond/mint/evm denom. This isn't caught by `mantrachaind genesis
 validate-genesis` (a structural/proto check only) — it only surfaces when
 a node actually boots. `genesis-template.json` and `genesis-params.json`
-both include a correct `denom_metadata` entry now (`esp` base,
-`KASH` display, `KASH` symbol).
+both include a correct `denom_metadata` entry now (`esp` base, `espees`
+intermediate, `KASH` display/symbol, with `wei`/`gwei`/`ether` aliases per
+decision #8's exact JSON), and `networks/mainnet/RUNBOOK.md`'s assembly
+script now relies on `genesis-params.json` as the single source of truth
+for this value instead of re-declaring a second, driftable copy inline.
 
 ## Needs real infrastructure, not just config
 
@@ -156,17 +202,54 @@ both include a correct `denom_metadata` entry now (`esp` base,
   replicated storage — losing it and restarting is exactly the failure
   mode that causes double-signing.
 
+## Still open per docs/decisions/module-and-config-decisions.md — genuine gaps, not faked
+
+- **Governance timelock (decision #14, locked, minimum 48h) is not
+  implemented anywhere in this codebase.** Stock cosmos-sdk `x/gov` has no
+  timelock field, hook, or config knob — a passed proposal executes
+  immediately in the same block its voting period ends. Implementing this
+  needs either a custom module wrapping `MsgExecLegacyContent`/proposal
+  execution, or a fork-level change to `x/gov`'s keeper. Not started. Do
+  not assume any genesis parameter in this track's files provides this —
+  none does, because none can.
+- **`gov.min_deposit`/`expedited_min_deposit` in
+  `networks/mainnet/genesis-params.json` are explicit placeholders**, not
+  reviewed values — decision #15 blocks the real figure on a total supply
+  decision that has not been made. Flagged prominently in that file's own
+  header comment and in `networks/mainnet/RUNBOOK.md`'s pre-flight
+  checklist so this can't be missed at genesis-day time.
+- **EVM precompile decisions (decision doc's table) are still all `⏳`
+  pending** in `docs/decisions/module-and-config-decisions.md`, despite
+  `STATUS.md` (Eng 1's track) already containing a full precompile audit
+  with reasoned recommendations. These two documents are currently out of
+  sync — worth whoever owns the decisions doc copying Eng 1's findings in
+  and getting real sign-off, rather than treating `STATUS.md`'s audit as
+  itself the decision.
+- **Admin/upgrade multisig (decision #17) is pending Eng 4's Day 3 key
+  ceremony** — out of this track's scope, noted here only so it isn't
+  mistaken for something this track's genesis files already handle. No
+  multisig address appears anywhere in `networks/mainnet/genesis-params.json`
+  because none has been decided yet.
+
 ## Lower priority / already mitigated, worth knowing about
 
-- **Observed devnet block time (~1.92s) sits at the upper edge of the
-  1-2s target**, not the ~1.1-1.3s the timeout math predicts. Root-caused
-  to CPU contention from running 4 full CGO/wasmvm-linked nodes
-  concurrently on one shared dev laptop (evidence:
-  `networks/devnet/proof/propose-timeout-evidence.log` shows
-  `RoundStepPropose` regularly consuming its full 1s timeout). The
-  configured values are correct for dedicated hardware — re-run
-  `make devnet-verify` on the real target hardware/topology before
-  trusting either number as representative.
+- **Observed devnet block time is now ~2.97s average, above the 1-2s
+  target band** (`networks/devnet/proof/block-times.log`, captured
+  2026-08-22 against the freshly rebuilt `track/2-consensus-genesis`
+  binary after correcting `timeout_commit` from `1s` to the
+  decision-#12-locked `2s`). `verify-blocks.sh`'s own WARN check caught
+  this — it is not silently passing. Root cause is very likely the other
+  three CometBFT round timeouts (`timeout_propose`/`timeout_prevote`/
+  `timeout_precommit`, all still `1s` each in `pystarport.json`) adding
+  real overhead on top of `timeout_commit`, rather than the CPU-contention
+  explanation an earlier measurement on this same file gave for a
+  different, smaller overshoot — not reduced further this session, per
+  decision #12's own explicit "do not chase sub-second block times on a
+  3-day build" guidance. If the 1-2s band needs to be hit precisely, the
+  other three timeout_* values are the ones to shrink next, not
+  `timeout_commit` (that one is the one the decision doc explicitly pins).
+  Re-run `make devnet-verify` after any such change and on real target
+  hardware before trusting either number as representative.
 - **This dev machine had no Go, `pystarport`, or `tmkms` installed at
   all** — all three were installed fresh this session. Two Go-toolchain
   nuances worth knowing: (1) `go.mod` specifies `go 1.25.0`; a newer
