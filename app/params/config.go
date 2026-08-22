@@ -12,7 +12,7 @@ import (
 // stale duplicate definition drifting from the real one.
 const (
 	HumanCoinUnit = "espees"
-	BaseCoinUnit  = "aespees"
+	BaseCoinUnit  = "espees"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit

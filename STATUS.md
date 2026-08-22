@@ -35,13 +35,13 @@ Already correctly wired before this session (keeper, store key, `app.SetCircuitB
 ### Bech32 prefix + denom rename — locked as of this session, per direct user decision
 
 - Bech32 prefix: `mantra` → **`ark`** (`arkpub`/`arkvaloper`/`arkvaloperpub`/`arkvalcons`/`arkvalconspub`)
-- Base denom: `amantra` → **`aespees`** (18 decimals, display `espees`, symbol `ESP`, human unit `espees`)
+- Base denom: `amantra` → **`espees`** (18 decimals, display `espees`, symbol `ESP`, human unit `espees`)
 - Devnet chain-id: kept as `arkdevnet_9000-1` (explicit user decision, unchanged)
 - Mainnet EVM chain-id: **not locked** — proposing `ark_9001-1` (a distinct EVM number from devnet's `9000` to avoid any chain-id collision/replay-confusion risk) but this was not explicitly confirmed by the user; flag for sign-off before real mainnet genesis.
 
 Fixed a real duplicate-definition hazard found while doing this: `app/params/config.go` and `cmd/mantrachaind/main.go` both independently defined the same `Bech32Prefix`/denom constants and both called `SetAddressPrefixes()`. Traced why this doesn't panic (`app/params/config.go`'s own `Seal()` call was already commented out — its `init()` runs first and sets values without sealing, `main()`'s `setupConfig()` runs second, re-sets the same fields, then seals) rather than assuming it was safe. Both files are now kept consistent (previously `app/params/config.go` had **stale** 6-decimal `om`/`uom` constants left over, not even matching pre-rename `mantra`/`amantra` — dead, unreferenced outside the file itself, confirmed via grep).
 
-Also renamed, since they're the same branding-leak category and low-risk/self-contained: the EVM coin display denom in `app/app.go`'s `EVMCoinInfo` (`"mantra"` → `"espees"`), the live `MinGasPrices` default every validator gets (`cmd/mantrachaind/cmd/config.go`: `"0amantra"` → `"0aespees"`), and the IBC-memo unwrap trigger key in `app/ibc_middleware/unwrap_erc20.go` (`{"mantra":{"unwrap":true}}` → `{"ark":{"unwrap":true}}` — a protocol-level identifier bearing MANTRA's name; safe to change now since Ark is a fresh chain with no existing integrations depending on the old key).
+Also renamed, since they're the same branding-leak category and low-risk/self-contained: the EVM coin display denom in `app/app.go`'s `EVMCoinInfo` (`"mantra"` → `"espees"`), the live `MinGasPrices` default every validator gets (`cmd/mantrachaind/cmd/config.go`: `"0amantra"` → `"0espees"`), and the IBC-memo unwrap trigger key in `app/ibc_middleware/unwrap_erc20.go` (`{"mantra":{"unwrap":true}}` → `{"ark":{"unwrap":true}}` — a protocol-level identifier bearing MANTRA's name; safe to change now since Ark is a fresh chain with no existing integrations depending on the old key).
 
 **Verified, not assumed:** built the binary fresh, generated a real key, confirmed the address comes back `ark1...` (`ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la` in the smoke test below), re-encoded (not text-replaced — bech32 checksums are prefix-dependent) two hardcoded `mantra1...` test addresses in `tests/e2e/` to their real `ark1...` equivalents using the same 20-byte payload.
 
@@ -61,7 +61,7 @@ Both audits shallow-cloned the actual fork and upstream repos and ran real `diff
 Single local node, chain-id `circuit-test-1`, binary built from this branch's HEAD:
 1. `genesis validate-genesis` passes.
 2. Node boots, produces blocks (reached height 3+ within 8s of start).
-3. Real signed `MsgSend` (val → recipient, `1aespees`... `1000000000000000000aespees`) broadcasts, lands, balance query confirms receipt.
+3. Real signed `MsgSend` (val → recipient, `1espees`... `1000000000000000000espees`) broadcasts, lands, balance query confirms receipt.
 4. Circuit breaker disable/reject/reset/allow cycle (see above).
 
 ### Tag

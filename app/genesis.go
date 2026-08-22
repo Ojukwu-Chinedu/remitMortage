@@ -13,7 +13,7 @@ type GenesisState map[string]json.RawMessage
 
 // FeeDenom is Ark's native base denomination (18 decimals) - see
 // cmd/mantrachaind/main.go's BaseCoinUnit, which this must stay in sync with.
-var FeeDenom = "aespees"
+var FeeDenom = "espees"
 
 // Deliberately no NewDefaultGenesisState() here. A previous version of this
 // file defined one, intended to wire FeeDenom into the evm/erc20/feemarket

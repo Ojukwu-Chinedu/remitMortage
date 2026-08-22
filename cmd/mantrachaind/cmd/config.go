@@ -62,7 +62,7 @@ func initAppConfig() (string, interface{}) {
 	//   own app.toml to override, or use this default value.
 	//
 	// In this example application, we set the min gas prices to 0.
-	srvCfg.MinGasPrices = "0aespees"
+	srvCfg.MinGasPrices = "0espees"
 
 	customAppTemplate := serverconfig.DefaultConfigTemplate +
 		cosmosevmserverconfig.DefaultEVMConfigTemplate +

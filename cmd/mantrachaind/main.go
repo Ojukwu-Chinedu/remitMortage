@@ -30,7 +30,7 @@ func main() {
 // native token.
 const (
 	HumanCoinUnit = "espees"
-	BaseCoinUnit  = "aespees"
+	BaseCoinUnit  = "espees"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit
@@ -51,7 +51,7 @@ var (
 )
 
 // ArkCoinDenomRegex returns the coin denom regex string used to override the
-// default SDK coin denom regex (needed since "espees"/"aespees" would
+// default SDK coin denom regex (needed since "espees"/"espees" would
 // otherwise be rejected by the SDK's default, stricter denom pattern).
 func ArkCoinDenomRegex() string {
 	return `[a-zA-Z][a-zA-Z0-9/:._-]{1,127}`
