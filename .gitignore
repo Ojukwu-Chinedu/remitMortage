@@ -19,3 +19,4 @@ mise.toml
 client/docs/.pnp.cjs
 client/docs/.pnp.loader.mjs
 client/docs/.yarn/
+.agent
