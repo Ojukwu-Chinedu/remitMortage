@@ -5,6 +5,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "ark-v*.*.*"
+      - "ark-v*"
   pull_request:
     branches: ["main"]
   workflow_dispatch:
