@@ -219,6 +219,9 @@ goreleaser-build-local:
 		-e CMT_VERSION=$(CMT_VERSION) \
 		-e REPO_OWNER=$(REPO_OWNER) \
 		-e REPO_NAME=$(REPO_NAME) \
+		-e GOPROXY="https://proxy.golang.org,direct" \
+		-e GOSUMDB="sum.golang.org" \
+		-e GO111MODULE=on \
 		-v `pwd`:/go/src/mantrachaind \
 		-w /go/src/mantrachaind \
 		--platform=$(GORELEASER_PLATFORM) \
@@ -247,13 +250,13 @@ build-and-run-single-node: build
 	@echo "Building and running a single node for testing..."
 	@mkdir -p .mantrasinglenodetest
 	@if [ ! -f .mantrasinglenodetest/config/config.toml ]; then \
-		./build/mantrachaind init single-node-test --chain-id test-chain --home .mantrasinglenodetest --default-denom amantra; \
+		./build/mantrachaind init single-node-test --chain-id test-chain --home .mantrasinglenodetest --default-denom esp; \
 		./build/mantrachaind keys add validator --keyring-backend test --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis add-genesis-account $$(./build/mantrachaind keys show validator -a --keyring-backend test --home .mantrasinglenodetest) 100000000000000000000000000amantra --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis gentx validator 100000000000000000000amantra --chain-id test-chain --keyring-backend test --home .mantrasinglenodetest; \
+		./build/mantrachaind genesis add-genesis-account $$(./build/mantrachaind keys show validator -a --keyring-backend test --home .mantrasinglenodetest) 100000000000000000000000000esp --home .mantrasinglenodetest; \
+		./build/mantrachaind genesis gentx validator 100000000000000000000esp --chain-id test-chain --keyring-backend test --home .mantrasinglenodetest; \
 		./build/mantrachaind genesis collect-gentxs --home .mantrasinglenodetest; \
-		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "amantra"/' .mantrasinglenodetest/config/genesis.json; \
+		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "esp"/' .mantrasinglenodetest/config/genesis.json; \
 	fi
-	./build/mantrachaind start --home .mantrasinglenodetest --minimum-gas-prices 0amantra
+	./build/mantrachaind start --home .mantrasinglenodetest --minimum-gas-prices 0esp
 
 .PHONY: build-and-run-single-node

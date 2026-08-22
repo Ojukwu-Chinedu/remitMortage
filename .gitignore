@@ -6,6 +6,7 @@ release/
 .DS_Store
 *.dot
 *.log
+!docs/proof/*.log
 *.ign
 .aider*
 swagger-proto
@@ -19,4 +20,7 @@ mise.toml
 client/docs/.pnp.cjs
 client/docs/.pnp.loader.mjs
 client/docs/.yarn/
-.agent
+
+# Agent and assistant artifacts
+.agent/
+artifacts/

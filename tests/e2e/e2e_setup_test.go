@@ -78,7 +78,7 @@ const (
 	transferPort              = "transfer"
 	transferChannel           = "channel-0"
 
-	govAuthority = "mantra10d07y265gmmuvt4z0w9aw880jnsr700j3fep4f"
+	govAuthority = "ark10d07y265gmmuvt4z0w9aw880jnsr700j2cu5hn"
 )
 
 var (
@@ -745,7 +745,7 @@ func (s *IntegrationTestSuite) writeSoftwareUpgradeProposal(c *chain, height int
 		"messages": [
 		 {
 		  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
-		  "authority": "mantra10d07y265gmmuvt4z0w9aw880jnsr700j3fep4f",
+		  "authority": "ark10d07y265gmmuvt4z0w9aw880jnsr700j2cu5hn",
 		  "plan": {
 		   "name": "%s",
 		   "height": "%d",
@@ -771,7 +771,7 @@ func (s *IntegrationTestSuite) writeCancelSoftwareUpgradeProposal(c *chain) {
 		"messages": [
 		 {
 		  "@type": "/cosmos.upgrade.v1beta1.MsgCancelUpgrade",
-		  "authority": "mantra10d07y265gmmuvt4z0w9aw880jnsr700j3fep4f"
+		  "authority": "ark10d07y265gmmuvt4z0w9aw880jnsr700j2cu5hn"
 		 }
 		],
 		"metadata": "ipfs://CID",
@@ -905,7 +905,7 @@ func (s *IntegrationTestSuite) writeExpeditedSoftwareUpgradeProp(c *chain) {
  "messages": [
   {
    "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
-   "authority": "mantra10d07y265gmmuvt4z0w9aw880jnsr700j3fep4f",
+   "authority": "ark10d07y265gmmuvt4z0w9aw880jnsr700j2cu5hn",
    "plan": {
     "name": "test-expedited-upgrade",
     "height": "123456789",

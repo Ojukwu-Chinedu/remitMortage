@@ -5,16 +5,27 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// Kept in sync with cmd/mantrachaind/main.go's identical constants - that file's
+// setupConfig() is what actually seals the SDK config (this package's own
+// SetAddressPrefixes() below intentionally does not call Seal(), so it never
+// conflicts with main's later call), but both are kept consistent to avoid a
+// stale duplicate definition drifting from the real one.
+//
+// Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
+//
+//	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
+//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
-	HumanCoinUnit  = "mantra"
-	BaseCoinUnit   = "amantra"
-	MantraExponent = 18
+	HumanCoinUnit = "KASH"
+	BaseCoinUnit  = "esp"
+	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit
 )
 
 var (
-	Bech32Prefix = "mantra"
+	Bech32Prefix = "ark"
 	// Bech32PrefixAccPub defines the Bech32 prefix of an account's public key.
 	Bech32PrefixAccPub = Bech32Prefix + "pub"
 	// Bech32PrefixValAddr defines the Bech32 prefix of a validator's operator address.
@@ -28,22 +39,24 @@ var (
 )
 
 func init() {
-	sdk.SetCoinDenomRegex(MantraCoinDenomRegex)
+	sdk.SetCoinDenomRegex(ArkCoinDenomRegex)
 	SetAddressPrefixes()
 }
 
-// MantraCoinDenomRegex returns the mantra regex string
+// ArkCoinDenomRegex returns the coin denom regex string
 // this is used to override the default sdk coin denom regex
-func MantraCoinDenomRegex() string {
+func ArkCoinDenomRegex() string {
 	return `[a-zA-Z][a-zA-Z0-9/:._-]{1,127}`
 }
 
-// SetAddressPrefixes builds the Config with Bech32 addressPrefix and publKeyPrefix for accounts, validators, and consensus nodes and verifies that addreeses have correct format.
+// SetAddressPrefixes builds the Config with Bech32 addressPrefix and pubKeyPrefix for accounts, validators, and consensus nodes and verifies that addresses have correct format.
 func SetAddressPrefixes() {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount(Bech32Prefix, Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(Bech32PrefixValAddr, Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
 	config.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	// config.Seal()
+	// Deliberately does NOT call config.Seal() here - cmd/mantrachaind/main.go's
+	// setupConfig() runs after this package's init() and seals the config itself.
+	// Sealing here first would panic on main's subsequent Set* calls.
 }

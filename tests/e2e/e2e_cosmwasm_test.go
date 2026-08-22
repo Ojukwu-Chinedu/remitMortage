@@ -171,7 +171,7 @@ func (s *IntegrationTestSuite) testExecuteContractWithSimplyMessage() {
 		valAddr, _ := s.chainA.validators[0].keyInfo.GetAddress()
 		senderAddr := valAddr.String()
 
-		newPublisher := "mantra1hze5xhd5d5mwysddrutmdt7f89lztrx2xm3nk8"
+		newPublisher := "ark1hze5xhd5d5mwysddrutmdt7f89lztrx2a25x5a"
 
 		// Simple message to execute on the contract
 		execMsg := fmt.Sprintf(`{ "add_publishers": { "publishers": [ "%s" ] } }`, newPublisher)
@@ -204,63 +204,6 @@ func (s *IntegrationTestSuite) testExecuteContractWithSimplyMessage() {
 		sort.Strings(actualPublishers)
 		sort.Strings(expectedPublishers)
 		s.Require().Equal(expectedPublishers, actualPublishers)
-	})
-}
-
-func (s *IntegrationTestSuite) testExecuteContractThatInteractsWithTokenFactory() {
-	s.Run("execute_wasm_contract_interacts_with_tokenfactory", func() {
-		chainEndpoint := fmt.Sprintf("http://%s", s.valResources[s.chainA.id][0].GetHostPort("1317/tcp"))
-		expectedMetadata := s.BuildTokenMetadata()
-		denom := expectedMetadata.Base
-		_, err := queryTokenfactoryDenomMetadata(chainEndpoint, denom)
-		s.Require().NoError(err)
-
-		// Get validator address for sending transaction
-		valAddr, _ := s.chainA.validators[0].keyInfo.GetAddress()
-		senderAddr := valAddr.String()
-
-		execMsg := fmt.Sprintf(`{ "register_asset": { "address_or_denom": "%s", "data_source": "T00gdG8gdGhlIG1vb24=" } }`, denom)
-
-		txHash := s.execWasmExecute(
-			s.chainA,
-			0,
-			senderAddr,
-			deployedContractAddress,
-			execMsg,
-			mantraHomePath,
-		)
-
-		s.Require().NotEmpty(txHash)
-
-		queryMsg := fmt.Sprintf(`{ "get_asset_info": { "address_or_denom": "%s" } }`, denom)
-
-		assetInfo, err := queryWasmContractSmart(chainEndpoint, deployedContractAddress, queryMsg)
-
-		s.Require().NoError(err)
-		s.Require().NotEmpty(string(assetInfo.Data))
-
-		s.T().Log("Asset Info: ", string(assetInfo.Data))
-
-		var assetInfoMap map[string]interface{}
-		err = json.Unmarshal(assetInfo.Data, &assetInfoMap)
-		s.Require().NoError(err)
-
-		s.Require().NotEmpty(assetInfoMap["address_or_denom"])
-		s.Require().Equal(denom, assetInfoMap["address_or_denom"])
-
-		s.Require().NotEmpty(assetInfoMap["symbol"])
-		s.Require().Equal(expectedMetadata.Symbol, assetInfoMap["symbol"])
-
-		s.Require().NotEmpty(assetInfoMap["name"])
-		s.Require().Equal(expectedMetadata.Name, assetInfoMap["name"])
-
-		s.Require().NotEmpty(assetInfoMap["description"])
-		s.Require().Equal(expectedMetadata.Description, assetInfoMap["description"])
-
-		s.Require().NotEmpty(assetInfoMap["exponent"])
-		actualExponent, ok := assetInfoMap["exponent"].(float64)
-		s.Require().True(ok, "exponent can be converted to float64")
-		s.Require().Equal(expectedMetadata.DenomUnits[1].Exponent, uint32(actualExponent))
 	})
 }
 

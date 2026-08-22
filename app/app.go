@@ -58,12 +58,6 @@ import (
 	sanctionkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/keeper"
 	sanction "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/module"
 	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
-	taxkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/tax/keeper"
-	tax "github.com/MANTRA-Chain/mantrachain/v8/x/tax/module"
-	taxtypes "github.com/MANTRA-Chain/mantrachain/v8/x/tax/types"
-	"github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory"
-	tokenfactorykeeper "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -183,7 +177,7 @@ import (
 var EVMCoinInfo = evmtypes.EvmCoinInfo{
 	Denom:         FeeDenom,
 	ExtendedDenom: FeeDenom,
-	DisplayDenom:  "mantra",
+	DisplayDenom:  "KASH",
 	Decimals:      evmtypes.EighteenDecimals.Uint32(),
 }
 
@@ -226,14 +220,12 @@ var maccPerms = map[string][]string{
 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 	govtypes.ModuleName:            {authtypes.Burner},
 	nft.ModuleName:                 nil,
+	sanctiontypes.ModuleName:       nil,
 	// non sdk modules
 	ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 	providertypes.ConsumerRewardsPool: nil,
 	ratelimittypes.ModuleName:         nil,
 	wasmtypes.ModuleName:              {authtypes.Burner},
-	tokenfactorytypes.ModuleName:      {authtypes.Minter, authtypes.Burner},
-	taxtypes.ModuleName:               nil,
-	sanctiontypes.ModuleName:          nil,
 
 	// Cosmos EVM modules
 	evmtypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
@@ -280,7 +272,8 @@ type App struct {
 	FeeGrantKeeper        feegrantkeeper.Keeper
 	NFTKeeper             nftkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
-	CircuitKeeper         circuitkeeper.Keeper
+	CircuitKeeper         circuitkeeper.Keeper // emergency pause: cosmossdk.io/x/circuit, wired via SetCircuitBreaker below
+	SanctionKeeper        sanctionkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -293,11 +286,6 @@ type App struct {
 
 	// ICS
 	ProviderKeeper icsproviderkeeper.Keeper
-
-	// MANTRAChain keepers
-	TokenFactoryKeeper tokenfactorykeeper.Keeper
-	TaxKeeper          taxkeeper.Keeper
-	SanctionKeeper     sanctionkeeper.Keeper
 
 	// Cosmos EVM keepers
 	FeeMarketKeeper feemarketkeeper.Keeper
@@ -357,13 +345,13 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey,
 		circuittypes.StoreKey,
+		sanctiontypes.StoreKey,
 		authzkeeper.StoreKey,
 		nftkeeper.StoreKey,
 		// non sdk store keys
 		ibcexported.StoreKey, ibctransfertypes.StoreKey,
 		wasmtypes.StoreKey,
 		ratelimittypes.StoreKey,
-		tokenfactorytypes.StoreKey, taxtypes.StoreKey, sanctiontypes.StoreKey,
 		icacontrollertypes.StoreKey, icahosttypes.StoreKey, providertypes.StoreKey,
 
 		// Cosmos EVM store keys
@@ -473,6 +461,13 @@ func New(
 	)
 	app.SetCircuitBreaker(&app.CircuitKeeper)
 
+	app.SanctionKeeper = sanctionkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[sanctiontypes.StoreKey]),
+		logger,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	app.AuthzKeeper = authzkeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[authzkeeper.StoreKey]),
 		appCodec,
@@ -532,35 +527,6 @@ func New(
 		),
 	)
 
-	sortedKnownModules := make([]string, 0, len(maccPerms))
-	for moduleName := range maccPerms {
-		sortedKnownModules = append(sortedKnownModules, moduleName)
-	}
-	sort.Strings(sortedKnownModules)
-
-	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[tokenfactorytypes.StoreKey]),
-		sortedKnownModules,
-		app.AccountKeeper,
-		app.BankKeeper,
-		&app.WasmKeeper,
-		&app.Erc20Keeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	app.SanctionKeeper = sanctionkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[sanctiontypes.StoreKey]),
-		logger,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	app.BankKeeper.BaseSendKeeper = app.BankKeeper.SetHooks(
-		banktypes.NewMultiBankHooks(
-			app.TokenFactoryKeeper.Hooks(),
-		))
-
 	govConfig := govtypes.DefaultConfig()
 	/*
 		Example of setting gov params:
@@ -607,16 +573,6 @@ func New(
 		&app.ProviderKeeper,
 		app.GetSubspace(providertypes.ModuleName),
 		app.keys[providertypes.StoreKey],
-	)
-
-	app.TaxKeeper = taxkeeper.NewKeeper(
-		appCodec,
-		app.AccountKeeper.AddressCodec(),
-		runtime.NewKVStoreService(keys[taxtypes.StoreKey]),
-		logger,
-		app.AccountKeeper,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
 	)
 
 	// ICA Host keeper
@@ -734,13 +690,11 @@ func New(
 		Create Transfer Stack
 
 		transfer stack (outermost to innermost, i.e. call-entry order for RecvPacket):
-			- UnwrapERC20 middleware (recv-only)
+			- UnwrapERC20 middleware (MANTRA/Ark memo unwrap)
 			- ICS Provider middleware
 			- IBC RateLimit middleware (guard: checks rate limit BEFORE calling next, blocks if exceeded)
-			- TokenFactory middleware (pass-through on RecvPacket)
 			- IBC Callbacks middleware (with EVM ContractKeeper)
 			- ERC-20 middleware
-			- MigrateUom middleware
 			- IBC Transfer
 
 		SendPacket, since it is originating from the application to core IBC:
@@ -749,16 +703,14 @@ func New(
 
 		RecvPacket, actual logic execution order (note: ratelimit runs its check BEFORE calling next,
 		all others call next before their own logic):
-			channel.RecvPacket -> ratelimit.OnRecvPacket (guard, aborts if exceeded) -> transfer.OnRecvPacket -> migrateuom.OnRecvPacket
+			channel.RecvPacket -> ratelimit.OnRecvPacket (guard, aborts if exceeded) -> transfer.OnRecvPacket
 			-> erc20.OnRecvPacket -> callbacks.OnRecvPacket -> icsprovider.OnRecvPacket -> unwraperc20.OnRecvPacket
-			(tokenfactory is pass-through on RecvPacket)
 	*/
 
 	// create IBC module from top to bottom of stack
 	var transferStack porttypes.IBCModule
 
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = ibc_middleware.NewMigrateUomIBCModule(transferStack, app.BankKeeper, app.AccountKeeper.AddressCodec())
 	maxCallbackGas := uint64(1_000_000)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 	app.CallbackKeeper = ibccallbackskeeper.NewKeeper(
@@ -768,8 +720,6 @@ func New(
 	)
 	callbacksMiddleware := ibccallbacks.NewIBCMiddleware(transferStack, app.RateLimitKeeper, app.CallbackKeeper, maxCallbackGas)
 	transferStack = &callbacksMiddleware
-	// register escrow address for tokenfactory when channel opens
-	transferStack = tokenfactory.NewIBCModule(transferStack, app.TokenFactoryKeeper)
 	transferStack = ratelimit.NewIBCMiddleware(app.RateLimitKeeper, transferStack)
 	transferStack = icsprovider.NewIBCMiddleware(transferStack, app.ProviderKeeper)
 	transferStack = ibc_middleware.NewUnwrapERC20IBCModule(transferStack, &app.Erc20Keeper, app.EVMKeeper)
@@ -909,6 +859,7 @@ func New(
 		nftmodule.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		circuit.NewAppModule(appCodec, app.CircuitKeeper),
+		sanction.NewAppModule(appCodec, app.SanctionKeeper),
 		// non sdk modules
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), nil),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -922,11 +873,6 @@ func New(
 
 		// sdk
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil), //nolint:staticcheck
-
-		// mantrachain modules
-		tokenfactory.NewAppModule(appCodec, app.TokenFactoryKeeper),
-		tax.NewAppModule(appCodec, app.TaxKeeper),
-		sanction.NewAppModule(appCodec, app.SanctionKeeper),
 
 		// Cosmos EVM modules
 		vm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.BankKeeper, app.AccountKeeper.AddressCodec()),
@@ -964,8 +910,6 @@ func New(
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.ModuleManager.SetOrderBeginBlockers(
 		minttypes.ModuleName,
-		// mca tax before distribution
-		taxtypes.ModuleName,
 
 		// IBC modules
 		ibcexported.ModuleName, ibctransfertypes.ModuleName,
@@ -986,9 +930,8 @@ func New(
 		icatypes.ModuleName,
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
+		sanctiontypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1003,17 +946,14 @@ func New(
 		erc20types.ModuleName,
 		feemarkettypes.ModuleName,
 		feegrant.ModuleName,
-		// burn fees from fee collector
-		taxtypes.ModuleName,
 		// additional non simd modules
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
+		sanctiontypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1041,6 +981,7 @@ func New(
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		circuittypes.ModuleName,
+		sanctiontypes.ModuleName,
 		ibcexported.ModuleName,
 
 		// Cosmos EVM modules
@@ -1059,9 +1000,6 @@ func New(
 		// wasm after ibc transfer
 
 		wasmtypes.ModuleName,
-		tokenfactorytypes.ModuleName,
-		taxtypes.ModuleName,
-		sanctiontypes.ModuleName,
 		providertypes.ModuleName,
 
 		// crisis needs to be last so that the genesis state is consistent when it checks invariants
@@ -1226,29 +1164,6 @@ func (app *App) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
 func (app *App) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	// v8.4.0 is the emergency, self-scheduled upgrade fixing the delegate
-	// precompile balance-drain exploit. No governance proposal; all
-	// validators must agree on this binary and height before restarting.
-	const name = "v8.4.0"
-
-	// upgradeHeight is chain-specific: the real halt height on mainnet,
-	// or a low height on dukong so the fix can be rehearsed on testnet first.
-	var upgradeHeight int64
-	switch ctx.ChainID() {
-	case "mantra-1":
-		upgradeHeight = 17449399
-	case "mantra-dukong-1":
-		upgradeHeight = 16107460
-	}
-
-	if upgradeHeight != 0 && ctx.BlockHeight() == upgradeHeight {
-		if _, err := app.UpgradeKeeper.GetUpgradePlan(ctx); err != nil { // no plan scheduled yet
-			_ = app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
-				Name:   name,
-				Height: ctx.BlockHeight(),
-			})
-		}
-	}
 	return app.ModuleManager.PreBlock(ctx)
 }
 
@@ -1521,7 +1436,6 @@ func (app *App) setupUpgradeHandlers() {
 					DistrKeeper:           app.DistrKeeper,
 					ProviderKeeper:        app.ProviderKeeper,
 					ConsensusParamsKeeper: app.ConsensusParamsKeeper,
-					SanctionKeeper:        app.SanctionKeeper,
 				},
 				app.keys,
 			),

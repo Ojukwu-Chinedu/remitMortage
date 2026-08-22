@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "v*"
+      - "ark-v*.*.*"
+      - "ark-v*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -13,6 +16,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
+
+permissions:
+  contents: read
+  packages: write
 
 # Set concurrency for this workflow to cancel in-progress jobs if retriggered.
 # The github.ref is only available when triggered by a PR so fall back to github.run_id for other cases.
@@ -25,6 +32,9 @@ concurrency:
 jobs:
   heighliner-docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
         with:
