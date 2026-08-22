@@ -1,29 +1,29 @@
 Sampling 15 blocks from http://127.0.0.1:26657 (every 1s)...
-started_at: 2026-08-22T07:55:09Z
-sample=1 height=9 time=2026-08-22T07:55:05.690268Z
-sample=2 height=10 time=2026-08-22T07:55:07.635432Z
-sample=3 height=10 time=2026-08-22T07:55:07.635432Z
-sample=4 height=11 time=2026-08-22T07:55:09.593364Z
-sample=5 height=11 time=2026-08-22T07:55:09.593364Z
-sample=6 height=12 time=2026-08-22T07:55:11.506273Z
-sample=7 height=12 time=2026-08-22T07:55:11.506273Z
-sample=8 height=13 time=2026-08-22T07:55:13.451743Z
-sample=9 height=13 time=2026-08-22T07:55:13.451743Z
-sample=10 height=14 time=2026-08-22T07:55:15.365978Z
-sample=11 height=15 time=2026-08-22T07:55:17.285247Z
-sample=12 height=15 time=2026-08-22T07:55:17.285247Z
-sample=13 height=16 time=2026-08-22T07:55:19.195888Z
-sample=14 height=16 time=2026-08-22T07:55:19.195888Z
-sample=15 height=17 time=2026-08-22T07:55:21.1171Z
+started_at: 2026-08-22T08:37:12Z
+sample=1 height=87 time=2026-08-22T08:37:09.377856Z
+sample=2 height=87 time=2026-08-22T08:37:09.377856Z
+sample=3 height=88 time=2026-08-22T08:37:11.299001Z
+sample=4 height=88 time=2026-08-22T08:37:11.299001Z
+sample=5 height=89 time=2026-08-22T08:37:13.268353Z
+sample=6 height=89 time=2026-08-22T08:37:13.268353Z
+sample=7 height=90 time=2026-08-22T08:37:15.182674Z
+sample=8 height=91 time=2026-08-22T08:37:17.171632Z
+sample=9 height=91 time=2026-08-22T08:37:17.171632Z
+sample=10 height=92 time=2026-08-22T08:37:19.085718Z
+sample=11 height=92 time=2026-08-22T08:37:19.085718Z
+sample=12 height=93 time=2026-08-22T08:37:21.015775Z
+sample=13 height=93 time=2026-08-22T08:37:21.015775Z
+sample=14 height=94 time=2026-08-22T08:37:22.926734Z
+sample=15 height=94 time=2026-08-22T08:37:22.926734Z
 
-heights observed: [9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 15, 15, 16, 16, 17]
-blocks advanced: 8 across the sampling window
+heights observed: [87, 87, 88, 88, 89, 89, 90, 91, 91, 92, 92, 93, 93, 94, 94]
+blocks advanced: 7 across the sampling window
 PASS: block height is advancing - devnet is producing blocks.
 
 Computing inter-block time from block headers directly (more precise than RPC polling interval)...
-inter-block deltas (s): [1.996, 1.96, 1.945, 1.958, 1.913, 1.945, 1.914, 1.919, 1.911, 1.921]
-average block time: 1.938s over 10 intervals (heights 7-17)
-PASS: average block time 1.938s falls within the 1-2s target band (with reasonable margin).
+inter-block deltas (s): [1.946, 1.911, 1.921, 1.969, 1.914, 1.989, 1.914, 1.93, 1.911, 1.911]
+average block time: 1.932s over 10 intervals (heights 85-95)
+PASS: average block time 1.932s falls within the 1-2s target band (with reasonable margin).
 
-finished_at: 2026-08-22T07:55:25Z
+finished_at: 2026-08-22T08:37:28Z
 

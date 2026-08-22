@@ -25,3 +25,8 @@ networks/devnet/remote-signing/secrets/
 networks/devnet/remote-signing/state/
 networks/devnet/remote-signing/*.log
 !networks/devnet/remote-signing/proof/*.log
+
+# Gentx rehearsal transcript: captured evidence referenced by
+# scripts/genesis/rehearsal/README.md - must be committed despite the
+# blanket *.log rule above (which silently excluded it until this line).
+!scripts/genesis/rehearsal/transcript.log

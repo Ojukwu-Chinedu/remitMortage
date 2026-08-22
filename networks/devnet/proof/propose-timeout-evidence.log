@@ -1,32 +1,35 @@
-8:54AM INF Timed out dur=-15.617 height=1 module=consensus round=0 server=node step=RoundStepNewHeight
-8:54AM INF Timed out dur=1000 height=1 module=consensus round=0 server=node step=RoundStepPropose
-8:54AM INF Timed out dur=957.653 height=2 module=consensus round=0 server=node step=RoundStepNewHeight
-8:54AM INF Timed out dur=1000 height=2 module=consensus round=0 server=node step=RoundStepPropose
-8:54AM INF Timed out dur=975.167 height=3 module=consensus round=0 server=node step=RoundStepNewHeight
-8:54AM INF Timed out dur=975.885 height=4 module=consensus round=0 server=node step=RoundStepNewHeight
-8:54AM INF Timed out dur=1000 height=4 module=consensus round=0 server=node step=RoundStepPropose
-8:54AM INF Timed out dur=974.762 height=5 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=974.855 height=6 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=6 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=975.266 height=7 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=959.547 height=8 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=8 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=975.686 height=9 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=961.016 height=10 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=10 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=976.583 height=11 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=972.365 height=12 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=12 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=975.29 height=13 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=976.531 height=14 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=14 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=975.074 height=15 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=976.687 height=16 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=16 module=consensus round=0 server=node step=RoundStepPropose
-8:55AM INF Timed out dur=976.326 height=17 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=970.966 height=18 module=consensus round=0 server=node step=RoundStepNewHeight
-8:55AM INF Timed out dur=1000 height=18 module=consensus round=0 server=node step=RoundStepPropose
- 8:56  up 5 days, 15:02, 2 users, load averages: 7.42 7.11 8.76
+# RoundStepPropose timeout evidence — why observed block time (~1.93s) sits above the
+# predicted ~1.1-1.3s: the proposer regularly consumes its FULL 1s timeout_propose,
+# consistent with CPU contention from 4 concurrent CGO/wasmvm-linked nodes on one dev laptop.
+# Captured 2026-08-22T08:41:16Z from a live run (binary commit 8fcceae6, TMKMS remote-signing active on validator-0)
+# System load at sample time: { 7.65 7.34 7.10 }
 
-# mantrachaind process CPU at time of capture (from ps aux during the devnet-verify run above):
-# (devnet already stopped by the time this note was appended; see block-times.log for the live sample window)
+9:39AM INF Timed out dur=1000 height=163 module=consensus round=0 server=node step=RoundStepPropose
+9:39AM INF Timed out dur=1000 height=165 module=consensus round=0 server=node step=RoundStepPropose
+9:39AM INF Timed out dur=1000 height=167 module=consensus round=0 server=node step=RoundStepPropose
+9:39AM INF Timed out dur=1000 height=169 module=consensus round=0 server=node step=RoundStepPropose
+9:39AM INF Timed out dur=1000 height=171 module=consensus round=0 server=node step=RoundStepPropose
+9:39AM INF Timed out dur=1000 height=173 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=175 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=177 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=179 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=181 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=183 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=185 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=187 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=189 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=191 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=193 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=195 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=197 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=199 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=201 module=consensus round=0 server=node step=RoundStepPropose
+9:40AM INF Timed out dur=1000 height=203 module=consensus round=0 server=node step=RoundStepPropose
+9:41AM INF Timed out dur=1000 height=205 module=consensus round=0 server=node step=RoundStepPropose
+9:41AM INF Timed out dur=1000 height=207 module=consensus round=0 server=node step=RoundStepPropose
+9:41AM INF Timed out dur=1000 height=209 module=consensus round=0 server=node step=RoundStepPropose
+9:41AM INF Timed out dur=1000 height=211 module=consensus round=0 server=node step=RoundStepPropose
+
+# Not every height times out — alternating pattern tracks which validator proposes:
+# node1 (validator-0, remote-signed) propose timeouts: 107
+# node3 (validator-1, local-signed)  propose timeouts: 105

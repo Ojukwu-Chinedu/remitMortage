@@ -1,35 +1,26 @@
-=== devnet status at capture time ===
-{
-  "latest_block_hash": "0DD749E9E164C2713AF918AFC7D11187DCD4C73046D87BA794D10F424C50FB0B",
-  "latest_app_hash": "60588155E67CBC5343CC1C621CAF2759ED8E495BC24769812CFE15AEA6763CD7",
-  "latest_block_height": "13",
-  "latest_block_time": "2026-08-22T07:47:41.490963Z",
-  "earliest_block_hash": "223AC99395097373C67BF6EFFA399F63B37C38384A269E10B7684310DE30F489",
-  "earliest_app_hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-  "earliest_block_height": "1",
-  "earliest_block_time": "2026-08-22T07:46:10.418634Z",
-  "catching_up": false
-}
+# Live TMKMS remote-signing evidence — captured 2026-08-22T08:36:42Z
+# validator-0 consensus addr: BEDF7D5BFD9C524507336957771FD98DAE13E4B6
+# node1/config/priv_validator_key.json was REMOVED before restart; CometBFT's
+# LoadOrGenFilePV auto-regenerated a FRESH (different) local key file at startup:
+#   regenerated local key addr:  13146AB5A7F551050A020E705EDD497F399F57C7  (never signs - unused)
+#   address signing live blocks: BEDF7D5BFD9C524507336957771FD98DAE13E4B6  (key material held ONLY by tmkms)
+# With priv_validator_laddr set, the node signs exclusively via the unix socket;
+# the mismatch between the two addresses above is itself the proof that the
+# local file is not the signer.
 
-=== validator-0's signature in block 13's last_commit (proves tmkms's signature was accepted into a real committed block) ===
-{
-  "block_id_flag": 2,
-  "validator_address": "FC3FF8635F285BAFFA1397E677996FB7E5C2FE38",
-  "timestamp": "2026-08-22T07:47:41.787786Z",
-  "signature": "q1knVf8mozEWGdP3KmI/CoDnrlIwJGQsGVlGBfjWvSq0KNBsfGdisiHpxQmOhU+f4aa86MgdeDGPCBmg2ag+DA=="
-}
+== tmkms signed-vote log lines (sample) ==
+2026-08-22T08:36:34.326730Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:69B069743D at h/r/s 68/0/1 (0 ms)
+2026-08-22T08:36:34.337060Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:69B069743D at h/r/s 68/0/2 (0 ms)
+2026-08-22T08:36:35.938859Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Proposal:303D382F1E at h/r/s 69/0/0 (0 ms)
+2026-08-22T08:36:35.959897Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:303D382F1E at h/r/s 69/0/1 (0 ms)
+2026-08-22T08:36:36.552926Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:303D382F1E at h/r/s 69/0/2 (0 ms)
+2026-08-22T08:36:38.164071Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:E4A086E1FA at h/r/s 70/0/1 (0 ms)
+2026-08-22T08:36:38.174613Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:E4A086E1FA at h/r/s 70/0/2 (0 ms)
+2026-08-22T08:36:39.875541Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Proposal:B40D8B15E9 at h/r/s 71/0/0 (0 ms)
+2026-08-22T08:36:39.904976Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:B40D8B15E9 at h/r/s 71/0/1 (0 ms)
+2026-08-22T08:36:40.610786Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:B40D8B15E9 at h/r/s 71/0/2 (0 ms)
+2026-08-22T08:36:42.258020Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:F5B9F38035 at h/r/s 72/0/1 (0 ms)
+2026-08-22T08:36:42.268666Z  INFO tmkms::session: [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:F5B9F38035 at h/r/s 72/0/2 (0 ms)
 
-=== validator-0's imported consensus key identity (from priv_validator_key.json before import) ===
-address: FC3FF8635F285BAFFA1397E677996FB7E5C2FE38 (matches signature above)
-
-=== tmkms live signing log excerpt (from tmkms.log) ===
-[2m2026-08-22T07:47:37.023512Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:2EC31B3402 at h/r/s 10/0/1 (0 ms)
-[2m2026-08-22T07:47:37.963972Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:2EC31B3402 at h/r/s 10/0/2 (0 ms)
-[2m2026-08-22T07:47:39.571609Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:52EC10C1C0 at h/r/s 11/0/1 (0 ms)
-[2m2026-08-22T07:47:39.580420Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:52EC10C1C0 at h/r/s 11/0/2 (0 ms)
-[2m2026-08-22T07:47:41.186521Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:58CC44B011 at h/r/s 12/0/1 (0 ms)
-[2m2026-08-22T07:47:41.788560Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:58CC44B011 at h/r/s 12/0/2 (0 ms)
-[2m2026-08-22T07:47:43.395549Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:0DD749E9E1 at h/r/s 13/0/1 (0 ms)
-[2m2026-08-22T07:47:43.405944Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:0DD749E9E1 at h/r/s 13/0/2 (0 ms)
-[2m2026-08-22T07:47:45.015820Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Prevote:699781EF74 at h/r/s 14/0/1 (0 ms)
-[2m2026-08-22T07:47:45.716334Z[0m [32m INFO[0m [2mtmkms::session[0m[2m:[0m [arkdevnet_9000-1@unix:///Users/test/ArkConstellation/networks/devnet/remote-signing/privval.sock] signed Precommit:699781EF74 at h/r/s 14/0/2 (0 ms)
+== validator-0 signature in live committed block ==
+{"height":"72","sig":{"addr":"BEDF7D5BFD9C524507336957771FD98DAE13E4B6","flag":2,"has_sig":true}}

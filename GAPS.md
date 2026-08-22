@@ -10,6 +10,25 @@ script/config in this PR, reflects the post-reset state (`v8.4.0-1-g026e64c8`
 at time of writing). This is the honest list of what's still different on
 the day it counts for real.
 
+**Re-verification note (2026-08-22, fresh session):** everything below was
+re-checked from scratch against the same `base-genesis` tip (`026e64c8`)
+rather than trusted from the prior session. Binary rebuilt from source
+(go@1.25), gentx fixtures re-run (tampered sig + overclaim still rejected,
+canonical hash reproduced), devnet re-deployed (`make devnet-up`), sentry
+isolation re-verified against the *running* network via `net_info`
+(validators: exactly 1 peer = own sentry, `pex=false`; new evidence in
+`networks/devnet/proof/sentry-isolation.log`), TMKMS remote signing
+re-integrated live for validator-0 (fresh key import; local
+`priv_validator_key.json` removed — CometBFT regenerated an unused
+replacement file at startup whose address provably differs from the one
+signing live blocks, see `remote-signing/proof/live-signing-evidence.log`),
+block time re-measured at 1.93-1.99s avg with the same
+`RoundStepPropose`-contention root cause (load avg ~7.6 at capture).
+Still true: **no ArkConstellation tag exists** — neither `v0.1.0-alpha` nor
+an ArkConstellation `v1.0.0-rc1`; the `v1.0.0-rc1` git tag visible in this
+repo is MANTRA's inherited 2024-10-07 upstream tag, not Eng 1's release.
+Downstream handoff marker added at `networks/devnet/STATUS.md`.
+
 ## Blocks mainnet genesis outright
 
 - **No ArkConstellation-specific release exists yet.** `git describe` on

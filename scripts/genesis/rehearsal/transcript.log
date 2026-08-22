@@ -1,0 +1,35 @@
+# Verbatim transcript — re-captured 2026-08-22T08:42:18Z, binary commit 8fcceae6
+$ ./scripts/genesis/collect-gentx.sh scripts/genesis/rehearsal/gentx scripts/genesis/rehearsal/base-genesis.json /tmp/rehearsal-out/genesis-template.json
+collect-gentx.sh: validating gentxs in scripts/genesis/rehearsal/gentx against scripts/genesis/rehearsal/base-genesis.json (chain-id=arkmainnet_9001-1)
+
+REJECT  bad-overclaim.json
+        -> insufficient self-delegation funds: account mantra1tagfzm9yrng9h6474tdfv8k7q0rcgxug9aj9s9 has 100000000000000000000000amantra, gentx claims 999999999999999999999999999amantra
+REJECT  bad-tampered.json
+        -> signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-1): (unable to verify single signer signature): unauthorized, signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-evm-1): (unable to verify single signer signature): unauthorized
+ACCEPT  valid-0.json  (moniker=validator-0, self-delegation=50000000000000000000000amantra)
+ACCEPT  valid-1.json  (moniker=validator-1, self-delegation=50000000000000000000000amantra)
+
+Summary: 2 accepted, 2 rejected
+File at /var/folders/ym/kkqv45r10mq_mn0589pkthhh0000gn/T/tmp.rmSW2vIXfI/compile/config/genesis.json is a valid genesis file
+
+Compiled genesis written to: /tmp/rehearsal-out/genesis-template.json
+Validators included: 2
+
+2 gentx file(s) were rejected and are NOT in the compiled genesis:
+  - bad-overclaim.json: insufficient self-delegation funds: account mantra1tagfzm9yrng9h6474tdfv8k7q0rcgxug9aj9s9 has 100000000000000000000000amantra, gentx claims 999999999999999999999999999amantra
+  - bad-tampered.json: signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-1): (unable to verify single signer signature): unauthorized, signature verification failed; please verify account number (0) and chain-id (arkmainnet_9001-evm-1): (unable to verify single signer signature): unauthorized
+
+Resolve these with the submitters before treating this genesis as final.
+exit: 1
+
+$ ./scripts/genesis/hash-genesis.sh /tmp/rehearsal-out/genesis-template.json
+file:             /tmp/rehearsal-out/genesis-template.json
+chain_id:         arkmainnet_9001-1
+genesis_time:     2026-08-22T07:49:17.084847Z
+
+raw bytes sha256:       153b079ce110fc1c5ae86c5f0edfe124f70cb62baddcbd11934a33104dd68c1a
+  (what 'shasum -a 256 /tmp/rehearsal-out/genesis-template.json' gives you - fragile to formatting)
+
+canonical sha256:       b4de7d1b25ee16bf686addd2257aa1a89ece491745f5bc08615a5f372558f046
+  (jq -S -c . | sha256 - THIS is the value to publish and cross-check)
+exit: 0
