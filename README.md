@@ -1,118 +1,83 @@
-[![License](https://img.shields.io/github/license/MANTRA-Chain/mantrachain)](https://github.com/MANTRA-Chain/mantrachain/blob/main/LICENSE)
+# ArkConstellation
 
-# Mantrachain
-
-Mantrachain is a global real-world assets platform built on blockchain technology. It leverages advanced blockchain features to facilitate the tokenization and trading of real-world assets.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Joining the Mainnet](#joining-the-mainnet)
-- [Getting Started](#getting-started)
-- [Development](#development)
-- [Architecture](#architecture)
-- [Modules](#modules)
-- [Security](#security)
+A sovereign, EVM-compatible L1 blockchain forked from [`MANTRA-Chain/mantrachain`](https://github.com/MANTRA-Chain/mantrachain). Built on Cosmos SDK + CometBFT + `cosmos/evm`.
 
 ## Overview
 
-Mantrachain is designed to bridge the gap between traditional assets and the blockchain world. By enabling the tokenization of real-world assets, it opens up new possibilities for asset management, trading, and financial innovation.
+ArkConstellation is a permissioned, EVM-compatible Layer 1 chain targeting production genesis within a 3-day build sprint. It inherits MANTRA's battle-tested integration of Cosmos SDK with EVM execution via `cosmos/evm`, with a module set and parameter set explicitly tuned for this chain's use case rather than MANTRA's regulated RWA positioning.
 
-## Features
+## Stack
 
-- Real-world asset tokenization
-- Advanced blockchain technology integration
-- Multi-token support for transaction fees
-- Custom fee market implementation
-- Cosmos SDK-based architecture
-
-## Joining the Mainnet
-
-[Please visit the official instructions on how to join the Mainnet here.](https://docs.mantrachain.io/node-and-validator-operations/node-setup-and-deployment/running-a-node)
+| Component | Version | Source |
+|-----------|---------|--------|
+| CometBFT | `v0.38.23` | Upstream, unmodified |
+| Cosmos SDK | `v0.53.6-v8-mantra-1` | MANTRA fork (diff required) |
+| `cosmos/evm` | `v0.6.2-v8-mantra-1` | MANTRA fork (diff required) |
+| IBC-go | `v10.5.1` | Upstream, unmodified |
+| Go toolchain | `1.25.0` | Per `go.mod` |
 
 ## Getting Started
 
-To get started with Mantrachain, you'll need to set up your development environment.
-
 ### Prerequisites
 
-- Go 1.23 or later
+- Go `1.25.0` or later
+- `make`
+- `gcc` (required for ledger support)
 
-### Installation
+### Build
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/MANTRA-Chain/mantrachain.git
-   cd mantrachain
-   ```
+```bash
+git clone https://github.com/Worldstreet-Web-Services/ArkConstellation.git
+cd ArkConstellation
+make build
+```
 
-2. Build the project:
-   ```bash
-   make install
-   ```
+The compiled binary is output to `./build/mantrachaind`.
 
-## Development
+### Pre-built Binaries
 
+Pre-compiled binaries are published automatically by CI on every push to `base-genesis` and on every version tag. Download them from the **Actions** tab → most recent passing run → **Artifacts** → `chain-binary`. SHA-256 checksums are included.
 
+### Run Tests
 
-### Testing
-
-#### To run unit tests:
 ```bash
 make test-unit
 ```
 
-#### To run e2e tests:
+## Repository Layout
 
-For the first time, run the following command to build image and run e2e tests:
-```shell
-make test-e2e
-````
-
-If you already have the image built, you can run the e2e tests directly:
-```shell
-cd test/e2e && go test -v -timeout 30m
 ```
-
-### Linter
-> Use same golangci-lint version as used in CI/CD pipeline to ensure consistency.
-
-#### Lint check
-```shell
-docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.64.8 golangci-lint run
-```
-
-#### Lint fix
-```shell
-docker run -t --rm -v $(pwd):/app -w /app golangci/golangci-lint:v1.64.8 golangci-lint run --fix
+.
+├── app/                  # State machine wiring (app.go, module manager)
+├── cmd/                  # Binary entrypoints
+├── x/                    # Custom Cosmos modules
+├── networks/
+│   ├── devnet/           # pystarport local testnet configs
+│   └── mainnet/          # Production genesis.json and gentx submissions
+├── scripts/
+│   ├── chaos/            # RPC fuzzer and adversarial test scripts
+│   └── genesis/          # gentx validation and genesis assembly
+└── ops/
+    ├── docker/           # Validator and sentry node container definitions
+    ├── monitoring/       # Prometheus configs and Grafana dashboards
+    └── runbooks/         # Incident response procedures
 ```
 
 ## Architecture
 
-Mantrachain follows the Cosmos SDK architecture and implements several custom modules to achieve its functionality. The project uses Architecture Decision Records (ADRs) to document important architectural decisions.
+- **Consensus:** CometBFT — unmodified, do not touch
+- **EVM execution:** `cosmos/evm` module, targeting 1–2s block finality
+- **Gas token:** 18-decimal denomination (hard requirement of `cosmos/evm`)
+- **Validator set:** Permissioned at genesis; progressive decentralization post-launch
 
-For more information on the architecture and design decisions, please refer to the [ADR directory](adr/).
+## Contributing
 
-## Modules
-
-Mantrachain includes several custom modules:
-
-- `x/sanction`: Blacklisting of addresses to prevent transactions from sanctioned entities.
-- `x/tokenfactory`: Allows for the creation and management of new tokens (based on Neutron's implementation).
-- `x/tax`: Handles tax-related operations within the chain.
-
-For detailed information on each module, please refer to their respective README files in the `x/` directory.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branch rules, CI pipeline details, the engineer track structure, and the handoff protocol for the 72-hour build sprint.
 
 ## Security
 
-We take security seriously. If you discover a security issue, please bring it to our attention right away!
-
-Please refer to our [Security Policy](SECURITY.md) for more details on reporting vulnerabilities.
-
-
-
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 ---
 
-For more detailed information, please check the documentation in the respective directories and files within the repository.
+*Base fork: `MANTRA-Chain/mantrachain` @ `v8.4.0`*
