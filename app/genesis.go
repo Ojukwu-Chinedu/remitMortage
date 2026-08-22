@@ -11,10 +11,10 @@ import "encoding/json"
 // object provided to it during init.
 type GenesisState map[string]json.RawMessage
 
-// FeeDenom is Ark's native EVM/display denomination (18 decimals). This is the
-// unit the EVM/fee market operate on, while staking/bonding uses BaseCoinUnit
-// ("aesp") - see docs/decisions/module-and-config-decisions.md.
-var FeeDenom = "KASH"
+// FeeDenom is Ark's native base denomination ("esp", 0 decimals, 1 wei equivalent).
+// This is the atomic unit the EVM/fee market and bank operate on, while display/EVM unit is
+// "KASH" ($10^{18}$ esp, 1 ether equivalent) - see docs/decisions/module-and-config-decisions.md.
+var FeeDenom = "esp"
 
 // Deliberately no NewDefaultGenesisState() here. A previous version of this
 // file defined one, intended to wire FeeDenom into the evm/erc20/feemarket

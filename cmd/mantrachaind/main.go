@@ -29,14 +29,14 @@ func main() {
 // throughout so nothing here leaks the fork's origin into addresses or the
 // native token.
 //
-// Denom layout follows docs/decisions/module-and-config-decisions.md:
+// Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
 //
-//	aesp  = smallest/base unit (exponent 0, used for staking/bonding)
-//	esp   = intermediate unit (exponent 12)
-//	KASH  = display/EVM unit (exponent 18)
+//	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
+//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
 	HumanCoinUnit = "KASH"
-	BaseCoinUnit  = "aesp"
+	BaseCoinUnit  = "esp"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit

@@ -11,14 +11,14 @@ import (
 // conflicts with main's later call), but both are kept consistent to avoid a
 // stale duplicate definition drifting from the real one.
 //
-// Denom layout follows docs/decisions/module-and-config-decisions.md:
+// Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
 //
-//	aesp  = smallest/base unit (exponent 0, used for staking/bonding)
-//	esp   = intermediate unit (exponent 12)
-//	KASH  = display/EVM unit (exponent 18)
+//	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
+//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
 	HumanCoinUnit = "KASH"
-	BaseCoinUnit  = "aesp"
+	BaseCoinUnit  = "esp"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit

@@ -41,7 +41,7 @@ func initAppConfig() (string, interface{}) {
 	srvCfg := serverconfig.DefaultConfig()
 
 	evmConfig := cosmosevmserverconfig.DefaultEVMConfig()
-	evmConfig.EVMChainID = app.MANTRAChainID
+	evmConfig.EVMChainID = app.DefaultEVMChainID
 
 	customAppConfig := CustomAppConfig{
 		Config:  *srvCfg,
@@ -62,7 +62,7 @@ func initAppConfig() (string, interface{}) {
 	//   own app.toml to override, or use this default value.
 	//
 	// In this example application, we set the min gas prices to 0.
-	srvCfg.MinGasPrices = "0aesp"
+	srvCfg.MinGasPrices = "0esp"
 
 	customAppTemplate := serverconfig.DefaultConfigTemplate +
 		cosmosevmserverconfig.DefaultEVMConfigTemplate +
