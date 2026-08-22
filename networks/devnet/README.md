@@ -10,7 +10,7 @@ touches real validators or mainnet.
 from Eng 1's state-machine track (PR #4). Eng 1 stripped the
 MANTRA-specific modules (`x/tax`, `x/tokenfactory`), retained
 `x/sanction`, set the bech32 prefix to `ark`, and named the token `KASH`
-(`aesp` base,
+(`esp` base,
 18 decimals, `KASH` symbol). Eng 2 re-verified the entire pipeline against
 that actual compiled binary rather than the previous `base-genesis` source
 build. See [`GAPS.md`](../../GAPS.md) for the full picture.
@@ -74,7 +74,7 @@ Cosmos SDK's proto-JSON unmarshalling rejects unknown fields).
 
 All values live in `genesis-template.json` / `pystarport.json`'s `genesis`
 key. The public token is `KASH` (symbol `KASH`, 18 decimals), with base
-unit `aesp` (`1 KASH = 1_000_000_000_000_000_000 aesp`). This was
+unit `esp` (`1 KASH = 1_000_000_000_000_000_000 esp`). This was
 set by Eng 1 in `ark-v0.1.0-alpha` (`app/params/config.go`) and confirmed
 by re-running the devnet against that binary.
 
@@ -92,7 +92,7 @@ by re-running the devnet against that binary.
 | `consensus.params.block.{max_bytes,max_gas}` | `1000000` / `75000000` | Reasonable production values | Reused as-is; these aren't iteration-speed-sensitive. |
 | `consensus.params.evidence.max_bytes` | `1000000` | Must be ≤ `block.max_bytes` | The SDK's raw default (`1048576`) is *larger* than the block size chosen above and fails genesis validation once block size is shrunk to match; this bit us during rehearsal (see git history) and is exactly the kind of drift-from-defaults trap this file exists to catch. |
 | `consensus.params.abci.vote_extensions_enable_height` | `0` (disabled) | Deliberately left off | No oracle/price-feed module is registered in this app (`app_state` has no `oracle`/`marketmap` key as of this branch), so there's nothing that would use vote extensions today; leaving this at the binary's own default avoids inventing a value for a feature nothing consumes yet. |
-| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `aesp` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `aesp`, staking module expects `stake`). |
+| `staking.bond_denom`, `mint.mint_denom`, `evm.params.evm_denom`, `evm.params.extended_denom_options.extended_denom` | `esp` | **Required, not optional** | `mantrachaind init`'s raw default has these as the generic SDK placeholders `stake`/`aatom` — see "Known gaps" below for why `app/genesis.go`'s own attempt to fix this doesn't actually run. Without this override the chain is internally inconsistent (funded accounts hold `esp`, staking module expects `stake`). |
 
 Everything not listed above (bank, auth, IBC, wasm, erc20, feemarket's EVM
 base-fee mechanics, etc.) is left at the binary's own compiled-in default —
@@ -108,7 +108,7 @@ Set in `pystarport.json`'s `validators[]`/`accounts[]`, all funded from
 nothing (no external faucet, no real funds) — this is a from-scratch local
 genesis. Amounts below are in whole `KASH` (18 decimals, so e.g. 100,000
 KASH = `100000` followed by eighteen zeros = `100000000000000000000000`
-`aesp` in the actual config):
+`esp` in the actual config):
 
 - `validator-0`, `validator-1`: 100,000 KASH each, self-delegate 50,000 KASH each (bonded)
 - `sentry-0`, `sentry-1`: 10,000 KASH each (never bonded — see topology below)

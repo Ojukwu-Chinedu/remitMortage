@@ -1,6 +1,7 @@
 package ante
 
 import (
+	circuitante "cosmossdk.io/x/circuit/ante"
 	sanctionkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	chainante "github.com/cosmos/evm/ante"
@@ -11,6 +12,7 @@ func newEVMAnteHandler(ctx sdk.Context, options HandlerOptions) sdk.AnteHandler 
 	evmParams := options.EvmOptions.EvmKeeper.GetParams(ctx)
 	feemarketParams := options.EvmOptions.FeeMarketKeeper.GetParams(ctx)
 	decorators := []sdk.AnteDecorator{
+		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),
 		sanctionkeeper.NewEVMBlacklistCheckDecorator(*options.SanctionKeeper),
 		evmante.NewEVMMonoDecorator(
 			options.EvmOptions.AccountKeeper,

@@ -6,7 +6,6 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v3/types"
-	tokenfactorytypes "github.com/MANTRA-Chain/mantrachain/v8/x/tokenfactory/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -25,19 +24,8 @@ import (
 var stargateResponsePools = make(map[string]*sync.Pool)
 
 func init() {
-	// Whitelist specific queries
-	setWhitelistedQuery("/osmosis.tokenfactory.v1beta1.Query/Params", &tokenfactorytypes.QueryParamsResponse{})
-	setWhitelistedQuery("/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata", &tokenfactorytypes.QueryDenomAuthorityMetadataResponse{})
-}
-
-// setWhitelistedQuery sets the whitelisted query at the provided path.
-// This method also creates a sync.Pool for the provided proto message.
-func setWhitelistedQuery(queryPath string, protoResponse proto.Message) {
-	stargateResponsePools[queryPath] = &sync.Pool{
-		New: func() any {
-			return proto.Clone(protoResponse)
-		},
-	}
+	// Nothing whitelisted by default. If contract-facing stargate queries are
+	// needed, register them here with stargateResponsePools[queryPath].
 }
 
 // IsWhitelistedQuery returns an error if the query is not whitelisted.

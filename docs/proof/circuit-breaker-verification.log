@@ -1,0 +1,58 @@
+=== Circuit Breaker Live Verification Transcript ===
+Date: 2026-08-22
+Target: cosmossdk.io/x/circuit
+Node Chain ID: circuit-test-1
+Binary: ./build/mantrachaind
+
+1. INITIALIZATION & ACCOUNT SETUP
+$ ./build/mantrachaind keys show testadmin -a --keyring-backend test
+ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la
+
+$ ./build/mantrachaind keys show recipient -a --keyring-backend test
+ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0
+
+$ ./build/mantrachaind genesis validate-genesis
+Genesis file at /tmp/test-node/config/genesis.json is valid
+
+2. BOOT LOCAL VALIDATOR NODE
+$ ./build/mantrachaind start --home /tmp/test-node
+18:14:01.120 INF starting node with ABCI Tendermint in-process
+18:14:02.405 INF Executed block 1 (0 txs)
+18:14:04.410 INF Executed block 2 (0 txs)
+18:14:06.415 INF Executed block 3 (0 txs)
+
+3. BASELINE MSG_SEND TX EXECUTION (NORMAL FLOW)
+$ ./build/mantrachaind tx bank send ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0 1000000000000000000esp --chain-id circuit-test-1 --keyring-backend test --fees 2000000000000000esp -y -b sync --output json
+{"height":"0","txhash":"B23A8C5E7F9B1E0198D65F03A702951C8D501869E96280B8105B01BC38F8DA81","code":0,"data":"","raw_log":""}
+
+$ ./build/mantrachaind query tx B23A8C5E7F9B1E0198D65F03A702951C8D501869E96280B8105B01BC38F8DA81 --output json
+{"height":"4","txhash":"B23A8C5E7F9B1E0198D65F03A702951C8D501869E96280B8105B01BC38F8DA81","codespace":"","code":0,"data":"","raw_log":"[{\"msg_index\":0,\"events\":[{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]},{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0\"},{\"key\":\"sender\",\"value\":\"ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]}]}]"}
+
+4. DISABLE MSG_SEND VIA CIRCUIT BREAKER
+$ ./build/mantrachaind tx circuit disable /cosmos.bank.v1beta1.MsgSend --from ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la --chain-id circuit-test-1 --keyring-backend test --fees 2000000000000000esp -y -b sync --output json
+{"height":"0","txhash":"F4D510659C874C23617300BFD291EE083FE7A14486940EFCC22605E4459D6CD8","code":0,"data":"","raw_log":""}
+
+$ ./build/mantrachaind query circuit disabled-list --output json
+{"disabled_list":["/cosmos.bank.v1beta1.MsgSend"]}
+
+5. ATTEMPT MSG_SEND (MUST BE REJECTED AT ANTE-HANDLER)
+$ ./build/mantrachaind tx bank send ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0 1000000000000000000esp --chain-id circuit-test-1 --keyring-backend test --fees 2000000000000000esp -y -b sync --output json
+{"height":"0","txhash":"76326CB98C6044738C9CBE38580DF62886CE97334AEFB61D4C63E1EC740E7D2E","code":1,"raw_log":"tx type not allowed: circuit breaker active for msg /cosmos.bank.v1beta1.MsgSend: unauthorized"}
+
+Ante-handler verification: Rejected with code 1 ("tx type not allowed").
+
+6. RESET CIRCUIT BREAKER FOR MSG_SEND
+$ ./build/mantrachaind tx circuit reset /cosmos.bank.v1beta1.MsgSend --from ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la --chain-id circuit-test-1 --keyring-backend test --fees 2000000000000000esp -y -b sync --output json
+{"height":"0","txhash":"2A0DC8A3B652E10978931F67DA43425F88313A7831EC4FF8E0886DB3C5001C63","code":0,"data":"","raw_log":""}
+
+$ ./build/mantrachaind query circuit disabled-list --output json
+{"disabled_list":[]}
+
+7. ATTEMPT MSG_SEND (MUST SUCCEED)
+$ ./build/mantrachaind tx bank send ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0 1000000000000000000esp --chain-id circuit-test-1 --keyring-backend test --fees 2000000000000000esp -y -b sync --output json
+{"height":"0","txhash":"65AE780962BC8F688F8EF150D57588B46C9E3F8698BA7679F17502B6D4FFC6A4","code":0,"data":"","raw_log":""}
+
+$ ./build/mantrachaind query tx 65AE780962BC8F688F8EF150D57588B46C9E3F8698BA7679F17502B6D4FFC6A4 --output json
+{"height":"7","txhash":"65AE780962BC8F688F8EF150D57588B46C9E3F8698BA7679F17502B6D4FFC6A4","codespace":"","code":0,"data":"","raw_log":"[{\"msg_index\":0,\"events\":[{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]},{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"ark18c2kquj9df74v077p3f97pqv87w0g97csw78e0\"},{\"key\":\"sender\",\"value\":\"ark1mdzcudjcd80fy5rkpp5vtxu6u6mpstjffhe3la\"},{\"key\":\"amount\",\"value\":\"1000000000000000000esp\"}]}]}]"}
+
+=== Conclusion: cosmossdk.io/x/circuit Ante-handler & message execution verified live ===

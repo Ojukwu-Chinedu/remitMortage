@@ -1,16 +1,6 @@
 package app
 
-import (
-	"encoding/json"
-
-	math "cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	erc20types "github.com/cosmos/evm/x/erc20/types"
-	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
-)
+import "encoding/json"
 
 // GenesisState of the blockchain is represented here as a map of raw json
 // messages key'd by a identifier string.
@@ -21,42 +11,27 @@ import (
 // object provided to it during init.
 type GenesisState map[string]json.RawMessage
 
-var FeeDenom = "amantra"
+// FeeDenom is Ark's native base denomination ("esp", 0 decimals, 1 wei equivalent).
+// This is the atomic unit the EVM/fee market and bank operate on, while display/EVM unit is
+// "KASH" ($10^{18}$ esp, 1 ether equivalent) - see docs/decisions/module-and-config-decisions.md.
+var FeeDenom = "esp"
 
-// NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	genesisState := module.BasicManager{}.DefaultGenesis(cdc)
-
-	distributionGenesis := distributiontypes.GenesisState{
-		Params: distributiontypes.Params{
-			CommunityTax: math.LegacyMustNewDecFromStr("0.01"),
-			//			McaTax:              math.LegacyMustNewDecFromStr("0.4"),
-			//			McaAddress:          "mantra15m77x4pe6w9vtpuqm22qxu0ds7vn4ehzwx8pls",
-			WithdrawAddrEnabled: true,
-		},
-	}
-	distributionGenesisStateBytes, err := json.Marshal(distributionGenesis)
-	if err != nil {
-		panic("cannot marshal distribution genesis state for tests")
-	}
-	genesisState[distributiontypes.ModuleName] = distributionGenesisStateBytes
-
-	var feeMarketState feemarkettypes.GenesisState
-	cdc.MustUnmarshalJSON(genesisState[feemarkettypes.ModuleName], &feeMarketState)
-	feeMarketState.Params.NoBaseFee = false
-	feeMarketState.Params.BaseFee = math.LegacyMustNewDecFromStr("0.01")
-	feeMarketState.Params.MinGasPrice = feeMarketState.Params.BaseFee
-	genesisState[feemarkettypes.ModuleName] = cdc.MustMarshalJSON(&feeMarketState)
-
-	var evmState evmtypes.GenesisState
-	cdc.MustUnmarshalJSON(genesisState[evmtypes.ModuleName], &evmState)
-	evmState.Params.EvmDenom = FeeDenom
-	genesisState[evmtypes.ModuleName] = cdc.MustMarshalJSON(&evmState)
-
-	var erc20State erc20types.GenesisState
-	cdc.MustUnmarshalJSON(genesisState[erc20types.ModuleName], &erc20State)
-	erc20State.TokenPairs[0].Denom = FeeDenom
-	genesisState[erc20types.ModuleName] = cdc.MustMarshalJSON(&erc20State)
-
-	return genesisState
-}
+// Deliberately no NewDefaultGenesisState() here. A previous version of this
+// file defined one, intended to wire FeeDenom into the evm/erc20/feemarket
+// app_state automatically whenever `mantrachaind init` runs - but it was
+// never actually called from cmd/ (verified: grepped the whole tree, only
+// this file's own definition matched), so none of that wiring ever ran in
+// practice. It was also broken even if it had been wired in:
+// erc20types.DefaultGenesisState() always returns an empty TokenPairs slice
+// (see the vendored cosmos/evm fork's x/erc20/types/genesis.go), so
+// `erc20State.TokenPairs[0].Denom = FeeDenom` would have panicked on index 0
+// of an empty slice the first time `mantrachaind init` actually ran it.
+//
+// Genesis-time denom/erc20/feemarket customization (including the
+// bank.denom_metadata entry the evm module's InitGenesis requires, which
+// this removed function never set either) is instead handled by the
+// deployment-time genesis-merge-patch process documented in
+// networks/devnet/README.md and networks/mainnet/RUNBOOK.md - that is
+// tested, versioned, and reviewable, unlike a hardcoded value baked into
+// the binary's init path. `mantrachaind init`'s raw output should be
+// treated as generic SDK/EVM defaults, not a finished genesis.

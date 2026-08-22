@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	sdk.SetCoinDenomRegex(MantraCoinDenomRegex)
+	sdk.SetCoinDenomRegex(ArkCoinDenomRegex)
 	setupConfig()
 	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, clienthelpers.EnvPrefix, app.DefaultNodeHome); err != nil {
@@ -23,16 +23,27 @@ func main() {
 	}
 }
 
+// Denom naming (bech32 prefix + base denom) locked as an explicit Day-1 decision -
+// see docs/decisions/module-and-config-decisions.md and STATUS.md. Previously
+// inherited from MANTRA-Chain ("mantra"/"amantra"); Ark uses its own identity
+// throughout so nothing here leaks the fork's origin into addresses or the
+// native token.
+//
+// Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
+//
+//	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
+//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
-	HumanCoinUnit  = "mantra"
-	BaseCoinUnit   = "amantra"
-	MantraExponent = 18
+	HumanCoinUnit = "KASH"
+	BaseCoinUnit  = "esp"
+	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit
 )
 
 var (
-	Bech32Prefix = "mantra"
+	Bech32Prefix = "ark"
 	// Bech32PrefixAccPub defines the Bech32 prefix of an account's public key.
 	Bech32PrefixAccPub = Bech32Prefix + "pub"
 	// Bech32PrefixValAddr defines the Bech32 prefix of a validator's operator address.
@@ -45,9 +56,10 @@ var (
 	Bech32PrefixConsPub = Bech32Prefix + "valconspub"
 )
 
-// MantraCoinDenomRegex returns the mantra regex string
-// this is used to override the default sdk coin denom regex
-func MantraCoinDenomRegex() string {
+// ArkCoinDenomRegex returns the coin denom regex string used to override the
+// default SDK coin denom regex (needed since "KASH" would otherwise be
+// rejected by the SDK's default, stricter denom pattern).
+func ArkCoinDenomRegex() string {
 	return `[a-zA-Z][a-zA-Z0-9/:._-]{1,127}`
 }
 

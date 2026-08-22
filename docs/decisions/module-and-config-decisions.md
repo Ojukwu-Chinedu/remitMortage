@@ -105,35 +105,29 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 
 ---
 
-### 8. Native Token Denomination & Symbol — 🔒 `aesp` / `esp` / `KASH`
+### 8. Native Token Denomination & Symbol — 🔒 `esp` / `espes` / `KASH`
 
 **Decision:**
-- **Base EVM denom (smallest unit):** `aesp` (atto-esp) — this is what `cosmos/evm` operates on internally
-- **Intermediate denom:** `esp` = 10¹² `aesp`
-- **Display denom (what wallets show):** `KASH` = 10¹⁸ `aesp` = **1,000,000 esp**
+- **Base unit (smallest integer unit in Cosmos Bank & EVM state):** `esp` (1 Wei equivalent, exponent 0)
+- **Intermediate unit (gas pricing):** `espes` = 10⁹ `esp` (1 Gwei equivalent, exponent 9)
+- **Display denom (what wallets and MetaMask show):** `KASH` = 10¹⁸ `esp` = 10⁹ `espes` (1 Ether equivalent, exponent 18)
 
-**This satisfies your requirement:** `1,000,000 esp = 1 KASH` ✅
-**This satisfies the EVM constraint:** 18 decimal places ✅
-
-**Why `aesp` must exist:** `cosmos/evm` has a hard constraint that the gas token uses 18 decimal places. This is baked into how EVM gas calculations convert between Cosmos token amounts and EVM Wei values. It cannot be changed without forking the EVM module itself.
-
-**How users experience this:**
-- MetaMask and block explorers will show `KASH` as the balance
-- Sending transactions will be denominated in `KASH`
-- `esp` can be exposed as a sub-unit (like gwei on Ethereum) for developer tooling
-- `aesp` is invisible to end users — it only appears in raw Cosmos transaction data
+**This satisfies exact Ethereum decimal parity:**
+- 1 `esp` = 1 Wei
+- 1 `espes` = 1 Gwei
+- 1 `KASH` = 1 Ether (18 decimal places)
 
 **Cosmos bank denom metadata to configure in genesis:**
 ```json
 {
-  "base": "aesp",
+  "base": "esp",
   "display": "KASH",
   "name": "KASH",
   "symbol": "KASH",
   "denom_units": [
-    { "denom": "aesp", "exponent": 0, "aliases": ["atto-esp"] },
-    { "denom": "esp",  "exponent": 12, "aliases": [] },
-    { "denom": "KASH", "exponent": 18, "aliases": [] }
+    { "denom": "esp",   "exponent": 0,  "aliases": ["wei"] },
+    { "denom": "espes", "exponent": 9,  "aliases": ["gwei", "nano-kash"] },
+    { "denom": "KASH",  "exponent": 18, "aliases": ["ether"] }
   ]
 }
 ```

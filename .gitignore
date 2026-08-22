@@ -1,12 +1,12 @@
 vue/node_modules
 vue/dist
 release/
-build/
 .idea/
 .vscode/
 .DS_Store
 *.dot
 *.log
+!docs/proof/*.log
 *.ign
 .aider*
 swagger-proto
@@ -20,4 +20,19 @@ mise.toml
 client/docs/.pnp.cjs
 client/docs/.pnp.loader.mjs
 client/docs/.yarn/
-.agent
+
+# Agent and assistant artifacts
+.agent/
+artifacts/
+
+# Devnet: generated node homes/keys/logs, never hand-edited or committed.
+networks/devnet/data/
+networks/devnet/.venv-pystarport/
+!networks/devnet/proof/*.log
+
+# tmkms: imported/generated private key material and signing state - never
+# committed, regenerated fresh by networks/devnet/remote-signing/README.md.
+networks/devnet/remote-signing/secrets/
+networks/devnet/remote-signing/state/
+networks/devnet/remote-signing/*.log
+!networks/devnet/remote-signing/proof/*.log

@@ -35,8 +35,8 @@ $BIN init <moniker> --chain-id "$CHAIN_ID" --home /tmp/mainnet-genesis
 # ecosystem accounts from the locked allocation list, AND every
 # prospective validator's self-delegation funding account. A validator
 # whose account isn't funded here will be rejected in Step 2, correctly.
-$BIN genesis add-genesis-account <address> <amount>aesp --home /tmp/mainnet-genesis
-# aesp is the base unit, KASH is the 18-decimal display (1 KASH = 1 followed by 18 zeros aesp). This is
+$BIN genesis add-genesis-account <address> <amount>esp --home /tmp/mainnet-genesis
+# esp is the base unit, KASH is the 18-decimal display (1 KASH = 1 followed by 18 zeros esp). This is
 # the codebase's CURRENT denom (app/params/config.go) - CONTRIBUTING.md still
 # lists "native token name, symbol, and initial allocations" as an open
 # Day-1 decision, so confirm this hasn't changed before running for real.
@@ -53,11 +53,11 @@ patch.pop('_comment', None)
 # found') - discovered empirically standing up the devnet, see
 # networks/devnet/genesis-template.json's _comment for the full story.
 # The denom_metadata below must match whatever denom actually ended up
-# in genesis-params.json above (aesp base, KASH display).
+# in genesis-params.json above (esp base, KASH display).
 patch.setdefault('app_state', {}).setdefault('bank', {})['denom_metadata'] = [{
     'description': 'The native staking and governance token.',
-    'denom_units': [{'denom': 'aesp', 'exponent': 0}, {'denom': 'esp', 'exponent': 12}, {'denom': 'KASH', 'exponent': 18}],
-    'base': 'aesp', 'display': 'KASH', 'name': 'KASH', 'symbol': 'KASH',
+    'denom_units': [{'denom': 'esp', 'exponent': 0}, {'denom': 'KASH', 'exponent': 18}],
+    'base': 'esp', 'display': 'KASH', 'name': 'KASH', 'symbol': 'KASH',
 }]
 def merge(a, b):
     for k, v in b.items():
@@ -80,7 +80,7 @@ without panicking:
 rm -rf /tmp/smoke-test
 $BIN init smoketest --chain-id "$CHAIN_ID" --home /tmp/smoke-test >/dev/null
 cp networks/mainnet/base-genesis.json /tmp/smoke-test/config/genesis.json
-timeout 10 $BIN start --home /tmp/smoke-test --minimum-gas-prices 0aesp || true
+timeout 10 $BIN start --home /tmp/smoke-test --minimum-gas-prices 0esp || true
 # look for "committed state" / height advancing in the output above, not a panic
 ```
 

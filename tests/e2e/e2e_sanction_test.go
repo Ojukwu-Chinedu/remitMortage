@@ -31,7 +31,7 @@ func (s *IntegrationTestSuite) writeAddBlacklistAccountsProposal(c *chain, block
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000` + amantraDenom + `",
 		"title": "Add %s to blacklist",
 		"summary": "e2e-test adding to blacklist"
 	   }`
@@ -100,7 +100,7 @@ func (s *IntegrationTestSuite) writeRemoveBlacklistAccountsProposal(c *chain, bl
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000` + amantraDenom + `",
 		"title": "Remove %s to blacklist",
 		"summary": "e2e-test remove from blacklist"
 	   }`

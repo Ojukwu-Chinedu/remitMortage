@@ -14,13 +14,12 @@ const (
 	runVestingTest                = true
 	runRestInterfacesTest         = true
 	runRateLimitTest              = true
-	runTokenfactoryTest           = true
 	runSanctionTest               = true
 	runWasmTest                   = true
 )
 
 func (s *IntegrationTestSuite) CanTestOnSingleNode() bool {
-	return !runIBCTest && !runTokenfactoryTest && !runRateLimitTest
+	return !runIBCTest && !runRateLimitTest
 }
 
 func (s *IntegrationTestSuite) TestRestInterfaces() {
@@ -118,18 +117,6 @@ func (s *IntegrationTestSuite) TestRateLimit() {
 	s.testRemoveRateLimit()
 }
 
-func (s *IntegrationTestSuite) TestTokenfactory() {
-	if !runTokenfactoryTest {
-		s.T().Skip()
-	}
-	s.testTokenfactoryCreate()
-	s.testTokenfactoryAdmin()
-	s.testTokenfactorySetMetadata()
-	s.testTokenfactoryMint()
-	s.testTokenfactoryBurn()
-	s.testTokenfactoryHooks()
-}
-
 func (s *IntegrationTestSuite) TestSanction() {
 	if !runSanctionTest {
 		s.T().Skip()
@@ -141,13 +128,11 @@ func (s *IntegrationTestSuite) TestSanction() {
 }
 
 func (s *IntegrationTestSuite) TestWasm() {
-	// The wasm contract will call the tokenfactory module, so we need to run both tests together.
-	if !runWasmTest || !runTokenfactoryTest {
+	if !runWasmTest {
 		s.T().Skip()
 	}
 	s.testQueryWasmParams()
 	s.testStoreCode()
 	s.testInstantiateContract()
 	s.testExecuteContractWithSimplyMessage()
-	s.testExecuteContractThatInteractsWithTokenFactory()
 }

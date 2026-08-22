@@ -15,19 +15,23 @@ import (
 
 var (
 	EVMChainIDMap = map[string]uint64{
-		"mantra-1":            5888, // mainnet Chain ID
-		"mantra-dukong-1":     5887, // testnet Chain ID
-		"mantra-canary-net-1": 7888, // devnet Chain ID
+		"arkconstellation-1":  11199, // ArkConstellation mainnet
+		"arkdevnet_9000-1":    9000,  // ArkConstellation devnet
+		"ark_11199-1":         11199, // ArkConstellation EVM format
+		"mantra-1":            5888,  // legacy mainnet Chain ID
+		"mantra-dukong-1":     5887,  // legacy testnet Chain ID
+		"mantra-canary-net-1": 7888,  // legacy devnet Chain ID
 	}
 
-	MANTRAChainID uint64 = 262144 // default Chain ID
+	DefaultEVMChainID uint64 = 11199             // ArkConstellation default EVM Chain ID
+	MANTRAChainID     uint64 = DefaultEVMChainID // alias for backwards compatibility
 )
 
 // init initializes the MANTRAChainID variable by reading the chain ID from the
 // genesis file or app.toml file in the node's home directory.
 // If the genesis file exists, it reads the Cosmos chain ID from there and finds the EVM Chain ID
 // against the EVMChainIDMap; otherwise, it checks the app.toml file for the EVM chain ID.
-// If neither file exists or the chain ID is not found, it defaults to the MANTRA Chain ID (262144).
+// If neither file exists or the chain ID is not found, it defaults to the Default EVM Chain ID (11199).
 func init() {
 	nodeHome, err := clienthelpers.GetNodeHomeDirectory(NodeDir)
 	if err != nil {
@@ -42,6 +46,7 @@ func init() {
 		var reader *os.File
 		reader, err = os.Open(genesisFilePath)
 		if err == nil {
+			defer reader.Close()
 			chainID, err = genutiltypes.ParseChainIDFromGenesis(reader)
 			if err == nil && chainID != "" {
 				evmChainID, found := EVMChainIDMap[chainID]
@@ -50,7 +55,6 @@ func init() {
 					return
 				}
 			}
-			defer reader.Close()
 		}
 	}
 	if err != nil && !os.IsNotExist(err) {
@@ -109,6 +113,9 @@ var (
 // chain-id in *big.Int format. The function returns an error if the chain-id has an invalid format
 func ParseChainID(chainID string) (uint64, error) {
 	chainID = strings.TrimSpace(chainID)
+	if id, found := EVMChainIDMap[chainID]; found {
+		return id, nil
+	}
 	if len(chainID) > 48 {
 		return 0, fmt.Errorf("chain-id '%s' cannot exceed 48 chars", chainID)
 	}
