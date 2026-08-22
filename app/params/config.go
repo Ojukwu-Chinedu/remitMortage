@@ -10,9 +10,15 @@ import (
 // SetAddressPrefixes() below intentionally does not call Seal(), so it never
 // conflicts with main's later call), but both are kept consistent to avoid a
 // stale duplicate definition drifting from the real one.
+//
+// Denom layout follows docs/decisions/module-and-config-decisions.md:
+//
+//	aesp  = smallest/base unit (exponent 0, used for staking/bonding)
+//	esp   = intermediate unit (exponent 12)
+//	KASH  = display/EVM unit (exponent 18)
 const (
-	HumanCoinUnit = "espees"
-	BaseCoinUnit  = "espees"
+	HumanCoinUnit = "KASH"
+	BaseCoinUnit  = "aesp"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit

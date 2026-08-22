@@ -55,6 +55,9 @@ import (
 	"github.com/MANTRA-Chain/mantrachain/v8/app/upgrades"
 	"github.com/MANTRA-Chain/mantrachain/v8/app/upgrades/v8_4"
 	"github.com/MANTRA-Chain/mantrachain/v8/client/docs"
+	sanctionkeeper "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/keeper"
+	sanction "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/module"
+	sanctiontypes "github.com/MANTRA-Chain/mantrachain/v8/x/sanction/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -174,7 +177,7 @@ import (
 var EVMCoinInfo = evmtypes.EvmCoinInfo{
 	Denom:         FeeDenom,
 	ExtendedDenom: FeeDenom,
-	DisplayDenom:  "espees",
+	DisplayDenom:  "KASH",
 	Decimals:      evmtypes.EighteenDecimals.Uint32(),
 }
 
@@ -217,6 +220,7 @@ var maccPerms = map[string][]string{
 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 	govtypes.ModuleName:            {authtypes.Burner},
 	nft.ModuleName:                 nil,
+	sanctiontypes.ModuleName:       nil,
 	// non sdk modules
 	ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 	providertypes.ConsumerRewardsPool: nil,
@@ -269,6 +273,7 @@ type App struct {
 	NFTKeeper             nftkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 	CircuitKeeper         circuitkeeper.Keeper // emergency pause: cosmossdk.io/x/circuit, wired via SetCircuitBreaker below
+	SanctionKeeper        sanctionkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -340,6 +345,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, consensusparamtypes.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey,
 		circuittypes.StoreKey,
+		sanctiontypes.StoreKey,
 		authzkeeper.StoreKey,
 		nftkeeper.StoreKey,
 		// non sdk store keys
@@ -454,6 +460,13 @@ func New(
 		app.AccountKeeper.AddressCodec(),
 	)
 	app.SetCircuitBreaker(&app.CircuitKeeper)
+
+	app.SanctionKeeper = sanctionkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[sanctiontypes.StoreKey]),
+		logger,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[authzkeeper.StoreKey]),
@@ -850,6 +863,7 @@ func New(
 		nftmodule.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		circuit.NewAppModule(appCodec, app.CircuitKeeper),
+		sanction.NewAppModule(appCodec, app.SanctionKeeper),
 		// non sdk modules
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), nil),
 		ibc.NewAppModule(app.IBCKeeper),
@@ -921,6 +935,7 @@ func New(
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
 		providertypes.ModuleName,
+		sanctiontypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -942,6 +957,7 @@ func New(
 		ratelimittypes.ModuleName,
 		wasmtypes.ModuleName,
 		providertypes.ModuleName,
+		sanctiontypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -969,6 +985,7 @@ func New(
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		circuittypes.ModuleName,
+		sanctiontypes.ModuleName,
 		ibcexported.ModuleName,
 
 		// Cosmos EVM modules
@@ -1119,6 +1136,7 @@ func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.No
 		WasmKeeper:            &app.WasmKeeper,
 		TXCounterStoreService: runtime.NewKVStoreService(txCounterStoreKey),
 		CircuitKeeper:         &app.CircuitKeeper,
+		SanctionKeeper:        &app.SanctionKeeper,
 		Codec:                 app.appCodec,
 	}
 

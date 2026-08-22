@@ -28,9 +28,15 @@ func main() {
 // inherited from MANTRA-Chain ("mantra"/"amantra"); Ark uses its own identity
 // throughout so nothing here leaks the fork's origin into addresses or the
 // native token.
+//
+// Denom layout follows docs/decisions/module-and-config-decisions.md:
+//
+//	aesp  = smallest/base unit (exponent 0, used for staking/bonding)
+//	esp   = intermediate unit (exponent 12)
+//	KASH  = display/EVM unit (exponent 18)
 const (
-	HumanCoinUnit = "espees"
-	BaseCoinUnit  = "espees"
+	HumanCoinUnit = "KASH"
+	BaseCoinUnit  = "aesp"
 	ArkExponent   = 18
 
 	DefaultBondDenom = BaseCoinUnit
@@ -51,8 +57,8 @@ var (
 )
 
 // ArkCoinDenomRegex returns the coin denom regex string used to override the
-// default SDK coin denom regex (needed since "espees"/"espees" would
-// otherwise be rejected by the SDK's default, stricter denom pattern).
+// default SDK coin denom regex (needed since "KASH" would otherwise be
+// rejected by the SDK's default, stricter denom pattern).
 func ArkCoinDenomRegex() string {
 	return `[a-zA-Z][a-zA-Z0-9/:._-]{1,127}`
 }
