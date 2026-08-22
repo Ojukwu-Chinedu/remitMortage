@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"cosmossdk.io/x/feegrant"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -195,37 +194,6 @@ func (s *IntegrationTestSuite) execUnjail(
 	s.T().Logf("successfully unjail with options %v", opt)
 }
 
-func (s *IntegrationTestSuite) execFeeGrant(c *chain, valIdx int, granter, grantee, spendLimit string, opt ...flagOption) {
-	opt = append(opt, withKeyValue(flagFrom, granter))
-	opt = append(opt, withKeyValue(flagSpendLimit, spendLimit))
-	opts := applyOptions(c.id, opt)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-
-	s.T().Logf("granting %s fee from %s on chain %s", grantee, granter, c.id)
-
-	mantraCommand := []string{
-		mantrachaindBinary,
-		txCommand,
-		feegrant.ModuleName,
-		"grant",
-		granter,
-		grantee,
-		fmt.Sprintf("--%s=%s", flags.FlagChainID, c.id),
-		fmt.Sprintf("--%s=%s", flags.FlagGas, "300000"), // default 200000 isn't enough
-		"--keyring-backend=test",
-		"--output=json",
-		"-y",
-	}
-	for flag, value := range opts {
-		mantraCommand = append(mantraCommand, fmt.Sprintf("--%s=%s", flag, value))
-	}
-	s.T().Logf("running feegrant on chain: %s - Tx %v", c.id, mantraCommand)
-
-	s.executeTxCommand(ctx, c, mantraCommand, valIdx, s.defaultExecValidation(c, valIdx))
-}
-
 // func (s *IntegrationTestSuite) execFeeGrantRevoke(c *chain, valIdx int, granter, grantee string, opt ...flagOption) {
 // 	opt = append(opt, withKeyValue(flagFrom, granter))
 // 	opts := applyOptions(c.id, opt)
@@ -259,11 +227,11 @@ func (s *IntegrationTestSuite) execBankSend(
 	amt,
 	fees string,
 	expectErr bool,
-	opt ...flagOption,
 ) {
-	// TODO remove the hardcode opt after refactor, all methods should accept custom flags
-	opt = append(opt, withKeyValue(flagFees, fees))
-	opt = append(opt, withKeyValue(flagFrom, from))
+	opt := []flagOption{
+		withKeyValue(flagFees, fees),
+		withKeyValue(flagFrom, from),
+	}
 	opts := applyOptions(c.id, opt)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -638,7 +606,6 @@ func (s *IntegrationTestSuite) execWithdrawReward(
 	s.T().Logf("Successfully withdrew distribution rewards for delegator %s from validator %s", delegatorAddress, validatorAddress)
 }
 
-//nolint:unparam
 func (s *IntegrationTestSuite) execWasmStoreCode(
 	c *chain,
 	valIdx int,
@@ -675,7 +642,6 @@ func (s *IntegrationTestSuite) execWasmStoreCode(
 	return txHash
 }
 
-//nolint:unparam
 func (s *IntegrationTestSuite) execWasmInstantiate(
 	c *chain,
 	valIdx int,

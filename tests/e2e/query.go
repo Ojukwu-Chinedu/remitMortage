@@ -21,7 +21,6 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 )
 
 func queryTx(endpoint, txHash string) error {
@@ -169,20 +168,6 @@ func querySupplyOf(endpoint, denom string) (sdk.Coin, error) {
 	}
 
 	return supplyOfResp.Amount, nil
-}
-
-func querySendEnabled(endpoint string) ([]*banktypes.SendEnabled, error) {
-	body, err := httpGet(fmt.Sprintf("%s/cosmos/bank/v1beta1/send_enabled", endpoint))
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var sendEnabledResp banktypes.QuerySendEnabledResponse
-	if err := cdc.UnmarshalJSON(body, &sendEnabledResp); err != nil {
-		return nil, err
-	}
-
-	return sendEnabledResp.SendEnabled, nil
 }
 
 // func queryStakingParams(endpoint string) (stakingtypes.QueryParamsResponse, error) {
@@ -424,20 +409,6 @@ func queryRateLimitsByChainID(endpoint, channelID string) ([]ratelimittypes.Rate
 		return []ratelimittypes.RateLimit{}, err
 	}
 	return res.RateLimits, nil
-}
-
-func queryIBCEscrowAddress(endpoint, channelID string) (string, error) {
-	body, err := httpGet(fmt.Sprintf("%s/ibc/apps/transfer/v1/channels/%s/ports/transfer/escrow_address", endpoint, channelID))
-	if err != nil {
-		return "", fmt.Errorf("failed to execute HTTP request: %w", err)
-	}
-
-	var resp transfertypes.QueryEscrowAddressResponse
-	if err := cdc.UnmarshalJSON(body, &resp); err != nil {
-		return "", err
-	}
-
-	return resp.EscrowAddress, nil
 }
 
 func queryICAAccountAddress(endpoint, owner, connectionID string) (string, error) {

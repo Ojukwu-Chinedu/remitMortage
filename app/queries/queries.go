@@ -24,20 +24,8 @@ import (
 var stargateResponsePools = make(map[string]*sync.Pool)
 
 func init() {
-	// Whitelist specific queries here as needed (see setWhitelistedQuery below).
-	// Previously whitelisted the tokenfactory module's queries; that module has
-	// been removed, so nothing is whitelisted by default until a contract-facing
-	// query need is identified.
-}
-
-// setWhitelistedQuery sets the whitelisted query at the provided path.
-// This method also creates a sync.Pool for the provided proto message.
-func setWhitelistedQuery(queryPath string, protoResponse proto.Message) {
-	stargateResponsePools[queryPath] = &sync.Pool{
-		New: func() any {
-			return proto.Clone(protoResponse)
-		},
-	}
+	// Nothing whitelisted by default. If contract-facing stargate queries are
+	// needed, register them here with stargateResponsePools[queryPath].
 }
 
 // IsWhitelistedQuery returns an error if the query is not whitelisted.
