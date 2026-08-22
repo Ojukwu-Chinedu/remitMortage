@@ -63,6 +63,14 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          cache: true
+      - name: Download Go modules
+        run: |
+          go mod download || (sleep 5 && go mod download)
+        env:
+          GO111MODULE: "on"
+          GOPROXY: "https://proxy.golang.org,direct"
+        continue-on-error: true
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -77,6 +85,9 @@ jobs:
           GORELEASER_CROSS_DISABLE: ${{ !matrix.platform.cross }}
           GORELEASER_PLATFORM: ${{ matrix.platform.docker-platform || 'linux/amd64' }}
           GORELEASER_SNAPSHOT: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+          GO111MODULE: "on"
+          GOPROXY: "https://proxy.golang.org,direct"
+          GOSUMDB: "sum.golang.org"
 
       - name: Install rcodesign
         if: matrix.platform.cross == true && github.event_name != 'pull_request'

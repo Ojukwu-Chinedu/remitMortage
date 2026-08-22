@@ -219,6 +219,9 @@ goreleaser-build-local:
 		-e CMT_VERSION=$(CMT_VERSION) \
 		-e REPO_OWNER=$(REPO_OWNER) \
 		-e REPO_NAME=$(REPO_NAME) \
+		-e GOPROXY="https://proxy.golang.org,direct" \
+		-e GOSUMDB="sum.golang.org" \
+		-e GO111MODULE=on \
 		-v `pwd`:/go/src/mantrachaind \
 		-w /go/src/mantrachaind \
 		--platform=$(GORELEASER_PLATFORM) \
