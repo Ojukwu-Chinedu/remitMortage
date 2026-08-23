@@ -3,6 +3,7 @@
 # the subcommands are located in the specific makefiles
 include scripts/makefiles/lint.mk
 include scripts/makefiles/proto.mk
+include scripts/makefiles/devnet.mk
 
 .DEFAULT_GOAL := help
 help:
@@ -15,6 +16,9 @@ help:
 	@echo "  make lint                  Show available lint commands"
 	@echo "  make test                  Show available test commands"
 	@echo "  make proto                 Show available proto commands"
+	@echo "  make devnet-up             Build, init and start the local 4-node devnet"
+	@echo "  make devnet-verify         Sample the running devnet and prove block production"
+	@echo "  make devnet-down           Stop the local devnet"
 	@echo ""
 	@echo "Run 'make [subcommand]' to see the available commands for each subcommand."
 

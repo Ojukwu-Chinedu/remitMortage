@@ -21,7 +21,7 @@
 4. **Circuit Breaker (`cosmossdk.io/x/circuit`)**: Wired in `app/app.go`, `SetCircuitBreaker(&app.CircuitKeeper)`, wasm message router, and `circuitante.NewCircuitBreakerDecorator` across **both** Cosmos ante path (`app/ante/cosmos.go`) and EVM JSON-RPC ante path (`app/ante/evm.go`). Verified live via local node testing (`MsgSend` disable -> reject -> reset -> allow). Proof log committed in `docs/proof/circuit-breaker-verification.log`.
 5. **Identity & Denom Rebrand**:
    - **Bech32 Prefix**: `mantra` → `ark` (`ark`, `arkpub`, `arkvaloper`, `arkvaloperpub`, `arkvalcons`, `arkvalconspub`).
-   - **Denom Hierarchy**: Base unit `esp` (0 decimals, exponent 0, 1 wei equivalent, staking/bonding), intermediate `espes` ($10^9$ `esp`, 1 gwei equivalent), display/EVM unit `KASH` ($10^{18}$ `esp`, 1 ether equivalent) per locked Decision #8.
+   - **Denom Hierarchy**: Base unit `esp` (0 decimals, exponent 0, 1 wei equivalent, staking/bonding), intermediate `espees` ($10^9$ `esp`, 1 gwei equivalent), display/EVM unit `KASH` ($10^{18}$ `esp`, 1 ether equivalent) per locked Decision #8.
    - `EVMCoinInfo`: `Denom: "esp"`, `ExtendedDenom: "esp"`, `DisplayDenom: "KASH"`, `Decimals: 18`.
    - `MinGasPrices`: Default set to `"0esp"`.
    - `EVMChainIDMap`: Mapped `"arkconstellation-1": 11199` (locked Decisions #6 & #7) and `"arkdevnet_9000-1": 9000`.

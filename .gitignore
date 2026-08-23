@@ -24,3 +24,16 @@ client/docs/.yarn/
 # Agent and assistant artifacts
 .agent/
 artifacts/
+
+# Devnet: generated node homes/keys/logs, never hand-edited or committed.
+networks/devnet/data/
+networks/devnet/.venv-pystarport/
+!networks/devnet/proof/*.log
+
+# tmkms: imported/generated private key material and signing state - never
+# committed, regenerated fresh by networks/devnet/remote-signing/README.md.
+networks/devnet/remote-signing/secrets/
+networks/devnet/remote-signing/state/
+networks/devnet/remote-signing/tmkms.local.toml
+networks/devnet/remote-signing/*.log
+!networks/devnet/remote-signing/proof/*.log
