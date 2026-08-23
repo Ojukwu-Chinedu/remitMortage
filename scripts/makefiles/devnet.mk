@@ -13,8 +13,12 @@ DEVNET_BASE_PORT := 26650
 DEVNET_BIN       ?= $(CURDIR)/build/mantrachaind
 # node0 (sentry-0) RPC port = base_port + 7 (pystarport's ports.rpc_port offset)
 DEVNET_RPC       := http://127.0.0.1:26657
+# node0 (sentry-0) EVM JSON-RPC port (only active when manually enabled)
+DEVNET_JSON_RPC  := http://127.0.0.1:8545
+# node0 (sentry-0) Cosmos LCD/API port (only active when [api] enable=true in app.toml)
+DEVNET_API       := http://127.0.0.1:1317
 
-.PHONY: devnet-venv devnet-check-genesis-sync devnet-init devnet-up devnet-down devnet-verify devnet-clean
+.PHONY: devnet-venv devnet-check-genesis-sync devnet-init devnet-up devnet-down devnet-verify devnet-info devnet-log devnet-explore devnet-clean
 
 devnet-venv:
 	@if [ ! -x "$(DEVNET_VENV)/bin/pystarport" ]; then \
@@ -59,10 +63,42 @@ devnet-up: devnet-init
 		exit 1; \
 	fi
 	@echo ">>> Devnet running (pid $$(cat $(DEVNET_DATA)/pystarport.pid))."
-	@echo ">>> Run 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
+	@echo ">>> Run 'make devnet-info' for node addresses, 'make devnet-explore' for EVM blocks, 'make devnet-log' to tail logs, 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
 
 devnet-verify:
 	@$(DEVNET_DIR)/verify-blocks.sh $(DEVNET_RPC)
+
+devnet-info:
+	@echo "=== Devnet node status ==="
+	@for offset in 0 10 20 30; do \
+		base=$$(( $(DEVNET_BASE_PORT) + offset )); \
+		rpc=$$(( $(DEVNET_BASE_PORT) + offset + 7 )); \
+		echo ""; \
+		echo "--- node on base port $$base (RPC http://127.0.0.1:$$rpc) ---"; \
+		status=$$(curl -sf -m 2 "http://127.0.0.1:$$rpc/status" 2>/dev/null); \
+		if [ -n "$$status" ]; then \
+			echo "$$status" | jq -r '"moniker: \(.result.node_info.moniker)\nid: \(.result.node_info.id)\nnetwork: \(.result.node_info.network)\nlisten_addr: \(.result.node_info.listen_addr)\nlatest_block_height: \(.result.sync_info.latest_block_height)\nlatest_block_time: \(.result.sync_info.latest_block_time)"'; \
+			curl -sf -m 2 "http://127.0.0.1:$$rpc/net_info" 2>/dev/null | jq -r '"peers: \(.result.n_peers)"' 2>/dev/null || true; \
+		else \
+			echo "  (not reachable)"; \
+		fi; \
+	done
+	@echo ""
+	@echo "=== Staking validators (requires [api] enable=true in app.toml) ==="
+	@staking=$$(curl -sf -m 2 "$(DEVNET_API)/cosmos/staking/v1beta1/validators?pagination.limit=10" 2>/dev/null); \
+	if [ -n "$$staking" ]; then \
+		echo "$$staking" | jq -r '.validators[] | "\(.description.moniker): \(.operator_address) (tokens: \(.tokens))\n  commission: \(.commission.commission_rates.rate)"' 2>/dev/null || echo "  (staking API not reachable — ensure the Cosmos LCD is enabled on node0)"; \
+	else \
+		echo "  (staking API not reachable — ensure the Cosmos LCD is enabled on node0)"; \
+	fi
+
+devnet-log:
+	@echo "=== Tailing combined devnet log (Ctrl-C to stop) ==="
+	@tail -f $(DEVNET_DATA)/devnet.log
+
+devnet-explore:
+	@echo "=== Real-time EVM block explorer (Ctrl-C to stop) ==="
+	@$(DEVNET_DIR)/explorer.sh $(DEVNET_JSON_RPC)
 
 devnet-down:
 	@if [ -f $(DEVNET_DATA)/pystarport.pid ]; then \
