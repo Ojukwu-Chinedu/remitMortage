@@ -12,7 +12,7 @@ help:
 	@echo "Usage:"
 	@echo "    make [command]"
 	@echo ""
-	@echo "  make build                 Build mantrachaind binary"
+	@echo "  make build                 Build arkd binary"
 	@echo "  make lint                  Show available lint commands"
 	@echo "  make test                  Show available test commands"
 	@echo "  make proto                 Show available proto commands"
@@ -97,12 +97,13 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain \
-	-X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=ark \
+	-X github.com/cosmos/cosmos-sdk/version.AppName=arkd \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 	-X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep) \
-	-X github.com/cometbft/cometbft/version.TMCoreSemVer=$(CMT_VERSION)
+	-X github.com/cometbft/cometbft/version.TMCoreSemVer=$(CMT_VERSION) \
+	-X github.com/MANTRA-Chain/mantrachain/v8/app.NodeDir=.ark
 
 ifeq (cleveldb,$(findstring cleveldb,$(MANTRACHAIN_BUILD_OPTIONS)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
@@ -136,10 +137,13 @@ build-arm:
 build-linux:
 	GOOS=linux GOARCH=$(if $(findstring aarch64,$(shell uname -m)) || $(findstring arm64,$(shell uname -m)),arm64,amd64) $(MAKE) build
 build-image:
-	DOCKER_BUILDKIT=1 docker build -f Dockerfile -t mantra-chain/mantrachain .
+	DOCKER_BUILDKIT=1 docker build -f Dockerfile -t ark-chain/arkd .
 
 $(BUILD_TARGETS): go.sum $(BUILDDIR)/
-	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) $(GO_MODULE)/cmd/mantrachaind
+	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) $(GO_MODULE)/cmd/arkd
+	@if [ "$@" = "build" ]; then \
+		cd $(BUILDDIR) && ln -sf arkd mantrachaind; \
+	fi
 $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
 
@@ -252,15 +256,15 @@ mocks:
 
 build-and-run-single-node: build
 	@echo "Building and running a single node for testing..."
-	@mkdir -p .mantrasinglenodetest
-	@if [ ! -f .mantrasinglenodetest/config/config.toml ]; then \
-		./build/mantrachaind init single-node-test --chain-id test-chain --home .mantrasinglenodetest --default-denom esp; \
-		./build/mantrachaind keys add validator --keyring-backend test --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis add-genesis-account $$(./build/mantrachaind keys show validator -a --keyring-backend test --home .mantrasinglenodetest) 100000000000000000000000000esp --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis gentx validator 100000000000000000000esp --chain-id test-chain --keyring-backend test --home .mantrasinglenodetest; \
-		./build/mantrachaind genesis collect-gentxs --home .mantrasinglenodetest; \
-		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "esp"/' .mantrasinglenodetest/config/genesis.json; \
+	@mkdir -p .arksinglenodetest
+	@if [ ! -f .arksinglenodetest/config/config.toml ]; then \
+		./build/arkd init single-node-test --chain-id test-chain --home .arksinglenodetest --default-denom esp; \
+		./build/arkd keys add validator --keyring-backend test --home .arksinglenodetest; \
+		./build/arkd genesis add-genesis-account $$(./build/arkd keys show validator -a --keyring-backend test --home .arksinglenodetest) 100000000000000000000000000esp --home .arksinglenodetest; \
+		./build/arkd genesis gentx validator 100000000000000000000esp --chain-id test-chain --keyring-backend test --home .arksinglenodetest; \
+		./build/arkd genesis collect-gentxs --home .arksinglenodetest; \
+		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "esp"/' .arksinglenodetest/config/genesis.json; \
 	fi
-	./build/mantrachaind start --home .mantrasinglenodetest --minimum-gas-prices 0esp
+	./build/arkd start --home .arksinglenodetest --minimum-gas-prices 0esp
 
 .PHONY: build-and-run-single-node

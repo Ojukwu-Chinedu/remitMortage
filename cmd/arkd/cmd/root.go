@@ -54,13 +54,13 @@ func NewRootCmd() *cobra.Command {
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastSync).
 		WithHomeDir(app.DefaultNodeHome).
-		WithViper("MANTRA").
+		WithViper("ARK").
 		WithKeyringOptions(hd.EthSecp256k1Option()).
 		WithLedgerHasProtobuf(true)
 
 	rootCmd := &cobra.Command{
 		Use:           version.AppName,
-		Short:         "Mantra Daemon (server)",
+		Short:         "Ark Daemon (server)",
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs

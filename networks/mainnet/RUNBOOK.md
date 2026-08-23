@@ -37,7 +37,7 @@ any on faith:
 ## Step 1 — Assemble the base genesis
 
 ```bash
-BIN=./build/mantrachaind      # the tagged binary, not a local rebuild
+BIN=./build/arkd          # the tagged binary, not a local rebuild
 CHAIN_ID=arkconstellation-1   # locked, decision #6 in docs/decisions/module-and-config-decisions.md
                                # cannot change after genesis without a full chain migration
 

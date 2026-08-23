@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Kept in sync with cmd/mantrachaind/main.go's identical constants - that file's
+// Kept in sync with cmd/arkd/main.go's identical constants - that file's
 // setupConfig() is what actually seals the SDK config (this package's own
 // SetAddressPrefixes() below intentionally does not call Seal(), so it never
 // conflicts with main's later call), but both are kept consistent to avoid a
@@ -56,7 +56,7 @@ func SetAddressPrefixes() {
 	config.SetBech32PrefixForValidator(Bech32PrefixValAddr, Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
 	config.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	// Deliberately does NOT call config.Seal() here - cmd/mantrachaind/main.go's
+	// Deliberately does NOT call config.Seal() here - cmd/arkd/main.go's
 	// setupConfig() runs after this package's init() and seals the config itself.
 	// Sealing here first would panic on main's subsequent Set* calls.
 }

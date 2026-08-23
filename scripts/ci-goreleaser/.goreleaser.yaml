@@ -1,11 +1,11 @@
 ---
 version: 2
-project_name: mantrachaind
+project_name: arkd
 
 builds:
-  - id: mantrachaind-darwin-amd64
+  - id: arkd-darwin-amd64
     main: ./scripts/ci-goreleaser/goreleaser.go
-    binary: mantrachaind
+    binary: arkd
     goos:
       - darwin
     goarch:
@@ -14,9 +14,9 @@ builds:
       post:
         - ./scripts/ci-goreleaser/.goreleaser_hook.sh {{ .Arch }} {{ .Os }} {{ .ProjectName }}
 
-  - id: mantrachaind-darwin-arm64
+  - id: arkd-darwin-arm64
     main: ./scripts/ci-goreleaser/goreleaser.go
-    binary: mantrachaind
+    binary: arkd
     goos:
       - darwin
     goarch:
@@ -25,9 +25,9 @@ builds:
       post:
         - ./scripts/ci-goreleaser/.goreleaser_hook.sh {{ .Arch }} {{ .Os }} {{ .ProjectName }}
 
-  - id: mantrachaind-linux-amd64
+  - id: arkd-linux-amd64
     main: ./scripts/ci-goreleaser/goreleaser.go
-    binary: mantrachaind
+    binary: arkd
     goos:
       - linux
     goarch:
@@ -36,9 +36,9 @@ builds:
       post:
         - ./scripts/ci-goreleaser/.goreleaser_hook.sh {{ .Arch }} {{ .Os }} {{ .ProjectName }}
 
-  - id: mantrachaind-linux-arm64
+  - id: arkd-linux-arm64
     main: ./scripts/ci-goreleaser/goreleaser.go
-    binary: mantrachaind
+    binary: arkd
     goos:
       - linux
     goarch:
@@ -50,20 +50,20 @@ builds:
 archives:
   - id: zipped
     builds:
-      - mantrachaind-linux-amd64
-      - mantrachaind-linux-arm64
-      - mantrachaind-darwin-amd64
-      - mantrachaind-darwin-arm64
+      - arkd-linux-amd64
+      - arkd-linux-arm64
+      - arkd-darwin-amd64
+      - arkd-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     format: tar.gz
     files:
       - none*
   - id: binaries
     builds:
-      - mantrachaind-linux-amd64
-      - mantrachaind-linux-arm64
-      - mantrachaind-darwin-amd64
-      - mantrachaind-darwin-arm64
+      - arkd-linux-amd64
+      - arkd-linux-arm64
+      - arkd-darwin-amd64
+      - arkd-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     format: binary
     files:
@@ -115,11 +115,11 @@ release:
 
     ````bash
     git clone https://github.com/{{ .Env.REPO_OWNER }}/{{ .Env.REPO_NAME }}
-    cd mantrachain && git checkout v{{ .Version }}
+    cd ArkConstellation && git checkout v{{ .Version }}
     make install
     ````
 
-  name_template: "Mantrachain v{{.Version}}"
+  name_template: "ArkConstellation v{{.Version}}"
   mode: replace
   draft: true
 

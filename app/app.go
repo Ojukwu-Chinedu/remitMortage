@@ -205,7 +205,7 @@ const (
 
 // We pull these out so we can set them with LDFLAGS in the Makefile
 var (
-	NodeDir = ".mantrachain"
+	NodeDir = ".ark"
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
 )
@@ -1067,7 +1067,7 @@ func New(
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
-	// see cmd/mantrachaind/root.go: 206 - 214 approx
+	// see cmd/arkd/root.go: 206 - 214 approx
 	if manager := app.SnapshotManager(); manager != nil {
 		err := manager.RegisterExtensions(
 			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
