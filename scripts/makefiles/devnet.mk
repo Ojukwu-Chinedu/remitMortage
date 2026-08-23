@@ -59,10 +59,24 @@ devnet-up: devnet-init
 		exit 1; \
 	fi
 	@echo ">>> Devnet running (pid $$(cat $(DEVNET_DATA)/pystarport.pid))."
-	@echo ">>> Run 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
+	@echo ">>> Run 'make devnet-info' for node addresses, 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
 
 devnet-verify:
 	@$(DEVNET_DIR)/verify-blocks.sh $(DEVNET_RPC)
+
+devnet-info:
+	@echo "=== Devnet node status ==="
+	@for offset in 0 10 20 30; do \
+		base=$$(( $(DEVNET_BASE_PORT) + offset )); \
+		rpc=$$(( $(DEVNET_BASE_PORT) + offset + 7 )); \
+		echo ""; \
+		echo "--- node on base port $$base (RPC http://127.0.0.1:$$rpc) ---"; \
+		curl -sS -m 2 "http://127.0.0.1:$$rpc/status" | jq -r '"moniker: \(.result.node_info.moniker)\nid: \(.result.node_info.id)\nnetwork: \(.result.node_info.network)\nlisten_addr: \(.result.node_info.listen_addr)\nlatest_block_height: \(.result.sync_info.latest_block_height)\nlatest_block_time: \(.result.sync_info.latest_block_time)"' 2>/dev/null || echo "  (not reachable)"; \
+		curl -sS -m 2 "http://127.0.0.1:$$rpc/net_info" | jq -r '"peers: \(.result.n_peers)"' 2>/dev/null || true; \
+	done
+	@echo ""
+	@echo "=== Staking validators ==="
+	@curl -sS -m 2 "$(DEVNET_RPC)/cosmos/staking/v1beta1/validators?pagination.limit=10" | jq -r '.validators[] | "\(.description.moniker): \(.operator_address) (tokens: \(.tokens))\n  commission: \(.commission.commission_rates.rate)"' 2>/dev/null || echo "  (staking query not reachable)"
 
 devnet-down:
 	@if [ -f $(DEVNET_DATA)/pystarport.pid ]; then \
