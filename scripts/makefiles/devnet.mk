@@ -75,12 +75,22 @@ devnet-info:
 		rpc=$$(( $(DEVNET_BASE_PORT) + offset + 7 )); \
 		echo ""; \
 		echo "--- node on base port $$base (RPC http://127.0.0.1:$$rpc) ---"; \
-		curl -sS -m 2 "http://127.0.0.1:$$rpc/status" | jq -r '"moniker: \(.result.node_info.moniker)\nid: \(.result.node_info.id)\nnetwork: \(.result.node_info.network)\nlisten_addr: \(.result.node_info.listen_addr)\nlatest_block_height: \(.result.sync_info.latest_block_height)\nlatest_block_time: \(.result.sync_info.latest_block_time)"' 2>/dev/null || echo "  (not reachable)"; \
-		curl -sS -m 2 "http://127.0.0.1:$$rpc/net_info" | jq -r '"peers: \(.result.n_peers)"' 2>/dev/null || true; \
+		status=$$(curl -sf -m 2 "http://127.0.0.1:$$rpc/status" 2>/dev/null); \
+		if [ -n "$$status" ]; then \
+			echo "$$status" | jq -r '"moniker: \(.result.node_info.moniker)\nid: \(.result.node_info.id)\nnetwork: \(.result.node_info.network)\nlisten_addr: \(.result.node_info.listen_addr)\nlatest_block_height: \(.result.sync_info.latest_block_height)\nlatest_block_time: \(.result.sync_info.latest_block_time)"'; \
+			curl -sf -m 2 "http://127.0.0.1:$$rpc/net_info" 2>/dev/null | jq -r '"peers: \(.result.n_peers)"' 2>/dev/null || true; \
+		else \
+			echo "  (not reachable)"; \
+		fi; \
 	done
 	@echo ""
 	@echo "=== Staking validators (requires [api] enable=true in app.toml) ==="
-	@curl -sS -m 2 "$(DEVNET_API)/cosmos/staking/v1beta1/validators?pagination.limit=10" | jq -r '.validators[] | "\(.description.moniker): \(.operator_address) (tokens: \(.tokens))\n  commission: \(.commission.commission_rates.rate)"' 2>/dev/null || echo "  (staking API not reachable — ensure the Cosmos LCD is enabled on node0)"
+	@staking=$$(curl -sf -m 2 "$(DEVNET_API)/cosmos/staking/v1beta1/validators?pagination.limit=10" 2>/dev/null); \
+	if [ -n "$$staking" ]; then \
+		echo "$$staking" | jq -r '.validators[] | "\(.description.moniker): \(.operator_address) (tokens: \(.tokens))\n  commission: \(.commission.commission_rates.rate)"' 2>/dev/null || echo "  (staking API not reachable — ensure the Cosmos LCD is enabled on node0)"; \
+	else \
+		echo "  (staking API not reachable — ensure the Cosmos LCD is enabled on node0)"; \
+	fi
 
 devnet-log:
 	@echo "=== Tailing combined devnet log (Ctrl-C to stop) ==="

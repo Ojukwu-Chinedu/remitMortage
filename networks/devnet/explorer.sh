@@ -25,14 +25,14 @@ while true; do
       --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBlockByNumber\",\"params\":[\"$BLOCK_HEX\",true],\"id\":2}" \
       "$RPC" 2>/dev/null || true)
 
-    if [ -n "$DATA" ]; then
+    if [ -n "$DATA" ] && echo "$DATA" | jq -e '.result.number' >/dev/null 2>&1; then
       echo "$DATA" | jq -r '
         "[\(.result.number)] hash=\(.result.hash) time=\(.result.timestamp) txs=\(.result.transactions | length) gasUsed=\(.result.gasUsed) parent=\(.result.parentHash)"
-      '
+      ' 2>/dev/null || true
       echo "$DATA" | jq -r '
         .result.transactions[]? |
         "  tx \(.hash) from=\(.from) to=\(.to) value=\(.value) gas=\(.gas) gasPrice=\(.gasPrice)"
-      '
+      ' 2>/dev/null || true
     fi
   fi
 
