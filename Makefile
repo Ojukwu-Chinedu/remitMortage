@@ -4,6 +4,7 @@
 include scripts/makefiles/lint.mk
 include scripts/makefiles/proto.mk
 include scripts/makefiles/devnet.mk
+include scripts/makefiles/ops.mk
 
 .DEFAULT_GOAL := help
 help:
@@ -19,6 +20,9 @@ help:
 	@echo "  make devnet-up             Build, init and start the local 4-node devnet"
 	@echo "  make devnet-verify         Sample the running devnet and prove block production"
 	@echo "  make devnet-down           Stop the local devnet"
+	@echo "  make blockscout-up         Start local Blockscout explorer via Docker Compose"
+	@echo "  make blockscout-down       Stop local Blockscout explorer"
+	@echo "  make blockscout-logs       Tail Blockscout explorer logs"
 	@echo ""
 	@echo "Run 'make [subcommand]' to see the available commands for each subcommand."
 
