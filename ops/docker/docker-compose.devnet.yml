@@ -63,11 +63,14 @@ services:
       MIN_GAS_PRICES: "0.01esp"
       PROMETHEUS: "true"
       ENABLE_API: "true"
+      ENABLE_EVM_RPC: "true"
     ports:
       - "26656:26656"   # P2P
       - "26657:26657"   # RPC
       - "1317:1317"     # Cosmos LCD/API
       - "9090:9090"     # Prometheus metrics
+      - "8545:8545"     # EVM JSON-RPC
+      - "8100:8100"     # EVM geth metrics
     volumes:
       - sentry-0-data:/home/nonroot/.ark
       - genesis-data:/config:ro
@@ -116,11 +119,14 @@ services:
       MIN_GAS_PRICES: "0.01esp"
       PROMETHEUS: "true"
       ENABLE_API: "true"
+      ENABLE_EVM_RPC: "true"
     ports:
       - "26676:26656"   # P2P
       - "26677:26657"   # RPC
       - "1318:1317"     # Cosmos LCD/API
       - "9091:9090"     # Prometheus metrics
+      - "8546:8545"     # EVM JSON-RPC
+      - "8101:8100"     # EVM geth metrics
     volumes:
       - sentry-1-data:/home/nonroot/.ark
       - genesis-data:/config:ro
@@ -152,6 +158,27 @@ services:
     depends_on:
       init:
         condition: service_completed_successfully
+
+  # -------------------------------------------------------------------
+  # Node Exporter — system metrics (CPU, RAM, disk, network)
+  # Runs as a sidecar sharing the host's /proc and /sys for real metrics.
+  # -------------------------------------------------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: ark-node-exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host/root'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host/root:ro
+    ports:
+      - "9100:9100"
+    networks:
+      - arkdevnet
 
   # -------------------------------------------------------------------
   # Prometheus — metrics collection

@@ -100,13 +100,26 @@ fi
 if [ "$PROMETHEUS" = "true" ]; then
     sed -i "s/^prometheus = .*/prometheus = true/" "$CONFIG"
     sed -i "s/^prometheus_listen_addr = .*/prometheus_listen_addr = \":9090\"/" "$CONFIG"
+    # Enable telemetry Prometheus sink (retention in seconds)
+    sed -i 's/^prometheus-retention-time = 0$/prometheus-retention-time = 60/' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+    # Enable EVM geth metrics on 0.0.0.0 so Prometheus can scrape from Docker network
+    sed -i 's|^geth-metrics-address = "127.0.0.1:8100"|geth-metrics-address = "0.0.0.0:8100"|' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
 fi
 
-[ "$ENABLE_API" = "true" ] && \
-    sed -i 's/enable = false/enable = true/' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+# Enable Cosmos LCD/API server
+if [ "$ENABLE_API" = "true" ]; then
+    sed -i '/^\[api\]$/,/^enable/{s/^enable = false/enable = true/}' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+fi
 
-[ "$ENABLE_EVM_RPC" = "true" ] && \
-    sed -i 's/enable = false/enable = true/' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+# Enable EVM JSON-RPC with metrics endpoint
+if [ "$ENABLE_EVM_RPC" = "true" ]; then
+    # Enable the json-rpc server (the only "enable = false" after [json-rpc] header)
+    sed -i '/^\[json-rpc\]$/,/^enable/{s/^enable = false/enable = true/}' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+    # Bind EVM RPC to 0.0.0.0 so Prometheus can scrape metrics from the Docker network
+    sed -i 's|^address = "127.0.0.1:8545"|address = "0.0.0.0:8545"|' "${NODE_HOME}/config/app.toml"
+    sed -i 's|^ws-address = "127.0.0.1:8546"|ws-address = "0.0.0.0:8546"|' "${NODE_HOME}/config/app.toml"
+    echo "  EVM RPC enabled on 0.0.0.0:8545"
+fi
 
 echo "=== Node Configuration ==="
 echo "  Role:       ${NODE_ROLE}"
