@@ -1,0 +1,746 @@
+{
+	"Golang errors": {
+		"/Users/ark/Documents/work/ArkConstellation/app/evmutil/erc20wrapper.go": [
+			{
+				"line": 7,
+				"column": 2,
+				"error": "\"github.com/ethereum/go-ethereum/common\" imported as erc20v1 and not used"
+			},
+			{
+				"line": 33,
+				"column": 40,
+				"error": "undefined: common"
+			},
+			{
+				"line": 44,
+				"column": 21,
+				"error": "undefined: common"
+			},
+			{
+				"line": 51,
+				"column": 38,
+				"error": "undefined: common"
+			},
+			{
+				"line": 53,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 55,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 56,
+				"column": 14,
+				"error": "undefined: common"
+			},
+			{
+				"line": 57,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 62,
+				"column": 87,
+				"error": "undefined: common"
+			},
+			{
+				"line": 62,
+				"column": 111,
+				"error": "undefined: common"
+			},
+			{
+				"line": 62,
+				"column": 128,
+				"error": "undefined: common"
+			},
+			{
+				"line": 68,
+				"column": 11,
+				"error": "undefined: common"
+			},
+			{
+				"line": 70,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 73,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 77,
+				"column": 10,
+				"error": "undefined: common"
+			},
+			{
+				"line": 82,
+				"column": 87,
+				"error": "undefined: common"
+			},
+			{
+				"line": 82,
+				"column": 111,
+				"error": "undefined: common"
+			},
+			{
+				"line": 82,
+				"column": 130,
+				"error": "undefined: common"
+			}
+		]
+	},
+	"Issues": [
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e uint8",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "500: \tfor v \u003e= 1\u003c\u003c7 {\n501: \t\tdAtA[offset] = uint8(v\u00260x7f | 0x80)\n502: \t\tv \u003e\u003e= 7\n",
+			"line": "501",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e uint8",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "521: \tfor v \u003e= 1\u003c\u003c7 {\n522: \t\tdAtA[offset] = uint8(v\u00260x7f | 0x80)\n523: \t\tv \u003e\u003e= 7\n",
+			"line": "522",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e uint8",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/params.pb.go",
+			"code": "135: \tfor v \u003e= 1\u003c\u003c7 {\n136: \t\tdAtA[offset] = uint8(v\u00260x7f | 0x80)\n137: \t\tv \u003e\u003e= 7\n",
+			"line": "136",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e uint8",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "155: \tfor v \u003e= 1\u003c\u003c7 {\n156: \t\tdAtA[offset] = uint8(v\u00260x7f | 0x80)\n157: \t\tv \u003e\u003e= 7\n",
+			"line": "156",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "567: func sozTx(x uint64) (n int) {\n568: \treturn sovTx(uint64((x \u003c\u003c 1) ^ uint64((int64(x) \u003e\u003e 63))))\n569: }\n",
+			"line": "568",
+			"column": "46",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "584: func sozQuery(x uint64) (n int) {\n585: \treturn sovQuery(uint64((x \u003c\u003c 1) ^ uint64((int64(x) \u003e\u003e 63))))\n586: }\n",
+			"line": "585",
+			"column": "49",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/params.pb.go",
+			"code": "155: func sozParams(x uint64) (n int) {\n156: \treturn sovParams(uint64((x \u003c\u003c 1) ^ uint64((int64(x) \u003e\u003e 63))))\n157: }\n",
+			"line": "156",
+			"column": "50",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "183: func sozGenesis(x uint64) (n int) {\n184: \treturn sovGenesis(uint64((x \u003c\u003c 1) ^ uint64((int64(x) \u003e\u003e 63))))\n185: }\n",
+			"line": "184",
+			"column": "51",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "867: \t\t}\n868: \t\tfieldNum := int32(wire \u003e\u003e 3)\n869: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "868",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "753: \t\t}\n754: \t\tfieldNum := int32(wire \u003e\u003e 3)\n755: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "754",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "703: \t\t}\n704: \t\tfieldNum := int32(wire \u003e\u003e 3)\n705: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "704",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "589: \t\t}\n590: \t\tfieldNum := int32(wire \u003e\u003e 3)\n591: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "590",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "825: \t\t}\n826: \t\tfieldNum := int32(wire \u003e\u003e 3)\n827: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "826",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "739: \t\t}\n740: \t\tfieldNum := int32(wire \u003e\u003e 3)\n741: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "740",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "656: \t\t}\n657: \t\tfieldNum := int32(wire \u003e\u003e 3)\n658: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "657",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "606: \t\t}\n607: \t\tfieldNum := int32(wire \u003e\u003e 3)\n608: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "607",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/params.pb.go",
+			"code": "177: \t\t}\n178: \t\tfieldNum := int32(wire \u003e\u003e 3)\n179: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "178",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int32",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "205: \t\t}\n206: \t\tfieldNum := int32(wire \u003e\u003e 3)\n207: \t\twireType := int(wire \u0026 0x7)\n",
+			"line": "206",
+			"column": "20",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "813: \t\t\t}\n814: \t\t\tintStringLen := int(stringLen)\n815: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "814",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "781: \t\t\t}\n782: \t\t\tintStringLen := int(stringLen)\n783: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "782",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "649: \t\t\t}\n650: \t\t\tintStringLen := int(stringLen)\n651: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "650",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/tx.pb.go",
+			"code": "617: \t\t\t}\n618: \t\t\tintStringLen := int(stringLen)\n619: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "618",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "853: \t\t\t}\n854: \t\t\tintStringLen := int(stringLen)\n855: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "854",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion uint64 -\u003e int",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "266: \t\t\t}\n267: \t\t\tintStringLen := int(stringLen)\n268: \t\t\tif intStringLen \u003c 0 {\n",
+			"line": "267",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int64 -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/precompiles/distrclaim/events.go",
+			"code": "52: \t\tData:        packed,\n53: \t\tBlockNumber: uint64(ctx.BlockHeight()),\n54: \t})\n",
+			"line": "53",
+			"column": "22",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "575: \t\tl = m.Pagination.Size()\n576: \t\tn += 1 + l + sovQuery(uint64(l))\n577: \t}\n",
+			"line": "576",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "556: \t\tl = m.Pagination.Size()\n557: \t\tn += 1 + l + sovQuery(uint64(l))\n558: \t}\n",
+			"line": "557",
+			"column": "31",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "544: \tl = m.Params.Size()\n545: \tn += 1 + l + sovQuery(uint64(l))\n546: \treturn n\n",
+			"line": "545",
+			"column": "30",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "500: \t\t\ti -= size\n501: \t\t\ti = encodeVarintQuery(dAtA, i, uint64(size))\n502: \t\t}\n",
+			"line": "501",
+			"column": "41",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "465: \t\t\ti -= size\n466: \t\t\ti = encodeVarintQuery(dAtA, i, uint64(size))\n467: \t\t}\n",
+			"line": "466",
+			"column": "41",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/query.pb.go",
+			"code": "431: \t\ti -= size\n432: \t\ti = encodeVarintQuery(dAtA, i, uint64(size))\n433: \t}\n",
+			"line": "432",
+			"column": "40",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "169: \tl = m.Params.Size()\n170: \tn += 1 + l + sovGenesis(uint64(l))\n171: \tif len(m.BlacklistAccounts) \u003e 0 {\n",
+			"line": "170",
+			"column": "32",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/types/genesis.pb.go",
+			"code": "144: \t\ti -= size\n145: \t\ti = encodeVarintGenesis(dAtA, i, uint64(size))\n146: \t}\n",
+			"line": "145",
+			"column": "42",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "190",
+				"url": "https://cwe.mitre.org/data/definitions/190.html"
+			},
+			"rule_id": "G115",
+			"details": "integer overflow conversion int -\u003e uint64",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/config.go",
+			"code": "133: \n134: \treturn uint64(chainIDInt), nil\n135: }\n",
+			"line": "134",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "MEDIUM",
+			"cwe": {
+				"id": "338",
+				"url": "https://cwe.mitre.org/data/definitions/338.html"
+			},
+			"rule_id": "G404",
+			"details": "Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/test_helpers.go",
+			"code": "295: \ttx, err := simtestutil.GenSignedMockTx(\n296: \t\trand.New(rand.NewSource(time.Now().UnixNano())),\n297: \t\ttxCfg,\n",
+			"line": "296",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "798",
+				"url": "https://cwe.mitre.org/data/definitions/798.html"
+			},
+			"rule_id": "G101",
+			"details": "Potential hardcoded credentials",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/module/simulation.go",
+			"code": "28: \n29: \topWeightMsgRemoveBlacklistAccounts = \"op_weight_msg_remove_blacklist_account\"\n30: \n",
+			"line": "29",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "798",
+				"url": "https://cwe.mitre.org/data/definitions/798.html"
+			},
+			"rule_id": "G101",
+			"details": "Potential hardcoded credentials",
+			"file": "/Users/ark/Documents/work/ArkConstellation/x/sanction/module/simulation.go",
+			"code": "24: const (\n25: \topWeightMsgAddBlacklistAccounts = \"op_weight_msg_add_blacklist_account\"\n26: \n",
+			"line": "25",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "HIGH",
+			"confidence": "LOW",
+			"cwe": {
+				"id": "798",
+				"url": "https://cwe.mitre.org/data/definitions/798.html"
+			},
+			"rule_id": "G101",
+			"details": "Potential hardcoded credentials",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/token_pair.go",
+			"code": "7: // WTokenContractMainnet is the WrappedToken contract address for mainnet\n8: const WTokenContractMainnet = \"0xD4949664cD82660AaE99bEdc034a0deA8A0bd517\"\n9: \n",
+			"line": "8",
+			"column": "7",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/config.go",
+			"code": "46: \t\tvar reader *os.File\n47: \t\treader, err = os.Open(genesisFilePath)\n48: \t\tif err == nil {\n",
+			"line": "47",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null,
+			"autofix": "Consider using os.Root to scope file access under a fixed root (Go \u003e=1.24). Prefer root.Open/root.Stat over os.Open/os.Stat to prevent directory traversal."
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled",
+			"file": "/Users/ark/Documents/work/ArkConstellation/app/test_helpers.go",
+			"code": "60: \trequire.NoError(tb, err)\n61: \ttb.Cleanup(func() { snapshotDB.Close() })\n62: \tsnapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)\n",
+			"line": "61",
+			"column": "22",
+			"nosec": false,
+			"suppressions": null
+		}
+	],
+	"Stats": {
+		"files": 63,
+		"lines": 8395,
+		"nosec": 0,
+		"found": 40
+	},
+	"GosecVersion": "dev"
+}
