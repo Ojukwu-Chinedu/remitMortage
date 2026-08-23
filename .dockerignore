@@ -20,6 +20,8 @@ dist/
 /proto
 /networks
 /adr
+# Keep genesis template for Docker node init
+!networks/devnet/genesis-template.json
 
 # Ignore any other unnecessary files
 *.log

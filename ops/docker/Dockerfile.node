@@ -79,6 +79,8 @@ RUN mkdir -p /home/nonroot/.ark && chown -R nonroot:nonroot /home/nonroot
 
 # Copy entrypoint
 COPY ops/docker/entrypoint.sh /entrypoint.sh
+COPY ops/docker/setup-devnet.sh /setup-devnet.sh
+COPY networks/devnet/genesis-template.json /genesis-template.json
 RUN chmod +x /entrypoint.sh
 
 # P2P, RPC, Prometheus metrics
