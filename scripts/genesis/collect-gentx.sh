@@ -29,7 +29,7 @@
 # accepted as final for a real mainnet genesis.
 set -euo pipefail
 
-BIN="${MANTRACHAIND_BIN:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/build/mantrachaind}"
+BIN="${ARKD_BIN:-${MANTRACHAIND_BIN:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/build/arkd}}"
 
 GENTX_DIR="${1:?usage: collect-gentx.sh <gentx-dir> <base-genesis.json> [output-genesis.json]}"
 BASE_GENESIS="${2:?usage: collect-gentx.sh <gentx-dir> <base-genesis.json> [output-genesis.json]}"

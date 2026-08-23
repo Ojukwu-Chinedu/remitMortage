@@ -1,6 +1,6 @@
 ---
 version: 2
-project_name: mantrachaind
+project_name: arkd
 
 env:
   - GO111MODULE=on
@@ -11,9 +11,9 @@ before:
     - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/checksums.txt -O /tmp/checksums.txt
 
 builds:
-  - id: mantrachaind-darwin-amd64
-    main: ./cmd/mantrachaind/main.go
-    binary: mantrachaind
+  - id: arkd-darwin-amd64
+    main: ./cmd/arkd/main.go
+    binary: arkd
     hooks:
       pre:
         - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvmstatic_darwin.a -O /lib/libwasmvmstatic_darwin.a
@@ -30,12 +30,13 @@ builds:
       - -mod=readonly
       - -trimpath
     ldflags:
-      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
-      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
+      - -X github.com/cosmos/cosmos-sdk/version.Name=ark
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=arkd
       - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,static_wasm
       - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -X github.com/MANTRA-Chain/mantrachain/v8/app.NodeDir=.ark
       - -w -s
       - -linkmode=external
     tags:
@@ -44,9 +45,9 @@ builds:
       - pebbledb
       - static_wasm
 
-  - id: mantrachaind-darwin-arm64
-    main: ./cmd/mantrachaind/main.go
-    binary: mantrachaind
+  - id: arkd-darwin-arm64
+    main: ./cmd/arkd/main.go
+    binary: arkd
     hooks:
       pre:
         - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvmstatic_darwin.a -O /lib/libwasmvmstatic_darwin.a
@@ -63,12 +64,13 @@ builds:
       - -mod=readonly
       - -trimpath
     ldflags:
-      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
-      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
+      - -X github.com/cosmos/cosmos-sdk/version.Name=ark
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=arkd
       - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,static_wasm
       - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -X github.com/MANTRA-Chain/mantrachain/v8/app.NodeDir=.ark
       - -w -s
       - -linkmode=external
     tags:
@@ -77,9 +79,9 @@ builds:
       - pebbledb
       - static_wasm
 
-  - id: mantrachaind-linux-amd64
-    main: ./cmd/mantrachaind
-    binary: mantrachaind
+  - id: arkd-linux-amd64
+    main: ./cmd/arkd
+    binary: arkd
     hooks:
       pre:
         - apk add --update linux-headers
@@ -94,12 +96,13 @@ builds:
       - -mod=readonly
       - -trimpath
     ldflags:
-      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
-      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
+      - -X github.com/cosmos/cosmos-sdk/version.Name=ark
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=arkd
       - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
       - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -X github.com/MANTRA-Chain/mantrachain/v8/app.NodeDir=.ark
       - -w -s
       - -linkmode=external
       - -extldflags '-Wl,-z,muldefs -static -lm'
@@ -110,9 +113,9 @@ builds:
       - osusergo
       - pebbledb
 
-  - id: mantrachaind-linux-arm64
-    main: ./cmd/mantrachaind
-    binary: mantrachaind
+  - id: arkd-linux-arm64
+    main: ./cmd/arkd
+    binary: arkd
     hooks:
       pre:
         - apk add --update linux-headers
@@ -127,12 +130,13 @@ builds:
       - -mod=readonly
       - -trimpath
     ldflags:
-      - -X github.com/cosmos/cosmos-sdk/version.Name=mantrachain
-      - -X github.com/cosmos/cosmos-sdk/version.AppName=mantrachaind
+      - -X github.com/cosmos/cosmos-sdk/version.Name=ark
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=arkd
       - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
       - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .ShortCommit }}
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,muslc,osusergo
       - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.CMT_VERSION }}
+      - -X github.com/MANTRA-Chain/mantrachain/v8/app.NodeDir=.ark
       - -w -s
       - -linkmode=external
       - -extldflags '-Wl,-z,muldefs -static -lm'
@@ -146,20 +150,20 @@ builds:
 archives:
   - id: zipped
     builds:
-      - mantrachaind-linux-amd64
-      - mantrachaind-linux-arm64
-      - mantrachaind-darwin-amd64
-      - mantrachaind-darwin-arm64
+      - arkd-linux-amd64
+      - arkd-linux-arm64
+      - arkd-darwin-amd64
+      - arkd-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     format: tar.gz
     files:
       - none*
   - id: binaries
     builds:
-      - mantrachaind-linux-amd64
-      - mantrachaind-linux-arm64
-      - mantrachaind-darwin-amd64
-      - mantrachaind-darwin-arm64
+      - arkd-linux-amd64
+      - arkd-linux-arm64
+      - arkd-darwin-amd64
+      - arkd-darwin-arm64
     name_template: "{{.ProjectName}}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     format: binary
     files:
@@ -192,11 +196,11 @@ release:
 
     ````bash
     git clone https://github.com/{{ .Env.REPO_OWNER }}/{{ .Env.REPO_NAME }}
-    cd mantrachain && git checkout v{{ .Version }}
+    cd ArkConstellation && git checkout v{{ .Version }}
     make install
     ````
 
-  name_template: "Mantrachain v{{.Version}}"
+  name_template: "ArkConstellation v{{.Version}}"
   mode: replace
   draft: true
 # Docs: https://goreleaser.com/customization/announce/

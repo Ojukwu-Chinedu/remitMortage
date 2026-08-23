@@ -1,6 +1,6 @@
 {
   "arkdevnet_9000-1": {
-    "cmd": "../../build/mantrachaind",
+    "cmd": "../../build/arkd",
     "start-flags": "--trace",
 
     "validators": [

@@ -31,16 +31,16 @@ jobs:
       matrix:
         platform:
           - name: Linux x86_64
-            ids: mantrachaind-linux-amd64
+            ids: arkd-linux-amd64
             runner: ubuntu-latest
             cross: false
           - name: Linux aarch64
-            ids: mantrachaind-linux-arm64
+            ids: arkd-linux-arm64
             runner: ubuntu-24.04-arm
             docker-platform: linux/arm64
             cross: false
           - name: MacOS x86_64 and aarch64
-            ids: mantrachaind-darwin-amd64,mantrachaind-darwin-arm64
+            ids: arkd-darwin-amd64,arkd-darwin-arm64
             runner: ubuntu-latest
             cross: true
 
@@ -117,7 +117,7 @@ jobs:
 
           shopt -s nullglob
           found=0
-          for bin in dist/*darwin*/mantrachaind; do
+          for bin in dist/*darwin*/arkd; do
             found=1
             echo "::group::sign+notarize $bin"
             rcodesign sign \
@@ -127,7 +127,7 @@ jobs:
               "$bin"
 
             zip="$WORK/$(basename "$(dirname "$bin")").zip"
-            ( cd "$(dirname "$bin")" && zip -q -X "$zip" mantrachaind )
+            ( cd "$(dirname "$bin")" && zip -q -X "$zip" arkd )
 
             rcodesign notary-submit \
               --api-key-file "$WORK/asc-api-key.json" \
@@ -219,6 +219,6 @@ jobs:
         continue-on-error: true
         with:
           subject-path: |
-            dist/*/mantrachaind*
+            dist/*/arkd*
             dist/*.tar.gz
             dist/sha256sum.txt*

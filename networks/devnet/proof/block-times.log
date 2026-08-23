@@ -1,29 +1,29 @@
 Sampling 15 blocks from http://127.0.0.1:26657 (every 1s)...
-started_at: 2026-08-22T20:15:36Z
-sample=1 height=7 time=2026-08-22T20:15:30.782784Z
-sample=2 height=8 time=2026-08-22T20:15:33.697709Z
-sample=3 height=8 time=2026-08-22T20:15:33.697709Z
-sample=4 height=8 time=2026-08-22T20:15:33.697709Z
-sample=5 height=9 time=2026-08-22T20:15:36.780375Z
-sample=6 height=9 time=2026-08-22T20:15:36.780375Z
-sample=7 height=9 time=2026-08-22T20:15:36.780375Z
-sample=8 height=10 time=2026-08-22T20:15:39.720369Z
-sample=9 height=10 time=2026-08-22T20:15:39.720369Z
-sample=10 height=10 time=2026-08-22T20:15:39.720369Z
-sample=11 height=11 time=2026-08-22T20:15:42.787119Z
-sample=12 height=11 time=2026-08-22T20:15:42.787119Z
-sample=13 height=11 time=2026-08-22T20:15:42.787119Z
-sample=14 height=12 time=2026-08-22T20:15:45.702499Z
-sample=15 height=12 time=2026-08-22T20:15:45.702499Z
+started_at: 2026-08-23T03:19:19Z
+sample=1 height=8 time=2026-08-23T03:19:14.456115Z
+sample=2 height=8 time=2026-08-23T03:19:14.456115Z
+sample=3 height=9 time=2026-08-23T03:19:17.366132Z
+sample=4 height=9 time=2026-08-23T03:19:17.366132Z
+sample=5 height=10 time=2026-08-23T03:19:20.357396Z
+sample=6 height=10 time=2026-08-23T03:19:20.357396Z
+sample=7 height=10 time=2026-08-23T03:19:20.357396Z
+sample=8 height=11 time=2026-08-23T03:19:23.29327Z
+sample=9 height=11 time=2026-08-23T03:19:23.29327Z
+sample=10 height=11 time=2026-08-23T03:19:23.29327Z
+sample=11 height=12 time=2026-08-23T03:19:26.200532Z
+sample=12 height=12 time=2026-08-23T03:19:26.200532Z
+sample=13 height=12 time=2026-08-23T03:19:26.200532Z
+sample=14 height=13 time=2026-08-23T03:19:29.191708Z
+sample=15 height=13 time=2026-08-23T03:19:29.191708Z
 
-heights observed: [7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12]
+heights observed: [8, 8, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13]
 blocks advanced: 5 across the sampling window
 PASS: block height is advancing - devnet is producing blocks.
 
 Computing inter-block time from block headers directly (more precise than RPC polling interval)...
-inter-block deltas (s): [2.914, 2.914, 2.921, 2.954, 2.915, 3.083, 2.94, 3.067, 2.915, 3.071]
-average block time: 2.969s over 10 intervals (heights 3-13)
-WARN: average block time 2.969s is outside the 1-2s target band - check timeout_commit/timeout_propose in networks/devnet/pystarport.json.
+inter-block deltas (s): [2.937, 3.008, 2.914, 2.911, 2.949, 2.91, 2.991, 2.936, 2.907, 2.991]
+average block time: 2.946s over 10 intervals (heights 3-13)
+WARN: average block time 2.946s is outside the 1-2s target band - check timeout_commit/timeout_propose in networks/devnet/pystarport.json.
 
-finished_at: 2026-08-22T20:15:52Z
+finished_at: 2026-08-23T03:19:35Z
 

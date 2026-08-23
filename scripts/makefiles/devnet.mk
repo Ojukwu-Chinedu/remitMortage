@@ -10,7 +10,7 @@ DEVNET_DATA      := $(DEVNET_DIR)/data
 DEVNET_VENV      := $(DEVNET_DIR)/.venv-pystarport
 DEVNET_CHAIN_ID  := arkdevnet_9000-1
 DEVNET_BASE_PORT := 26650
-DEVNET_BIN       ?= $(CURDIR)/build/mantrachaind
+DEVNET_BIN       ?= $(CURDIR)/build/arkd
 # node0 (sentry-0) RPC port = base_port + 7 (pystarport's ports.rpc_port offset)
 DEVNET_RPC       := http://127.0.0.1:26657
 # node0 (sentry-0) EVM JSON-RPC port (only active when manually enabled)
@@ -36,7 +36,7 @@ devnet-check-genesis-sync:
 devnet-init: devnet-venv devnet-check-genesis-sync
 	@if [ ! -x "$(DEVNET_BIN)" ]; then \
 		echo "!!! DEVNET_BIN not found or not executable: $(DEVNET_BIN)" >&2; \
-		echo "    Build/copy the mantrachaind binary there, or set DEVNET_BIN to a release binary path." >&2; \
+		echo "    Build/copy the arkd binary there, or set DEVNET_BIN to a release binary path." >&2; \
 		exit 1; \
 	fi
 	@echo ">>> Wiping previous devnet state at $(DEVNET_DATA)"
@@ -105,6 +105,7 @@ devnet-down:
 		PID=$$(cat $(DEVNET_DATA)/pystarport.pid); \
 		kill $$PID 2>/dev/null || true; \
 		sleep 1; \
+		pkill -f "arkd.*$(DEVNET_DATA)" 2>/dev/null || true; \
 		pkill -f "mantrachaind.*$(DEVNET_DATA)" 2>/dev/null || true; \
 		rm -f $(DEVNET_DATA)/pystarport.pid; \
 		echo ">>> Devnet stopped."; \
