@@ -1,0 +1,77 @@
+# AlertManager configuration for ArkConstellation.
+#
+# Routes alerts to configured receivers (Slack, email, PagerDuty).
+# This is a default configuration for local devnet use.
+# For production, update the receiver credentials below.
+#
+# AlertManager UI: http://localhost:9093
+
+global:
+  resolve_timeout: 5m
+
+# Default route — all alerts go here unless matched
+route:
+  receiver: "default"
+  group_by: ["alertname", "network"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 1h
+
+  # Severity-based routing
+  routes:
+    - match:
+        severity: critical
+      receiver: "critical"
+      group_wait: 10s
+      repeat_interval: 5m
+
+    - match:
+        severity: warning
+      receiver: "warning"
+      repeat_interval: 30m
+
+# Inhibition rules — suppress lower severity when critical is firing
+inhibit_rules:
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal: ["alertname", "network"]
+
+receivers:
+  # Default receiver — logs to AlertManager UI only
+  - name: "default"
+
+  # Critical alerts — for immediate attention
+  # Configure one of: Slack, PagerDuty, email, or webhook
+  - name: "critical"
+    # Slack example (uncomment and configure):
+    # slack_configs:
+    #   - api_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    #     channel: "#alerts-critical"
+    #     title: "{{ .CommonAnnotations.summary }}"
+    #     text: "{{ .CommonAnnotations.description }}"
+
+    # PagerDuty example (uncomment and configure):
+    # pagerduty_configs:
+    #   - routing_key: "YOUR_PAGERDUTY_ROUTING_KEY"
+    #     description: "{{ .CommonAnnotations.summary }}"
+
+    # Email example (uncomment and configure):
+    # email_configs:
+    #   - to: "ops-team@arkconstellation.org"
+    #     from: "alertmanager@arkconstellation.org"
+    #     smarthost: "smtp.arkconstellation.org:587"
+    #     subject: "[CRITICAL] {{ .CommonAnnotations.summary }}"
+
+  # Warning alerts — for review during working hours
+  - name: "warning"
+    # Slack example:
+    # slack_configs:
+    #   - api_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    #     channel: "#alerts-warning"
+    #     title: "{{ .CommonAnnotations.summary }}"
+
+# Templates for alert message formatting
+# templates:
+#   - "/etc/alertmanager/templates/*.tmpl"

@@ -1,0 +1,210 @@
+# docker-compose.devnet.yml — 4-node ArkConstellation devnet with monitoring
+#
+# Sentry Node Architecture:
+#   sentry-0 <--> validator-0  (validator peers ONLY with its sentry)
+#   sentry-1 <--> validator-1  (validator peers ONLY with its sentry)
+#   sentry-0 <--> sentry-1     (public relay tier)
+#
+# Usage:
+#   1. Run the init script to generate node IDs:
+#      bash ops/docker/init-devnet.sh
+#   2. Start the devnet:
+#      docker compose -f ops/docker/docker-compose.devnet.yml up -d
+#   3. Check node status:
+#      curl -s http://127.0.0.1:26657/status | jq '.result.node_info'
+#   4. Stop:
+#      docker compose -f ops/docker/docker-compose.devnet.yml down -v
+#
+# Prerequisites:
+#   - Docker and Docker Compose installed
+#   - The arkd binary built (or build within the container)
+#
+# Ports (sentries are the only publicly reachable nodes):
+#   sentry-0:  P2P=26656  RPC=26657  LCD=1317  Prometheus=9090
+#   sentry-1:  P2P=26676  RPC=26677  LCD=1317  Prometheus=9091
+#   (validators have NO public ports)
+#   Grafana:    3000
+#   Prometheus: 9092
+#   AlertManager: 9093
+
+services:
+  # -------------------------------------------------------------------
+  # Sentry Node 0 — public relay tier (no signing key material)
+  # -------------------------------------------------------------------
+  sentry-0:
+    build:
+      context: ../../
+      dockerfile: ops/docker/Dockerfile.node
+    container_name: ark-sentry-0
+    environment:
+      NODE_ROLE: sentry
+      SENTRY_INDEX: "0"
+      CHAIN_ID: arkdevnet_9000-1
+      PERSISTENT_PEERS: "VALIDATOR_0_ID@validator-0:26656,SENTRY_1_ID@sentry-1:26656"
+      PRIVATE_PEER_IDS: "VALIDATOR_0_ID"
+      UNCONDITIONAL_PEER_IDS: "VALIDATOR_0_ID"
+      MIN_GAS_PRICES: "0.01esp"
+      PROMETHEUS: "true"
+      ENABLE_API: "true"
+    ports:
+      - "26656:26656"   # P2P
+      - "26657:26657"   # RPC
+      - "1317:1317"     # Cosmos LCD/API
+      - "9090:9090"     # Prometheus metrics
+    volumes:
+      - sentry-0-data:/home/nonroot/.ark
+    networks:
+      - arkdevnet
+    depends_on:
+      - validator-0
+
+  # -------------------------------------------------------------------
+  # Validator 0 — signing node (NEVER publicly reachable)
+  # -------------------------------------------------------------------
+  validator-0:
+    build:
+      context: ../../
+      dockerfile: ops/docker/Dockerfile.node
+    container_name: ark-validator-0
+    environment:
+      NODE_ROLE: validator
+      VALIDATOR_INDEX: "0"
+      CHAIN_ID: arkdevnet_9000-1
+      PERSISTENT_PEERS: "SENTRY_0_ID@sentry-0:26656"
+      PEX: "false"
+      MIN_GAS_PRICES: "0.01esp"
+      PROMETHEUS: "true"
+    # NO ports exposed — validator is never publicly reachable
+    # Prometheus scrape via internal Docker network only
+    networks:
+      - arkdevnet
+    volumes:
+      - validator-0-data:/home/nonroot/.ark
+
+  # -------------------------------------------------------------------
+  # Sentry Node 1 — public relay tier (no signing key material)
+  # -------------------------------------------------------------------
+  sentry-1:
+    build:
+      context: ../../
+      dockerfile: ops/docker/Dockerfile.node
+    container_name: ark-sentry-1
+    environment:
+      NODE_ROLE: sentry
+      SENTRY_INDEX: "1"
+      CHAIN_ID: arkdevnet_9000-1
+      PERSISTENT_PEERS: "VALIDATOR_1_ID@validator-1:26656,SENTRY_0_ID@sentry-0:26656"
+      PRIVATE_PEER_IDS: "VALIDATOR_1_ID"
+      UNCONDITIONAL_PEER_IDS: "VALIDATOR_1_ID"
+      MIN_GAS_PRICES: "0.01esp"
+      PROMETHEUS: "true"
+      ENABLE_API: "true"
+    ports:
+      - "26676:26656"   # P2P
+      - "26677:26657"   # RPC
+      - "1318:1317"     # Cosmos LCD/API
+      - "9091:9090"     # Prometheus metrics
+    volumes:
+      - sentry-1-data:/home/nonroot/.ark
+    networks:
+      - arkdevnet
+    depends_on:
+      - validator-1
+
+  # -------------------------------------------------------------------
+  # Validator 1 — signing node (NEVER publicly reachable)
+  # -------------------------------------------------------------------
+  validator-1:
+    build:
+      context: ../../
+      dockerfile: ops/docker/Dockerfile.node
+    container_name: ark-validator-1
+    environment:
+      NODE_ROLE: validator
+      VALIDATOR_INDEX: "1"
+      CHAIN_ID: arkdevnet_9000-1
+      PERSISTENT_PEERS: "SENTRY_1_ID@sentry-1:26656"
+      PEX: "false"
+      MIN_GAS_PRICES: "0.01esp"
+      PROMETHEUS: "true"
+    networks:
+      - arkdevnet
+    volumes:
+      - validator-1-data:/home/nonroot/.ark
+
+  # -------------------------------------------------------------------
+  # Prometheus — metrics collection
+  # -------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: ark-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9092:9090"
+    networks:
+      - arkdevnet
+
+  # -------------------------------------------------------------------
+  # Grafana — dashboards and visualization
+  # -------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: ark-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: arkconstellation
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - arkdevnet
+    depends_on:
+      - prometheus
+
+  # -------------------------------------------------------------------
+  # AlertManager — alert routing and notification
+  # -------------------------------------------------------------------
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: ark-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ../monitoring/alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - arkdevnet
+
+# -------------------------------------------------------------------
+# Named volumes — persist node data across restarts
+# -------------------------------------------------------------------
+volumes:
+  sentry-0-data:
+  sentry-1-data:
+  validator-0-data:
+  validator-1-data:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:
+
+# -------------------------------------------------------------------
+# Network — all containers on a single bridge network
+# Validators are only reachable from their sentries via Docker DNS
+# -------------------------------------------------------------------
+networks:
+  arkdevnet:
+    driver: bridge
