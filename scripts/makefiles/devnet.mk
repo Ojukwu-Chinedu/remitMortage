@@ -13,8 +13,10 @@ DEVNET_BASE_PORT := 26650
 DEVNET_BIN       ?= $(CURDIR)/build/mantrachaind
 # node0 (sentry-0) RPC port = base_port + 7 (pystarport's ports.rpc_port offset)
 DEVNET_RPC       := http://127.0.0.1:26657
+# node0 (sentry-0) EVM JSON-RPC port (only active when manually enabled)
+DEVNET_JSON_RPC  := http://127.0.0.1:8545
 
-.PHONY: devnet-venv devnet-check-genesis-sync devnet-init devnet-up devnet-down devnet-verify devnet-clean
+.PHONY: devnet-venv devnet-check-genesis-sync devnet-init devnet-up devnet-down devnet-verify devnet-log devnet-explore devnet-clean
 
 devnet-venv:
 	@if [ ! -x "$(DEVNET_VENV)/bin/pystarport" ]; then \
@@ -59,7 +61,7 @@ devnet-up: devnet-init
 		exit 1; \
 	fi
 	@echo ">>> Devnet running (pid $$(cat $(DEVNET_DATA)/pystarport.pid))."
-	@echo ">>> Run 'make devnet-info' for node addresses, 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
+	@echo ">>> Run 'make devnet-info' for node addresses, 'make devnet-explore' for EVM blocks, 'make devnet-log' to tail logs, 'make devnet-verify' to confirm block production, or 'make devnet-down' to stop."
 
 devnet-verify:
 	@$(DEVNET_DIR)/verify-blocks.sh $(DEVNET_RPC)
@@ -77,6 +79,14 @@ devnet-info:
 	@echo ""
 	@echo "=== Staking validators ==="
 	@curl -sS -m 2 "$(DEVNET_RPC)/cosmos/staking/v1beta1/validators?pagination.limit=10" | jq -r '.validators[] | "\(.description.moniker): \(.operator_address) (tokens: \(.tokens))\n  commission: \(.commission.commission_rates.rate)"' 2>/dev/null || echo "  (staking query not reachable)"
+
+devnet-log:
+	@echo "=== Tailing combined devnet log (Ctrl-C to stop) ==="
+	@tail -f $(DEVNET_DATA)/devnet.log
+
+devnet-explore:
+	@echo "=== Real-time EVM block explorer (Ctrl-C to stop) ==="
+	@$(DEVNET_DIR)/explorer.sh $(DEVNET_JSON_RPC)
 
 devnet-down:
 	@if [ -f $(DEVNET_DATA)/pystarport.pid ]; then \
