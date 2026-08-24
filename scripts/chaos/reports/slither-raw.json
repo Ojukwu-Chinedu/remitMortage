@@ -1,0 +1,1010 @@
+{
+  "success": true,
+  "error": null,
+  "results": {
+    "detectors": [
+      {
+        "elements": [
+          {
+            "type": "pragma",
+            "name": "^0.8.20",
+            "source_mapping": {
+              "start": 32,
+              "length": 24,
+              "filename_relative": "scripts/chaos/contracts/TestStorage.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/TestStorage.sol",
+              "filename_short": "scripts/chaos/contracts/TestStorage.sol",
+              "is_dependency": false,
+              "lines": [
+                2
+              ],
+              "starting_column": 1,
+              "ending_column": 25
+            },
+            "type_specific_fields": {
+              "directive": [
+                "solidity",
+                "^",
+                "0.8",
+                ".20"
+              ]
+            }
+          }
+        ],
+        "description": "Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)\n\t- VerbatimInvalidDeduplication\n\t- FullInlinerNonExpressionSplitArgumentEvaluationOrder\n\t- MissingSideEffectsOnSelectorAccess.\nIt is used by:\n\t- ^0.8.20 (scripts/chaos/contracts/TestStorage.sol#2)\n",
+        "markdown": "Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)\n\t- VerbatimInvalidDeduplication\n\t- FullInlinerNonExpressionSplitArgumentEvaluationOrder\n\t- MissingSideEffectsOnSelectorAccess.\nIt is used by:\n\t- [^0.8.20](scripts/chaos/contracts/TestStorage.sol#L2)\n",
+        "first_markdown_element": "scripts/chaos/contracts/TestStorage.sol#L2",
+        "id": "d31c2fcaecf79a94b523ad27eedd63e6ec1c9080dd94349e93f87110b9842af3",
+        "check": "solc-version",
+        "impact": "Informational",
+        "confidence": "High"
+      },
+      {
+        "elements": [
+          {
+            "type": "function",
+            "name": "testStakingDelegate",
+            "source_mapping": {
+              "start": 5598,
+              "length": 259,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122
+              ],
+              "starting_column": 5,
+              "ending_column": 6
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "contract",
+                "name": "PrecompileHarness",
+                "source_mapping": {
+                  "start": 3869,
+                  "length": 2509,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    89,
+                    90,
+                    91,
+                    92,
+                    93,
+                    94,
+                    95,
+                    96,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104,
+                    105,
+                    106,
+                    107,
+                    108,
+                    109,
+                    110,
+                    111,
+                    112,
+                    113,
+                    114,
+                    115,
+                    116,
+                    117,
+                    118,
+                    119,
+                    120,
+                    121,
+                    122,
+                    123,
+                    124,
+                    125,
+                    126,
+                    127,
+                    128,
+                    129,
+                    130,
+                    131,
+                    132,
+                    133
+                  ],
+                  "starting_column": 1,
+                  "ending_column": 2
+                }
+              },
+              "signature": "testStakingDelegate(string,uint256)"
+            }
+          },
+          {
+            "type": "node",
+            "name": "success = IStaking(STAKING_ADDR).delegate(validator,amount)",
+            "source_mapping": {
+              "start": 5704,
+              "length": 65,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                119
+              ],
+              "starting_column": 9,
+              "ending_column": 74
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testStakingDelegate",
+                "source_mapping": {
+                  "start": 5598,
+                  "length": 259,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    118,
+                    119,
+                    120,
+                    121,
+                    122
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testStakingDelegate(string,uint256)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "external_calls"
+            }
+          },
+          {
+            "type": "node",
+            "name": "HarnessStakingDelegated(validator,amount)",
+            "source_mapping": {
+              "start": 5779,
+              "length": 47,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                120
+              ],
+              "starting_column": 9,
+              "ending_column": 56
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testStakingDelegate",
+                "source_mapping": {
+                  "start": 5598,
+                  "length": 259,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    118,
+                    119,
+                    120,
+                    121,
+                    122
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testStakingDelegate(string,uint256)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "event"
+            }
+          }
+        ],
+        "description": "Reentrancy in PrecompileHarness.testStakingDelegate(string,uint256) (scripts/chaos/contracts/Precompiles.sol#118-122):\n\tExternal calls:\n\t- success = IStaking(STAKING_ADDR).delegate(validator,amount) (scripts/chaos/contracts/Precompiles.sol#119)\n\tEvent emitted after the call(s):\n\t- HarnessStakingDelegated(validator,amount) (scripts/chaos/contracts/Precompiles.sol#120)\n",
+        "markdown": "Reentrancy in [PrecompileHarness.testStakingDelegate(string,uint256)](scripts/chaos/contracts/Precompiles.sol#L118-L122):\n\tExternal calls:\n\t- [success = IStaking(STAKING_ADDR).delegate(validator,amount)](scripts/chaos/contracts/Precompiles.sol#L119)\n\tEvent emitted after the call(s):\n\t- [HarnessStakingDelegated(validator,amount)](scripts/chaos/contracts/Precompiles.sol#L120)\n",
+        "first_markdown_element": "scripts/chaos/contracts/Precompiles.sol#L118-L122",
+        "id": "46b52cf01da6a8cb49917aa0be43bf3d749afe8963207fdede0c92f7aa4375fb",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium"
+      },
+      {
+        "elements": [
+          {
+            "type": "function",
+            "name": "testBankTransfer",
+            "source_mapping": {
+              "start": 5334,
+              "length": 258,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116
+              ],
+              "starting_column": 5,
+              "ending_column": 6
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "contract",
+                "name": "PrecompileHarness",
+                "source_mapping": {
+                  "start": 3869,
+                  "length": 2509,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    89,
+                    90,
+                    91,
+                    92,
+                    93,
+                    94,
+                    95,
+                    96,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104,
+                    105,
+                    106,
+                    107,
+                    108,
+                    109,
+                    110,
+                    111,
+                    112,
+                    113,
+                    114,
+                    115,
+                    116,
+                    117,
+                    118,
+                    119,
+                    120,
+                    121,
+                    122,
+                    123,
+                    124,
+                    125,
+                    126,
+                    127,
+                    128,
+                    129,
+                    130,
+                    131,
+                    132,
+                    133
+                  ],
+                  "starting_column": 1,
+                  "ending_column": 2
+                }
+              },
+              "signature": "testBankTransfer(string,string,uint256)"
+            }
+          },
+          {
+            "type": "node",
+            "name": "success = IBank(BANK_ADDR).send(to,denom,amount)",
+            "source_mapping": {
+              "start": 5453,
+              "length": 55,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                113
+              ],
+              "starting_column": 9,
+              "ending_column": 64
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testBankTransfer",
+                "source_mapping": {
+                  "start": 5334,
+                  "length": 258,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    112,
+                    113,
+                    114,
+                    115,
+                    116
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testBankTransfer(string,string,uint256)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "external_calls"
+            }
+          },
+          {
+            "type": "node",
+            "name": "HarnessBankTransfer(to,denom,amount)",
+            "source_mapping": {
+              "start": 5518,
+              "length": 43,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                114
+              ],
+              "starting_column": 9,
+              "ending_column": 52
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testBankTransfer",
+                "source_mapping": {
+                  "start": 5334,
+                  "length": 258,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    112,
+                    113,
+                    114,
+                    115,
+                    116
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testBankTransfer(string,string,uint256)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "event"
+            }
+          }
+        ],
+        "description": "Reentrancy in PrecompileHarness.testBankTransfer(string,string,uint256) (scripts/chaos/contracts/Precompiles.sol#112-116):\n\tExternal calls:\n\t- success = IBank(BANK_ADDR).send(to,denom,amount) (scripts/chaos/contracts/Precompiles.sol#113)\n\tEvent emitted after the call(s):\n\t- HarnessBankTransfer(to,denom,amount) (scripts/chaos/contracts/Precompiles.sol#114)\n",
+        "markdown": "Reentrancy in [PrecompileHarness.testBankTransfer(string,string,uint256)](scripts/chaos/contracts/Precompiles.sol#L112-L116):\n\tExternal calls:\n\t- [success = IBank(BANK_ADDR).send(to,denom,amount)](scripts/chaos/contracts/Precompiles.sol#L113)\n\tEvent emitted after the call(s):\n\t- [HarnessBankTransfer(to,denom,amount)](scripts/chaos/contracts/Precompiles.sol#L114)\n",
+        "first_markdown_element": "scripts/chaos/contracts/Precompiles.sol#L112-L116",
+        "id": "9073fea4d9b09b517a2632ed1c011d6fe1ca577f455a8a94648d162150c63bad",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium"
+      },
+      {
+        "elements": [
+          {
+            "type": "function",
+            "name": "testClaimAndConvert",
+            "source_mapping": {
+              "start": 5863,
+              "length": 321,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128
+              ],
+              "starting_column": 5,
+              "ending_column": 6
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "contract",
+                "name": "PrecompileHarness",
+                "source_mapping": {
+                  "start": 3869,
+                  "length": 2509,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    89,
+                    90,
+                    91,
+                    92,
+                    93,
+                    94,
+                    95,
+                    96,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104,
+                    105,
+                    106,
+                    107,
+                    108,
+                    109,
+                    110,
+                    111,
+                    112,
+                    113,
+                    114,
+                    115,
+                    116,
+                    117,
+                    118,
+                    119,
+                    120,
+                    121,
+                    122,
+                    123,
+                    124,
+                    125,
+                    126,
+                    127,
+                    128,
+                    129,
+                    130,
+                    131,
+                    132,
+                    133
+                  ],
+                  "starting_column": 1,
+                  "ending_column": 2
+                }
+              },
+              "signature": "testClaimAndConvert(address,uint32,string)"
+            }
+          },
+          {
+            "type": "node",
+            "name": "amount = IDistrClaim(DISTRCLAIM_ADDR).claimRewardsAndConvertCoin(delegator,maxRetrieve,denom)",
+            "source_mapping": {
+              "start": 5991,
+              "length": 103,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                125
+              ],
+              "starting_column": 9,
+              "ending_column": 112
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testClaimAndConvert",
+                "source_mapping": {
+                  "start": 5863,
+                  "length": 321,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    124,
+                    125,
+                    126,
+                    127,
+                    128
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testClaimAndConvert(address,uint32,string)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "external_calls"
+            }
+          },
+          {
+            "type": "node",
+            "name": "HarnessClaimRewards(delegator,denom,amount)",
+            "source_mapping": {
+              "start": 6104,
+              "length": 50,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                126
+              ],
+              "starting_column": 9,
+              "ending_column": 59
+            },
+            "type_specific_fields": {
+              "parent": {
+                "type": "function",
+                "name": "testClaimAndConvert",
+                "source_mapping": {
+                  "start": 5863,
+                  "length": 321,
+                  "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                  "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                  "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                  "is_dependency": false,
+                  "lines": [
+                    124,
+                    125,
+                    126,
+                    127,
+                    128
+                  ],
+                  "starting_column": 5,
+                  "ending_column": 6
+                },
+                "type_specific_fields": {
+                  "parent": {
+                    "type": "contract",
+                    "name": "PrecompileHarness",
+                    "source_mapping": {
+                      "start": 3869,
+                      "length": 2509,
+                      "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+                      "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+                      "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+                      "is_dependency": false,
+                      "lines": [
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127,
+                        128,
+                        129,
+                        130,
+                        131,
+                        132,
+                        133
+                      ],
+                      "starting_column": 1,
+                      "ending_column": 2
+                    }
+                  },
+                  "signature": "testClaimAndConvert(address,uint32,string)"
+                }
+              }
+            },
+            "additional_fields": {
+              "underlying_type": "event"
+            }
+          }
+        ],
+        "description": "Reentrancy in PrecompileHarness.testClaimAndConvert(address,uint32,string) (scripts/chaos/contracts/Precompiles.sol#124-128):\n\tExternal calls:\n\t- amount = IDistrClaim(DISTRCLAIM_ADDR).claimRewardsAndConvertCoin(delegator,maxRetrieve,denom) (scripts/chaos/contracts/Precompiles.sol#125)\n\tEvent emitted after the call(s):\n\t- HarnessClaimRewards(delegator,denom,amount) (scripts/chaos/contracts/Precompiles.sol#126)\n",
+        "markdown": "Reentrancy in [PrecompileHarness.testClaimAndConvert(address,uint32,string)](scripts/chaos/contracts/Precompiles.sol#L124-L128):\n\tExternal calls:\n\t- [amount = IDistrClaim(DISTRCLAIM_ADDR).claimRewardsAndConvertCoin(delegator,maxRetrieve,denom)](scripts/chaos/contracts/Precompiles.sol#L125)\n\tEvent emitted after the call(s):\n\t- [HarnessClaimRewards(delegator,denom,amount)](scripts/chaos/contracts/Precompiles.sol#L126)\n",
+        "first_markdown_element": "scripts/chaos/contracts/Precompiles.sol#L124-L128",
+        "id": "f2ebe426cb8b6db7c5778ede23888bcccc668e349aba73304c5e773246ea6336",
+        "check": "reentrancy-events",
+        "impact": "Low",
+        "confidence": "Medium"
+      },
+      {
+        "elements": [
+          {
+            "type": "pragma",
+            "name": "^0.8.20",
+            "source_mapping": {
+              "start": 32,
+              "length": 24,
+              "filename_relative": "scripts/chaos/contracts/Precompiles.sol",
+              "filename_absolute": "/Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol",
+              "filename_short": "scripts/chaos/contracts/Precompiles.sol",
+              "is_dependency": false,
+              "lines": [
+                2
+              ],
+              "starting_column": 1,
+              "ending_column": 25
+            },
+            "type_specific_fields": {
+              "directive": [
+                "solidity",
+                "^",
+                "0.8",
+                ".20"
+              ]
+            }
+          }
+        ],
+        "description": "Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)\n\t- VerbatimInvalidDeduplication\n\t- FullInlinerNonExpressionSplitArgumentEvaluationOrder\n\t- MissingSideEffectsOnSelectorAccess.\nIt is used by:\n\t- ^0.8.20 (scripts/chaos/contracts/Precompiles.sol#2)\n",
+        "markdown": "Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)\n\t- VerbatimInvalidDeduplication\n\t- FullInlinerNonExpressionSplitArgumentEvaluationOrder\n\t- MissingSideEffectsOnSelectorAccess.\nIt is used by:\n\t- [^0.8.20](scripts/chaos/contracts/Precompiles.sol#L2)\n",
+        "first_markdown_element": "scripts/chaos/contracts/Precompiles.sol#L2",
+        "id": "992e5d90595cac37123b4981b6d94c90d5795c7b9e0deece29986976fd23a7d9",
+        "check": "solc-version",
+        "impact": "Informational",
+        "confidence": "High"
+      }
+    ]
+  }
+}
