@@ -51,6 +51,24 @@ func TestParseChainID(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name:      "Large 64-bit unsigned chain ID beyond int32",
+			chainID:   "large_42949672950-1",
+			expectID:  42949672950,
+			expectErr: false,
+		},
+		{
+			name:      "Max uint64 chain ID representation",
+			chainID:   "max_18446744073709551615-1",
+			expectID:  18446744073709551615,
+			expectErr: false,
+		},
+		{
+			name:      "Overflowing uint64 value",
+			chainID:   "overflow_18446744073709551616-1",
+			expectID:  0,
+			expectErr: true,
+		},
+		{
 			name:      "Invalid chain ID format",
 			chainID:   "invalid-chain-no-number",
 			expectID:  0,
