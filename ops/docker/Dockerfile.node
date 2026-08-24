@@ -1,0 +1,97 @@
+# syntax=docker/dockerfile:1
+#
+# ArkConstellation Node — Validator or Sentry
+#
+# This single Dockerfile builds both validator and sentry nodes. The role
+# (validator vs. sentry) and topology are configured at runtime via
+# environment variables, not baked into the image. This follows the
+# industry-standard pattern: one image, configurable at deploy time.
+#
+# Build:
+#   docker build -f ops/docker/Dockerfile.node -t arkconstellation-node .
+#
+# Run (sentry):
+#   docker run -e NODE_ROLE=sentry -e SENTRY_INDEX=0 \
+#     -e PERSISTENT_PEERS="tcp://<validator_node_id>@validator:26656" \
+#     -p 26656:26656 -p 26657:26657 -p 9090:9090 \
+#     arkconstellation-node
+#
+# Run (validator):
+#   docker run -e NODE_ROLE=validator -e VALIDATOR_INDEX=0 \
+#     -e PERSISTENT_PEERS="tcp://<sentry_node_id>@sentry:26656" \
+#     arkconstellation-node
+#
+# See ops/runbooks/node-topology.md for the full sentry architecture diagram.
+
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache \
+    ca-certificates \
+    build-base \
+    linux-headers \
+    binutils-gold \
+    git \
+    wget
+
+WORKDIR /src/app
+
+# Download Go dependencies (cached unless go.mod/go.sum change)
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+# Download CosmWasm libwasmvm
+RUN ARCH=$(uname -m) && \
+    WASMVM_VERSION=$(go list -m github.com/CosmWasm/wasmvm/v3 | sed 's/.* //') && \
+    wget -q https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/libwasmvm_muslc.$ARCH.a \
+        -O /lib/libwasmvm_muslc.$ARCH.a && \
+    wget -q https://github.com/CosmWasm/wasmvm/releases/download/$WASMVM_VERSION/checksums.txt \
+        -O /tmp/checksums.txt && \
+    sha256sum /lib/libwasmvm_muslc.$ARCH.a | \
+        grep $(cat /tmp/checksums.txt | grep libwasmvm_muslc.$ARCH | cut -d ' ' -f 1)
+
+COPY . .
+
+# Build arkd binary
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    LEDGER_ENABLED=true BUILD_TAGS='muslc osusergo' LINK_STATICALLY=true make build
+
+# --------------------------------------------------------
+# Runtime
+# --------------------------------------------------------
+FROM alpine:3.19
+
+RUN apk add --no-cache \
+    ca-certificates \
+    jq \
+    curl \
+    tini \
+    && addgroup -g 1025 nonroot \
+    && adduser -D nonroot -u 1025 -G nonroot
+
+COPY --from=builder /src/app/build/arkd /usr/local/bin/arkd
+RUN ln -sf /usr/local/bin/arkd /usr/local/bin/mantrachaind
+
+# Node data and config
+RUN mkdir -p /home/nonroot/.ark && chown -R nonroot:nonroot /home/nonroot
+
+# Copy entrypoint
+COPY ops/docker/entrypoint.sh /entrypoint.sh
+COPY ops/docker/setup-devnet.sh /setup-devnet.sh
+COPY networks/devnet/genesis-template.json /genesis-template.json
+RUN chmod +x /entrypoint.sh
+
+# P2P, RPC, Prometheus metrics
+EXPOSE 26656 26657 9090
+
+USER nonroot
+WORKDIR /home/nonroot
+
+# Health check: CometBFT RPC /status endpoint
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -sf http://127.0.0.1:26657/status > /dev/null 2>&1 || exit 1
+
+ENTRYPOINT ["tini", "--", "/entrypoint.sh"]
+CMD ["start"]

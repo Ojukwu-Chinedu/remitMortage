@@ -1,0 +1,79 @@
+# Prometheus configuration for ArkConstellation devnet monitoring.
+#
+# Scrapes metrics from:
+#   - CometBFT consensus metrics (via /metrics on each node's Prometheus port)
+#   - EVM JSON-RPC metrics (if exposed)
+#   - System metrics via node_exporter
+#   - AlertManager health
+#
+# In Docker Compose, nodes are reachable by service name (e.g., sentry-0:9090).
+# For non-Docker setups, replace hostnames with actual IPs.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  external_labels:
+    project: arkconstellation
+    environment: devnet
+
+# Alert rules evaluation
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+# AlertManager endpoint
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # ---------------------------------------------------------------
+  # CometBFT / Cosmos SDK metrics from each node's /metrics endpoint
+  # CometBFT exposes Prometheus metrics on port 26660 (configurable)
+  # via config.toml: [prometheus] prometheus_listen_addr = ":26660"
+  # In Docker Compose, each node's Prometheus port is mapped to a
+  # unique host port (sentry-0=9090, sentry-1=9091, etc.)
+  # ---------------------------------------------------------------
+  - job_name: "cometbft"
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          # Docker Compose service names (bridge network DNS)
+          - "sentry-0:9090"
+          - "sentry-1:9090"
+          # Validators also expose metrics but are only reachable
+          # from within the Docker network
+          - "validator-0:9090"
+          - "validator-1:9090"
+        labels:
+          network: devnet
+
+  # ---------------------------------------------------------------
+  # EVM metrics — cosmos_evm_* metrics are NOT currently available.
+  # The cosmos/evm module registers feemarket (base fee, gas), EVM
+  # tx counts, and state metrics, but the EVM HTTP JSON-RPC server
+  # starts and immediately stops (upstream lifecycle bug). Once
+  # fixed, add a scrape job for the EVM metrics endpoint here.
+  # ---------------------------------------------------------------
+
+  # ---------------------------------------------------------------
+  # System metrics via Prometheus node_exporter
+  # Runs as a Docker sidecar, exposing host-level CPU, RAM, disk,
+  # and network metrics.
+  # ---------------------------------------------------------------
+  - job_name: "node-exporter"
+    static_configs:
+      - targets:
+          - "node-exporter:9100"
+        labels:
+          network: devnet
+
+  # ---------------------------------------------------------------
+  # Prometheus self-monitoring
+  # ---------------------------------------------------------------
+  - job_name: "prometheus"
+    static_configs:
+      - targets:
+          - "localhost:9090"

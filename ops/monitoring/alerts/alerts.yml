@@ -1,0 +1,191 @@
+# ArkConstellation Alert Rules
+#
+# These rules define alerts for chain health, validator status, and
+# infrastructure issues. They are evaluated by Prometheus and routed
+# to AlertManager for notification.
+#
+# Groups:
+#   - chain: Block production, consensus health
+#   - validator: Validator status, jailing, signing
+#   - infrastructure: Node reachability, sync status, system resources
+
+groups:
+  # -----------------------------------------------------------------
+  # Chain Health Alerts
+  # -----------------------------------------------------------------
+  - name: chain
+    rules:
+      # Chain not producing blocks
+      - alert: ChainNotProducing
+        expr: delta(cometbft_consensus_height[30s]) == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: consensus
+        annotations:
+          summary: "Chain not producing blocks"
+          description: >
+            Block height has not advanced in 30 seconds. The chain may be
+            halted or experiencing consensus failure. Check validator nodes
+            and network connectivity.
+
+      # Consensus round taking too long
+      - alert: ConsensusRoundSlow
+        expr: cometbft_consensus_rounds > 2
+        for: 1m
+        labels:
+          severity: warning
+          component: consensus
+        annotations:
+          summary: "Consensus round taking unusually long"
+          description: >
+            The consensus round number is {{ $value }}, indicating repeated
+            failed attempts to reach agreement. This may indicate network
+            partition or validator connectivity issues.
+
+      # Missed blocks (>3 consecutive)
+      - alert: MissedBlocks
+        expr: increase(cometbft_consensus_height[1m]) == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: consensus
+        annotations:
+          summary: "Missed blocks detected"
+          description: >
+            No blocks produced in the last minute. Expected ~30-60 blocks
+            at 1-2s block time. Possible consensus failure or all
+            validators offline.
+
+  # -----------------------------------------------------------------
+  # Validator Health Alerts
+  # -----------------------------------------------------------------
+  - name: validator
+    rules:
+      # Validator jailed
+      # NOTE: cometbft_slashing_jailed_validators is not exported by CometBFT's
+      # /metrics endpoint. The closest proxy is cometbft_consensus_validators
+      # dropping below the expected validator count. Uncomment and adjust the
+      # threshold once the slashing metrics are enabled or a custom exporter
+      # is added.
+      #
+      # - alert: ValidatorJailed
+      #   expr: cometbft_consensus_validators < 4
+      #   for: 0s
+      #   labels:
+      #     severity: critical
+      #     component: validator
+      #   annotations:
+      #     summary: "Validator jailed"
+      #     description: >
+      #       Active validator count dropped below expected (4). A validator
+      #       may have been jailed for downtime or double-signing.
+
+      # Validator missing signatures (potential jailing)
+      - alert: ValidatorMissingSignatures
+        expr: cometbft_consensus_missing_validators > 0
+        for: 2m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Validator missing block signatures"
+          description: >
+            Validator is missing block signatures at a rate of
+            {{ $value | humanizePercentage }}. At this rate, the validator
+            will be jailed within the signed_blocks_window period.
+
+      # Validator power dropped to zero
+      - alert: ValidatorPowerZero
+        expr: cometbft_consensus_validators_power == 0
+        for: 1m
+        labels:
+          severity: warning
+          component: validator
+        annotations:
+          summary: "Validator has zero voting power"
+          description: >
+            A validator's voting power has dropped to zero. This may
+            indicate the validator has been jailed, unbonded, or removed
+            from the active validator set.
+
+  # -----------------------------------------------------------------
+  # Infrastructure Alerts
+  # -----------------------------------------------------------------
+  - name: infrastructure
+    rules:
+      # Node unreachable
+      - alert: NodeUnreachable
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Node {{ $labels.instance }} unreachable"
+          description: >
+            Prometheus cannot scrape metrics from {{ $labels.instance }}.
+            The node may be down, restarting, or experiencing network issues.
+
+      # RPC desync (node lagging behind peers)
+      - alert: RPCDesync
+        expr: (max(cometbft_consensus_height) - cometbft_consensus_height) > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: sync
+        annotations:
+          summary: "Node sync lagging behind peers"
+          description: >
+            Node {{ $labels.instance }} is more than 5 blocks behind the
+            highest node in the cluster. Current height: {{ $value }}. The node
+            may be experiencing disk I/O issues or network partition.
+
+      # High base fee spike (>5x baseline)
+      # NOTE: cosmos_evm_feemarket_base_fee is only available when the EVM HTTP
+      # JSON-RPC server is running. It is currently broken upstream (cosmos/evm
+      # lifecycle bug — EVM HTTP starts then stops). Uncomment once the EVM
+      # metrics endpoint is fixed.
+      #
+      # - alert: BaseFeeSpike
+      #   expr: |
+      #     cosmos_evm_feemarket_base_fee
+      #     > 5 * avg_over_time(cosmos_evm_feemarket_base_fee[1h])
+      #   for: 2m
+      #   labels:
+      #     severity: warning
+      #     component: evm
+      #   annotations:
+      #     summary: "EVM base fee spike detected"
+      #     description: >
+      #       The EVM base fee has spiked to {{ $value }} which is more than
+      #       5x the 1-hour average. This may indicate high demand or a
+      #       fee market configuration issue.
+
+      # High disk usage
+      - alert: HighDiskUsage
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Disk usage above 85%"
+          description: >
+            Disk usage on {{ $labels.instance }} is above 85%.
+            Current free space: {{ $value | humanizePercentage }}.
+            Consider cleanup or expansion.
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: >
+            CPU usage is above 85% for 5 minutes.
+            This may impact block production performance.
