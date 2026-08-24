@@ -307,3 +307,18 @@ for this value instead of re-declaring a second, driftable copy inline.
   genesis in this repo overrides it to a dedicated devnet-only test
   address specifically to avoid ever accidentally carrying that real
   address into a rehearsal artifact.
+
+---
+
+## Re-verification — `track/2-add-devnet-info` (2026-08-23)
+
+Re-ran the Elisha handoff pipeline from a clean working state to confirm the genesis assembly tooling and devnet observability targets still work after the `devnet-info`/`devnet-log`/`devnet-explore` changes:
+
+- `make devnet-info` works against the running 4-node devnet (validators 1 peer, sentries 2 peers, latest block heights match).
+- `make devnet-log` tails the combined `devnet.log`.
+- `make devnet-explore` prints live EVM blocks via `networks/devnet/explorer.sh`.
+- `./scripts/genesis/collect-gentx.sh scripts/genesis/rehearsal/gentx scripts/genesis/rehearsal/base-genesis.json /tmp/rehearsal-genesis-2026-08-23.json` still accepts `valid-0.json` and `valid-1.json`, rejects `bad-overclaim.json` and `bad-tampered.json`.
+- `./scripts/genesis/hash-genesis.sh /tmp/rehearsal-genesis-2026-08-23.json` reproduces the same canonical SHA-256 as before: `d0e283f6595fb07cb6fd973f68762f78b783d2ad7a63e074782ea5ee96316d61`.
+- Binary used for the re-run reports version `track-2-consensus-genesis-7e2a522b` (the `ark-v0.1.0-alpha` / post-`track/1-state-machine` build); it does not include the Makefile-only `track/2-add-devnet-info` commits, which is correct for genesis validation because those changes do not affect state-machine output.
+
+No new blockers surfaced. Elisha Day 3 remains blocked on the same external inputs: real validator `gentx` files, total token supply, governance deposit minima, admin/upgrade multisig, and governance timelock sign-off.
