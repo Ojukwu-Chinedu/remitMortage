@@ -1,0 +1,17 @@
+# Grafana dashboard provisioning — auto-loads dashboards from /var/lib/grafana/dashboards/
+# This file is mounted into Grafana at /etc/grafana/provisioning/dashboards/
+
+apiVersion: 1
+
+providers:
+  - name: "ArkConstellation"
+    orgId: 1
+    folder: "ArkConstellation"
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

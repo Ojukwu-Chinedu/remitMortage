@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ArkConstellation Validator Failure & Liveness Simulator (Track 3 Day 2)
+# ArkConstellation Validator Fault Tolerance & Liveness Test (Track 3 Day 2)
 # ==============================================================================
 
 set -euo pipefail

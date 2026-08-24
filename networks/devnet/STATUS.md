@@ -2,7 +2,7 @@
 
 **Status: READY for downstream work, with the caveats below** (one WARN, not
 a failure — see the block-time row).
-Last full re-verification: 2026-08-22 (UTC), on `track/2-consensus-genesis`
+Last full re-verification: 2026-08-23 (UTC), on `track/2-add-devnet-info`
 after merging `origin/base-genesis` (which brought in `track/1-state-machine`
 and `docs/decisions/module-and-config-decisions.md`), rebuilding the binary
 from that merged code, and reconciling every genesis parameter in this track
@@ -22,6 +22,8 @@ match the now-locked values (see `GAPS.md`'s reconciliation note for specifics).
 | Gentx validation pipeline (tampered sig + overclaim fixtures rejected, valid accepted, exit code 1 confirmed non-tee'd) | PASS | `scripts/genesis/rehearsal/transcript.log` |
 | `collect-gentx.sh`'s account-prefix derivation (fixed this session - was hardcoded to `"ark"`, now derived from the base genesis) | PASS | same transcript; also round-trip tested standalone, see `GAPS.md` |
 | `check-genesis-sync.py` (genesis-template.json / pystarport.json drift check) | PASS | ran directly, exits 0 |
+| `make devnet-info` / `make devnet-log` / `make devnet-explore` targets and `networks/devnet/explorer.sh` | PASS | PR review fixes applied; `make devnet-explore` prints live EVM blocks |
+| `collect-gentx.sh` + `hash-genesis.sh` re-run on current fixtures | PASS | 2/2 valid accepted, 2/2 bad rejected; canonical SHA-256 reproduced: `d0e283f6...96316d61` |
 
 The block-time WARN is real and not swept under the rug: `timeout_commit`
 was raised from `1s` to the decision-#12-locked `2s`, and the other three

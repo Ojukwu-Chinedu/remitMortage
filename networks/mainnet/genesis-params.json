@@ -55,12 +55,11 @@
     "when the display denom is exactly 18 decimals (our case): the",
     "`decimals == 18` branch hardcodes ExtendedDenom = EvmDenom instead.",
     "",
-    "gov.min_deposit / expedited_min_deposit below are PLACEHOLDER values,",
-    "NOT a final decision - decision #15 explicitly blocks this on the total",
-    "supply figure, which has not been set (see GAPS.md and the doc's Token",
-    "Distribution section, also pending). Do not treat these numbers as",
-    "reviewed or approved; they exist only so this patch produces a bootable",
-    "genesis. Must be revisited before any real mainnet genesis is finalized."
+    "gov.min_deposit = 88,888 KASH and expedited_min_deposit = 888,888 KASH",
+    "are locked values (decision #15). Against the approved 1,000,000,000 KASH",
+    "total supply, these are ~0.0089% and ~0.0889% of supply respectively.",
+    "The Token Distribution section of docs/decisions/module-and-config-decisions.md",
+    "locks the same total supply and allocation table."
   ],
   "consensus": {
     "params": {

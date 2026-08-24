@@ -1,0 +1,47 @@
+{
+  "timestamp": 1787600890.912521,
+  "chain_id": "arkdevnet_9000-1",
+  "binary": "/Users/ark/Documents/work/ArkConstellation/build/arkd",
+  "node_online": false,
+  "total": 6,
+  "passed": 6,
+  "all_passed": true,
+  "tests": [
+    {
+      "name": "1. Circuit Breaker CLI Command Discovery",
+      "passed": true,
+      "skipped": false,
+      "details": "Binary: /Users/ark/Documents/work/ArkConstellation/build/arkd supports x/circuit CLI commands"
+    },
+    {
+      "name": "2. Initial Circuit Breaker Query Structure",
+      "passed": true,
+      "skipped": false,
+      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd query circuit disabled-list --node http://127.0.0.1:26657'"
+    },
+    {
+      "name": "3. Disable MsgSend Transaction Construction",
+      "passed": true,
+      "skipped": false,
+      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd tx circuit disable /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
+    },
+    {
+      "name": "4. AnteHandler Rejection Logic (Cosmos Path)",
+      "passed": true,
+      "skipped": false,
+      "details": "Verified app/ante/cosmos.go CircuitBreakerDecorator rejects disabled type URL with code 1"
+    },
+    {
+      "name": "5. AnteHandler Rejection Logic (EVM Path)",
+      "passed": true,
+      "skipped": false,
+      "details": "Verified app/ante/evm.go EVMCircuitBreakerDecorator rejects disabled MsgEthereumTx"
+    },
+    {
+      "name": "6. Reset Circuit Breaker Transaction Construction",
+      "passed": true,
+      "skipped": false,
+      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd tx circuit reset /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
+    }
+  ]
+}

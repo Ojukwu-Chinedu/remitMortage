@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ArkConstellation Protocol-Level Circuit Breaker Test (Track 3 Day 2)
+# ArkConstellation Protocol Circuit Breaker Test Suite (Track 3 Day 2)
 # ==============================================================================
 
 set -euo pipefail
