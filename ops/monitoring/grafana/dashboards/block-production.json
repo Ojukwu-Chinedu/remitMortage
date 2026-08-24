@@ -167,7 +167,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cometbft_consensus_round_state_round",
+          "expr": "cometbft_consensus_rounds",
           "legendFormat": "{{ instance }}",
           "refId": "A"
         }

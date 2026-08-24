@@ -37,8 +37,8 @@ WORKDIR /src/app
 
 # Download Go dependencies (cached unless go.mod/go.sum change)
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/nonroot/.cache/go-build \
-    --mount=type=cache,target=/nonroot/go/pkg/mod \
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
 # Download CosmWasm libwasmvm
@@ -54,8 +54,8 @@ RUN ARCH=$(uname -m) && \
 COPY . .
 
 # Build arkd binary
-RUN --mount=type=cache,target=/nonroot/.cache/go-build \
-    --mount=type=cache,target=/nonroot/go/pkg/mod \
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
     LEDGER_ENABLED=true BUILD_TAGS='muslc osusergo' LINK_STATICALLY=true make build
 
 # --------------------------------------------------------

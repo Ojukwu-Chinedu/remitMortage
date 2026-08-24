@@ -121,8 +121,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(cometbft_p2p_traffic_total_bytes_total[30s])",
-          "legendFormat": "{{ instance }} {{ direction }}",
+          "expr": "rate(cometbft_p2p_peer_receive_bytes_total[30s]) + rate(cometbft_p2p_peer_send_bytes_total[30s])",
+          "legendFormat": "{{ instance }}",
           "refId": "A"
         }
       ]

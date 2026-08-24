@@ -51,12 +51,11 @@ scrape_configs:
           network: devnet
 
   # ---------------------------------------------------------------
-  # EVM metrics — exposed via CometBFT metrics endpoint on port 9090.
+  # EVM metrics — cosmos_evm_* metrics are NOT currently available.
   # The cosmos/evm module registers feemarket (base fee, gas), EVM
-  # tx counts, and state metrics under the same /metrics endpoint.
-  # EVM JSON-RPC (port 8545) and geth metrics (port 8100) are not
-  # reliably available in this cosmos/evm version, so we rely on
-  # the CometBFT metrics which include EVM module data.
+  # tx counts, and state metrics, but the EVM HTTP JSON-RPC server
+  # starts and immediately stops (upstream lifecycle bug). Once
+  # fixed, add a scrape job for the EVM metrics endpoint here.
   # ---------------------------------------------------------------
 
   # ---------------------------------------------------------------

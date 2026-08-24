@@ -47,7 +47,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cometbft_staking_power",
+          "expr": "cometbft_consensus_validators_power",
           "legendFormat": "{{ moniker }}",
           "refId": "A"
         }
@@ -86,7 +86,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cometbft_slashing_jailed_validators",
+          "expr": "cometbft_consensus_validators",
           "legendFormat": "Jailed Validators",
           "refId": "A"
         }
@@ -122,7 +122,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "1 - rate(cometbft_slashing_missed_blocks_counter[5m])",
+          "expr": "1 - cometbft_consensus_missing_validators",
           "legendFormat": "{{ instance }}",
           "refId": "A"
         }
@@ -157,7 +157,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cometbft_slashing_missed_blocks_counter",
+          "expr": "cometbft_consensus_missing_validators",
           "legendFormat": "{{ instance }}",
           "refId": "A"
         }

@@ -19,9 +19,9 @@ validators are never publicly reachable; only sentry nodes expose RPC/P2P/LCD en
 | File | Purpose |
 |------|---------|
 | `ops/docker/Dockerfile.node` | Multi-stage Dockerfile for both validator and sentry nodes. Builds the `arkd` binary from source (Alpine + CGO + wasmvm). Configurable at runtime via environment variables. |
-| `ops/docker/entrypoint.sh` | Node initialization and startup script. Handles node ID generation, config patching (persistent_peers, PEX, private_peer_ids), and role-based configuration. |
-| `ops/docker/docker-compose.devnet.yml` | 4-node devnet compose file: sentry-0 + validator-0 + sentry-1 + validator-1. Includes monitoring stack (Prometheus, Grafana, AlertManager). |
-| `ops/docker/init-devnet.sh` | Initialization script that generates node IDs and writes a resolved compose file with real peer IDs. |
+| `ops/docker/entrypoint.sh` | Node initialization and startup script. Handles config patching (persistent_peers, PEX, private_peer_ids), and role-based configuration. |
+| `ops/docker/setup-devnet.sh` | One-shot init container that generates all keys, accounts, gentxs, and resolved peer configs. |
+| `ops/docker/docker-compose.devnet.yml` | 4-node devnet compose file with init container, sentry-0 + validator-0 + sentry-1 + validator-1, and monitoring stack (Prometheus, Grafana, AlertManager, node-exporter). |
 
 #### How It Works
 
@@ -31,7 +31,7 @@ validators are never publicly reachable; only sentry nodes expose RPC/P2P/LCD en
    - **Validators:** `pex=false`, peers only their sentry, no public ports exposed
    - **Sentries:** `pex=true`, peers with their validator + the other sentry, public ports exposed
 
-3. **Node ID resolution:** The `init-devnet.sh` script temporarily starts each node to generate its `node_key.json`, extracts the node ID, and writes a resolved compose file with real peer IDs. This is necessary because CometBFT node IDs are generated during `init` and cannot be predicted.
+3. **Genesis setup:** The `setup-devnet.sh` init container runs first, generating all keys, accounts, gentxs with unique consensus keys, and resolved peer configs. All node containers depend on it.
 
 #### Architecture Diagram
 
@@ -59,18 +59,17 @@ validators are never publicly reachable; only sentry nodes expose RPC/P2P/LCD en
 #### Usage
 
 ```bash
-# Initialize and start the devnet
-bash ops/docker/init-devnet.sh
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml up -d
+# Start the devnet with monitoring
+docker compose -f ops/docker/docker-compose.devnet.yml up -d --build
 
 # Check status
 curl -s http://127.0.0.1:26657/status | jq '.result.node_info'
 
 # View logs
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml logs -f
+docker compose -f ops/docker/docker-compose.devnet.yml logs -f
 
 # Stop
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml down -v
+docker compose -f ops/docker/docker-compose.devnet.yml down -v
 ```
 
 ---
@@ -244,16 +243,16 @@ docker stop <container-id> && docker rm <container-id>
 
 ```bash
 # Start full devnet + monitoring
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml up -d
+docker compose -f ops/docker/docker-compose.devnet.yml up -d --build
 
 # View status
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml ps
+docker compose -f ops/docker/docker-compose.devnet.yml ps
 
 # View logs (all services)
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml logs -f
+docker compose -f ops/docker/docker-compose.devnet.yml logs -f
 
 # Stop everything (including volumes)
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml down -v
+docker compose -f ops/docker/docker-compose.devnet.yml down -v
 ```
 
 ### Common Commands
@@ -281,8 +280,8 @@ ops/
 ├── docker/
 │   ├── Dockerfile.node              # Node container definition (validator/sentry)
 │   ├── entrypoint.sh                # Node init and startup script
-│   ├── docker-compose.devnet.yml    # Devnet compose template (with peer ID placeholders)
-│   └── init-devnet.sh               # Generates node IDs and resolves compose file
+│   ├── setup-devnet.sh              # One-shot genesis init container
+│   └── docker-compose.devnet.yml    # Full devnet stack with monitoring
 ├── monitoring/
 │   ├── prometheus.yml               # Prometheus scrape configuration
 │   ├── alerts/

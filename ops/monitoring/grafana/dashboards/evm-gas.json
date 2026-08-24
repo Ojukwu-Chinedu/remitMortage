@@ -18,149 +18,15 @@
   "links": [],
   "panels": [
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": false
-          },
-          "mappings": [],
-          "unit": "wei"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
       "id": 1,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "mode": "markdown",
+        "content": "## EVM Gas & Fees — Pending Upstream Fix\n\nThe `cosmos_evm_*` Prometheus metrics are only exposed when the EVM HTTP JSON-RPC server is running. Due to a known [cosmos/evm lifecycle bug](https://github.com/cosmos/evm/issues/XXX), the EVM HTTP RPC starts and immediately stops, so these metrics are not available.\n\n**Affected metrics:**\n- `cosmos_evm_feemarket_base_fee` (EVM base fee)\n- `cosmos_evm_block_gas_used` (gas consumed per block)\n- `cosmos_evm_tx_total` (EVM transaction throughput)\n\nOnce the upstream bug is fixed, enable `ENABLE_EVM_RPC=true` in the sentry services and uncomment the original dashboard panels.\n\n**Workaround:** Use CometBFT's native metrics for block-level monitoring — see the **Block Production** dashboard."
       },
-      "title": "EVM Base Fee",
-      "description": "Dynamic base fee from the EVM fee market. Spikes indicate high demand.",
-      "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cosmos_evm_feemarket_base_fee",
-          "legendFormat": "base_fee",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": false
-          },
-          "mappings": [],
-          "unit": "gas"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-      "id": 2,
-      "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "title": "Gas Used Per Block",
-      "description": "Total gas consumed by transactions in each block.",
-      "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cosmos_evm_block_gas_used",
-          "legendFormat": "gas_used",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": false
-          },
-          "mappings": [],
-          "unit": "percentunit",
-          "max": 1
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
-      "id": 3,
-      "options": {
-        "legend": { "calcs": ["mean"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "title": "Block Gas Utilization",
-      "description": "Gas used as a percentage of block gas limit. High utilization = network under load.",
-      "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "cosmos_evm_block_gas_used / 75000000",
-          "legendFormat": "utilization",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto",
-            "spanNulls": false
-          },
-          "mappings": [],
-          "unit": "cps"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
-      "id": 4,
-      "options": {
-        "legend": { "calcs": ["mean"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "title": "EVM Transaction Throughput",
-      "description": "EVM transactions per second.",
-      "type": "timeseries",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(cosmos_evm_tx_total[30s])",
-          "legendFormat": "tx/s",
-          "refId": "A"
-        }
-      ]
+      "title": "EVM Metrics Unavailable",
+      "type": "text"
     }
   ],
   "refresh": "10s",
@@ -170,7 +36,7 @@
   "time": { "from": "now-30m", "to": "now" },
   "timepicker": {},
   "timezone": "utc",
-  "title": "ArkConstellation — EVM Gas & Fees",
+  "title": "ArkConstellation — EVM Gas & Fees (requires EVM HTTP RPC — currently broken upstream)",
   "uid": "ark-evm-gas",
   "version": 1
 }

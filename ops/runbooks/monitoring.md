@@ -10,13 +10,10 @@ infrastructure for ArkConstellation nodes.
 ### Start the devnet with monitoring
 
 ```bash
-# 1. Initialize node IDs (one-time setup)
-bash ops/docker/init-devnet.sh
+# Start the devnet with init container and monitoring stack
+docker compose -f ops/docker/docker-compose.devnet.yml up -d --build
 
-# 2. Start the devnet
-docker compose -f ops/docker/docker-compose.devnet-resolved.yml up -d
-
-# 3. Access monitoring
+# Access monitoring
 #    Grafana:       http://localhost:3000  (admin / arkconstellation)
 #    Prometheus:    http://localhost:9092
 #    AlertManager:  http://localhost:9093
@@ -37,7 +34,7 @@ update the Prometheus config targets to point at the host:
    ```
 3. Restart Prometheus:
    ```bash
-   docker compose -f ops/docker/docker-compose.devnet-resolved.yml restart prometheus
+   docker compose -f ops/docker/docker-compose.devnet.yml restart prometheus
    ```
 
 ---
