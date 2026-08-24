@@ -91,9 +91,8 @@ groups:
         annotations:
           summary: "Validator missing block signatures"
           description: >
-            Validator is missing block signatures at a rate of
-            {{ $value | humanizePercentage }}. At this rate, the validator
-            will be jailed within the signed_blocks_window period.
+            {{ $value }} validator(s) currently missing block signatures in consensus.
+            Validators missing signatures consistently over signed_blocks_window will be jailed.
 
       # Validator power dropped to zero
       - alert: ValidatorPowerZero
