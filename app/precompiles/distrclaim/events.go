@@ -46,11 +46,16 @@ func (p *Precompile) emitClaimRewardsAndConvertCoinEvent(
 		return err
 	}
 
+	blockHeight := ctx.BlockHeight()
+	if blockHeight < 0 {
+		blockHeight = 0
+	}
+
 	evm.StateDB.AddLog(&types.Log{
 		Address:     p.ContractAddress,
 		Topics:      []common.Hash{claimRewardsAndConvertCoinEventID, topicAddress(delegator)},
 		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
+		BlockNumber: uint64(blockHeight),
 	})
 
 	return nil
