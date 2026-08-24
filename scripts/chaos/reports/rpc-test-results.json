@@ -38,7 +38,7 @@
       "name": "6. EIP-155 Raw Contract Deployment Signing Verification",
       "passed": true,
       "skipped": false,
-      "details": "Generated Signed Raw Tx: f9053180843b9aca00830f42408080b904dd60a0... (Len: 1332 bytes)"
+      "details": "Generated Signed Raw Tx: 0xf9053180843b9aca00830f42408080b904dd60a0... (Len: 1332 bytes)"
     },
     {
       "name": "7. Contract Execution (setValue)",

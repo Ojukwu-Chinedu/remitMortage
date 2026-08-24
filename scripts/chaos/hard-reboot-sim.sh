@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ArkConstellation Validator Fault Tolerance & Liveness Test (Track 3 Day 2)
+# ArkConstellation Hard Reboot & State Consistency Simulator (Track 3 Day 3)
 # ==============================================================================
 
 set -euo pipefail
@@ -18,4 +18,4 @@ if ! command -v python3 &>/dev/null; then
     fi
 fi
 
-exec "$PYTHON_EXEC" "${SCRIPT_DIR}/validator_failure_sim.py" "$@"
+exec "$PYTHON_EXEC" "${SCRIPT_DIR}/hard_reboot_sim.py" "$@"

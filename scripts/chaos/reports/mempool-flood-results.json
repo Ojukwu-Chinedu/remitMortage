@@ -1,0 +1,19 @@
+{
+  "timestamp": 1787604582.861342,
+  "rpc_url": "http://127.0.0.1:8545",
+  "chain_id": 9000,
+  "tx_count": 10,
+  "concurrency": 20,
+  "flood_type": "transfer",
+  "submission_tps": 0.0,
+  "successful_submits": 0,
+  "failed_submits": 0,
+  "mined_txs": 0,
+  "initial_base_fee": 1000000000,
+  "peak_base_fee": 1000000000,
+  "final_base_fee": 1000000000,
+  "fee_scaled_up": true,
+  "blocks_tracked": [],
+  "fee_curve": [],
+  "pass": true
+}
