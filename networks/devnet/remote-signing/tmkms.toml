@@ -1,0 +1,31 @@
+# Tendermint KMS configuration - single-instance softsign remote signer for
+# validator-0 (node1) in the local devnet. See README.md in this directory
+# for what this proves, what's simulated, and what changes for real
+# validator hardware.
+
+[[chain]]
+id = "arkdevnet_9000-1"
+key_format = { type = "bech32", account_key_prefix = "arkpub", consensus_key_prefix = "arkvalconspub" }
+state_file = "state/arkdevnet_9000-1-consensus.json"
+
+[[providers.softsign]]
+chain_ids = ["arkdevnet_9000-1"]
+key_type = "consensus"
+path = "secrets/arkdevnet_9000-1-consensus.key"
+
+[[validator]]
+chain_id = "arkdevnet_9000-1"
+# Unix socket, not TCP - see README.md's "Known gap" section for why:
+# CometBFT 0.38's TCP privval listener (privval/utils.go:42) generates a
+# fresh random SecretConnection identity key on every node restart with an
+# upstream '// TODO: persist this key so external signer can actually
+# authenticate us' - there is no way to pin the expected peer ID tmkms's
+# tcp:// addr scheme requires. The unix:// listener has no such identity
+# exchange at all (filesystem-permission-secured instead), so it isn't
+# affected. This is realistic for tmkms/validator co-located on one host;
+# see README.md for what a genuinely remote (separate-host) signer needs
+# instead.
+addr = "unix://__TMKMS_SOCKET_PATH__"
+secret_key = "secrets/kms-identity.key"
+protocol_version = "v0.38"
+reconnect = true

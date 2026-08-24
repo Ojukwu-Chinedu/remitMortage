@@ -58,7 +58,7 @@ jobs:
 
       - uses: strangelove-ventures/heighliner-build-action@main
         with:
-          chain: mantrachain
+          chain: arkd
           chains-spec-file: chains.yaml
           clone-key: ${{ secrets.GIT_CLONE_KEY }}
           # heighliner-owner: ${{ github.repository_owner }}

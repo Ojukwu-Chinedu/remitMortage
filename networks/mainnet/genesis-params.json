@@ -1,0 +1,138 @@
+{
+  "_comment": [
+    "Mainnet's genesis-merge-patch (see networks/devnet/genesis-template.json",
+    "for why this is a patch, not a full genesis.json). Unlike the devnet",
+    "version, every value here is a plausible REAL intended production",
+    "parameter — nothing here is shortened for iteration speed. This file",
+    "only covers consensus/staking/slashing/mint/gov/tax/tokenfactory/evm",
+    "denom params; it deliberately does NOT contain account allocations, the",
+    "validator cohort, or gentxs — those don't exist yet (see",
+    "CONTRIBUTING.md's still-open 'native token name, symbol, and initial",
+    "allocations' and 'initial validator set identities' decisions) and must",
+    "never be fabricated here. scripts/genesis/collect-gentx.sh takes a real,",
+    "already-funded base genesis (this patch applied + real allocations",
+    "added via `genesis add-genesis-account`) plus real validator gentx",
+    "submissions, and produces the actual networks/mainnet/genesis-template.json.",
+    "",
+    "Denom: esp is the base unit (1 wei), espees is the intermediate unit",
+    "(10^9 esp, 1 gwei), and KASH is the 18-decimal display unit (10^18 esp,",
+    "1 ether) per app/params/config.go and the decision doc. 1 KASH =",
+    "1_000_000_000_000_000_000 esp = 1_000_000_000 espees. All amounts below",
+    "are in esp (the Coin denom used by staking/mint/gov/evm/crisis and",
+    "in bank.denom_metadata). See GAPS.md.",
+    "",
+    "x/tax.mca_address and x/tokenfactory.fee_collector_address are",
+    "deliberately NOT set here (unlike the devnet template, which uses a",
+    "throwaway placeholder) - x/tax's own default hardcodes a real MANTRA",
+    "mainnet address (x/tax/types/params.go); do not carry that into a real",
+    "genesis without a deliberate decision, and do not invent a fake one",
+    "either. Resolve this when x/tax's keep-or-strip decision lands.",
+    "",
+    "The values below now reflect docs/decisions/module-and-config-decisions.md",
+    "where it locks a number: unbonding_time 21d/1814400s (#10),",
+    "downtime_jail_duration 10min (#11), voting_period/max_deposit_period",
+    "7d/604800s (#13), max_validators 10 (#16).",
+    "",
+    "slash_fraction_double_sign/slash_fraction_downtime below are the REAL",
+    "cosmos-sdk x/slashing defaults, verified directly against the vendored",
+    "source's Default* constants (x/slashing/types/params.go), not copied",
+    "from decision #11's table: DefaultSlashFractionDoubleSign = 1/20 = 5%",
+    "(matches the table), but DefaultSlashFractionDowntime = 1/100 = 1%, NOT",
+    "the '0.01%' the table states - the table appears to have a units error",
+    "(off by 100x from the actual SDK default it says to use). Flagged in",
+    "GAPS.md; the code-verified value (1%, i.e. \"0.010000000000000000\") is",
+    "used here since the decision's own rationale is 'SDK Defaults, do not",
+    "modify' and 0.01% is not what the SDK actually defaults to.",
+    "",
+    "signed_blocks_window (1000) is NOT in the locked table - kept at a",
+    "plausible mainnet-typical value, not the SDK's literal default (100),",
+    "since #11's header covers the 3 explicitly listed sub-parameters, not",
+    "this one.",
+    "",
+    "extended_denom_options.extended_denom is set for documentation accuracy",
+    "only - verified against the real vendored source",
+    "(x/vm/keeper/coin_info.go LoadEvmCoinInfo) that this field is NEVER READ",
+    "when the display denom is exactly 18 decimals (our case): the",
+    "`decimals == 18` branch hardcodes ExtendedDenom = EvmDenom instead.",
+    "",
+    "gov.min_deposit / expedited_min_deposit below are PLACEHOLDER values,",
+    "NOT a final decision - decision #15 explicitly blocks this on the total",
+    "supply figure, which has not been set (see GAPS.md and the doc's Token",
+    "Distribution section, also pending). Do not treat these numbers as",
+    "reviewed or approved; they exist only so this patch produces a bootable",
+    "genesis. Must be revisited before any real mainnet genesis is finalized."
+  ],
+  "consensus": {
+    "params": {
+      "block": { "max_bytes": "1000000", "max_gas": "75000000" },
+      "evidence": { "max_bytes": "1000000" },
+      "abci": { "vote_extensions_enable_height": "0" }
+    }
+  },
+  "app_state": {
+    "bank": {
+      "denom_metadata": [
+        {
+          "description": "The native staking and governance token.",
+          "denom_units": [
+            { "denom": "esp", "exponent": 0, "aliases": ["wei"] },
+            { "denom": "espees", "exponent": 9, "aliases": ["gwei", "nano-kash"] },
+            { "denom": "KASH", "exponent": 18, "aliases": ["ether"] }
+          ],
+          "base": "esp",
+          "display": "KASH",
+          "name": "KASH",
+          "symbol": "KASH"
+        }
+      ]
+    },
+    "staking": {
+      "params": {
+        "unbonding_time": "1814400s",
+        "max_validators": 10,
+        "bond_denom": "esp"
+      }
+    },
+    "slashing": {
+      "params": {
+        "signed_blocks_window": "1000",
+        "min_signed_per_window": "0.500000000000000000",
+        "downtime_jail_duration": "600s",
+        "slash_fraction_double_sign": "0.050000000000000000",
+        "slash_fraction_downtime": "0.010000000000000000"
+      }
+    },
+    "mint": {
+      "params": {
+        "mint_denom": "esp",
+        "inflation_rate_change": "0.001000000000000000",
+        "inflation_max": "0.000100000000000000",
+        "inflation_min": "0.000100000000000000",
+        "goal_bonded": "0.670000000000000000",
+        "blocks_per_year": "9562910"
+      }
+    },
+    "evm": {
+      "params": {
+        "evm_denom": "esp",
+        "extended_denom_options": { "extended_denom": "espees" }
+      }
+    },
+    "gov": {
+      "params": {
+        "min_deposit": [{ "denom": "esp", "amount": "88888000000000000000000" }],
+        "max_deposit_period": "604800s",
+        "voting_period": "604800s",
+        "quorum": "0.334000000000000000",
+        "threshold": "0.500000000000000000",
+        "veto_threshold": "0.667000000000000000",
+        "expedited_voting_period": "10800s",
+        "expedited_threshold": "0.667000000000000000",
+        "expedited_min_deposit": [{ "denom": "esp", "amount": "888888000000000000000000" }]
+      }
+    },
+    "crisis": {
+      "constant_fee": { "denom": "esp", "amount": "8000000000000000" }
+    }
+  }
+}

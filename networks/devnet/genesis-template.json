@@ -1,0 +1,135 @@
+{
+  "_comment": [
+    "This is NOT a complete genesis.json — it is a JSON-merge-patch overlay.",
+    "Cosmos SDK genesis files are strict proto-JSON: unknown fields inside a",
+    "module's params struct fail to unmarshal, so this file cannot itself carry",
+    "inline JSON comments (JSON has no comment syntax) or ship as the literal",
+    "genesis.json consumed by the binary. Instead it is merged (via jsonmerge,",
+    "recursive-merge-objects / replace-leaves) on top of the FULL default",
+    "genesis produced by `mantrachaind init` for every registered module.",
+    "That default is regenerated fresh from the actual compiled binary every",
+    "time — see networks/devnet/README.md for why this file only overrides the",
+    "fields Eng2 actually controls, and for the full rationale behind each",
+    "value below. This _comment key exists ONLY in this reviewable copy — it",
+    "is never valid inside an actual genesis-merge patch (unknown top-level",
+    "fields fail strict proto-JSON unmarshalling), so pystarport.json embeds",
+    "the same override values without this key. `make devnet-check-genesis-sync`",
+    "verifies the two stay identical everywhere except this comment.",
+    "",
+    "Eng 1 update (ark-v0.1.0-alpha): the state-machine track strips",
+    "MANTRA-specific modules (x/tax, x/tokenfactory) but retains x/sanction,",
+    "renames the bech32 prefix to `ark`, and settles the token as `esp` base",
+    "with `espees` (10^9 esp) and `KASH` (10^18 esp) as the denom units",
+    "(1 KASH = 1_000_000_000_000_000_000 esp = 1_000_000_000 espees). Spelling",
+    "is `espees` per docs/decisions/module-and-config-decisions.md",
+    "#8 - the denom_units entry below must match that exactly.",
+    "",
+    "extended_denom_options.extended_denom is set to `espees` below purely as",
+    "accurate documentation of intent. Verified against the real vendored",
+    "source (x/vm/keeper/coin_info.go LoadEvmCoinInfo): because our display",
+    "denom is exactly 18 decimals, the `decimals == 18` branch fires and",
+    "ExtendedDenom is hardcoded to EvmDenom - this field is NEVER READ in",
+    "this configuration, only for chains with a non-18-decimal display.",
+    "",
+    "Devnet intentionally keeps unbonding_time/voting_period/gov-deposit",
+    "FAST rather than mirroring the decisions doc's locked mainnet figures",
+    "(21-day unbonding #10, 7-day voting #13) - see networks/devnet/README.md's",
+    "deviation table for the per-field rationale. The SLASH FRACTIONS below",
+    "(not just durations) match the real SDK-default values from decision",
+    "#11 on both networks: testing the wrong fraction on devnet would defeat",
+    "the purpose of testing it. timeout_commit=2s (decision #12) is set in",
+    "pystarport.json's node config and applies to both networks.",
+    "This template targets the `ark-v0.1.0-alpha` binary. Base `mantrachaind init`",
+    "still has staking/mint denom `stake` and evm denom `aatom`, so the denom and",
+    "metadata overrides below remain load-bearing.",
+    "",
+    "bank.denom_metadata for esp is REQUIRED, not cosmetic: the evm module's",
+    "InitGenesis calls a coin-info lookup that panics at node startup if the",
+    "denom metadata for evm_denom (esp) cannot be found. The 18 decimals are",
+    "taken from the KASH denom_unit in the same metadata record.",
+    "",
+    "feemarket.params.base_fee's raw default (10^9 atto-units, roughly a",
+    "'1 gwei' analog at 18 decimals) is a normal EVM gas price and is NOT",
+    "overridden - it only looks large as a bare integer."
+  ],
+  "consensus": {
+    "params": {
+      "block": {
+        "max_bytes": "1000000",
+        "max_gas": "75000000"
+      },
+      "evidence": {
+        "max_bytes": "1000000"
+      },
+      "abci": {
+        "vote_extensions_enable_height": "0"
+      }
+    }
+  },
+  "app_state": {
+    "bank": {
+      "denom_metadata": [
+        {
+          "description": "The native staking and governance token.",
+          "denom_units": [
+            { "denom": "esp", "exponent": 0, "aliases": ["wei"] },
+            { "denom": "espees", "exponent": 9, "aliases": ["gwei", "nano-kash"] },
+            { "denom": "KASH", "exponent": 18, "aliases": ["ether"] }
+          ],
+          "base": "esp",
+          "display": "KASH",
+          "name": "KASH",
+          "symbol": "KASH"
+        }
+      ]
+    },
+    "staking": {
+      "params": {
+        "unbonding_time": "300s",
+        "max_validators": 10,
+        "bond_denom": "esp"
+      }
+    },
+    "slashing": {
+      "params": {
+        "signed_blocks_window": "100",
+        "min_signed_per_window": "0.500000000000000000",
+        "downtime_jail_duration": "60s",
+        "slash_fraction_double_sign": "0.050000000000000000",
+        "slash_fraction_downtime": "0.010000000000000000"
+      }
+    },
+    "mint": {
+      "params": {
+        "mint_denom": "esp",
+        "inflation_rate_change": "0.001000000000000000",
+        "inflation_max": "0.000100000000000000",
+        "inflation_min": "0.000100000000000000",
+        "goal_bonded": "0.670000000000000000",
+        "blocks_per_year": "9562910"
+      }
+    },
+    "evm": {
+      "params": {
+        "evm_denom": "esp",
+        "extended_denom_options": { "extended_denom": "espees" }
+      }
+    },
+    "gov": {
+      "params": {
+        "min_deposit": [{ "denom": "esp", "amount": "1000000000000000000" }],
+        "max_deposit_period": "120s",
+        "voting_period": "120s",
+        "quorum": "0.334000000000000000",
+        "threshold": "0.500000000000000000",
+        "veto_threshold": "0.667000000000000000",
+        "expedited_voting_period": "60s",
+        "expedited_threshold": "0.667000000000000000",
+        "expedited_min_deposit": [{ "denom": "esp", "amount": "5000000000000000000" }]
+      }
+    },
+    "crisis": {
+      "constant_fee": { "denom": "esp", "amount": "8000000000000000" }
+    }
+  }
+}

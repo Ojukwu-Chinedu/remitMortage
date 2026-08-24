@@ -7,7 +7,7 @@ import (
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/MANTRA-Chain/mantrachain/v8/app"
-	"github.com/MANTRA-Chain/mantrachain/v8/cmd/mantrachaind/cmd"
+	"github.com/MANTRA-Chain/mantrachain/v8/cmd/arkd/cmd"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmcfg "github.com/cosmos/evm/config"
@@ -32,7 +32,7 @@ func main() {
 // Denom layout follows docs/decisions/module-and-config-decisions.md (Ethereum parity):
 //
 //	esp   = smallest/base unit (exponent 0, 1 wei equivalent, used for staking/bonding)
-//	espes = intermediate unit (exponent 9, 1 gwei equivalent)
+//	espees = intermediate unit (exponent 9, 1 gwei equivalent)
 //	KASH  = display/EVM unit (exponent 18, 1 ether equivalent)
 const (
 	HumanCoinUnit = "KASH"

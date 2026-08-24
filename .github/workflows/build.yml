@@ -23,7 +23,7 @@ jobs:
       - name: Build Binary
         run: |
           make build
-          sha256sum build/mantrachaind > build/sha256sum.txt || true
+          sha256sum build/arkd > build/sha256sum.txt || true
       - uses: actions/upload-artifact@v4
         with:
           name: chain-binary
@@ -39,21 +39,34 @@ jobs:
         with:
           name: chain-binary
           path: build/
-      - name: Install libwasmvm
-        run: |
-          WASMVM_VERSION=$(grep "github.com/CosmWasm/wasmvm" go.mod | head -n 1 | awk '{print $2}')
-          echo "Installing libwasmvm ${WASMVM_VERSION}..."
-          sudo wget "https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm.x86_64.so" -O /lib/libwasmvm.x86_64.so
-          sudo chmod +x /lib/libwasmvm.x86_64.so
       - name: Make binary executable
-        run: chmod +x build/mantrachaind
+        run: chmod +x build/arkd build/mantrachaind 2>/dev/null || chmod +x build/arkd
+      - name: Install libwasmvm shared library
+        # The binary is dynamically linked against libwasmvm (CosmWasm) but the
+        # `build` job never installs it on the runner, so any attempt to execute
+        # the downloaded binary fails with "libwasmvm.x86_64.so: cannot open
+        # shared object file". Pull the exact version pinned in go.mod and drop
+        # it on the linker path before we try to run the binary.
+        run: |
+          # Match any wasmvm major (v2 -> v3 happened once already; don't
+          # silently break again on the next bump) and fail loudly if the
+          # pattern stops matching rather than curl-ing an empty version.
+          WASMVM_VERSION=$(grep -E 'github.com/CosmWasm/wasmvm/v[0-9]+ ' go.mod | awk '{print $2}')
+          if [ -z "$WASMVM_VERSION" ]; then
+            echo "::error::could not determine wasmvm version from go.mod" >&2
+            exit 1
+          fi
+          echo "Installing libwasmvm ${WASMVM_VERSION}"
+          sudo curl -fsSL -o /usr/lib/x86_64-linux-gnu/libwasmvm.x86_64.so \
+            "https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm.x86_64.so"
+          sudo ldconfig
       - name: Validate genesis files
         run: |
           found=0
           for dir in networks/*/; do
             if [ -f "$dir/genesis.json" ]; then
               echo "Validating $dir/genesis.json..."
-              ./build/mantrachaind genesis validate-genesis "$dir/genesis.json"
+              ./build/arkd genesis validate-genesis "$dir/genesis.json"
               found=1
             fi
           done
