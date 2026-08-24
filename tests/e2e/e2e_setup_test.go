@@ -47,8 +47,8 @@ const (
 	queryCommand       = "query"
 	keysCommand        = "keys"
 	mantraHomePath     = "/home/nonroot/.mantrachain"
-	amantraDenom       = "amantra"
-	initBalanceStr     = "100000000000000000000000000000amantra"
+	amantraDenom       = "esp"
+	initBalanceStr     = "100000000000000000000000000000esp"
 	minGasPrice        = "10000000000"
 	// the test basefee in genesis is the same as minGasPrice
 	// global fee lower/higher than min_gas_price
@@ -96,9 +96,9 @@ var (
 	distModuleAddress, govModuleAddress string
 
 	ChainCoinInfo = evmtypes.EvmCoinInfo{
-		Denom:         "amantra",
-		ExtendedDenom: "amantra",
-		DisplayDenom:  "mantra",
+		Denom:         "esp",
+		ExtendedDenom: "espees",
+		DisplayDenom:  "KASH",
 		Decimals:      evmtypes.EighteenDecimals.Uint32(),
 	}
 )
@@ -727,7 +727,7 @@ func (s *IntegrationTestSuite) writeGovCommunitySpendProposal(c *chain, amount s
 			}]
 		  }
 		],
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"proposer": "Proposing validator address",
 		"metadata": "Community Pool Spend",
 		"title": "Fund Team!",
@@ -755,7 +755,7 @@ func (s *IntegrationTestSuite) writeSoftwareUpgradeProposal(c *chain, height int
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "title",
 		"summary": "test"
 	   }`
@@ -775,7 +775,7 @@ func (s *IntegrationTestSuite) writeCancelSoftwareUpgradeProposal(c *chain) {
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "title",
 		"summary": "test"
 	   }`
@@ -806,7 +806,7 @@ func (s *IntegrationTestSuite) writeLiquidStakingParamsUpdateProposal(c *chain, 
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "Update LSM Params",
 		"summary": "e2e-test updating LSM staking params",
 		"expedited": false
@@ -842,7 +842,7 @@ func (s *IntegrationTestSuite) writeGovParamChangeProposalBlocksPerEpoch(c *chai
 			"params": %s
 		  }
 		],
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"proposer": "sample proposer",
 		"metadata": "sample metadata",
 		"title": "blocks per epoch title",
@@ -882,7 +882,7 @@ func (s *IntegrationTestSuite) writeFailingExpeditedProposal(c *chain, blocksPer
 			}
 		  }
 		],
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"proposer": "sample proposer",
 		"metadata": "sample metadata",
 		"title": "blocks per epoch title",
@@ -915,7 +915,7 @@ func (s *IntegrationTestSuite) writeExpeditedSoftwareUpgradeProp(c *chain) {
   }
  ],
  "metadata": "ipfs://CID",
- "deposit": "100000000000000amantra",
+ "deposit": "100000000000000esp",
  "title": "title",
  "summary": "test",
  "expedited": true

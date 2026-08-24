@@ -31,7 +31,7 @@ func (s *IntegrationTestSuite) writeAddRateLimitAmantraProposal(c *chain) {
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "Add Rate Limit on (channel-0, amantra)",
 		"summary": "e2e-test adding an IBC rate limit"
 	   }`
@@ -63,7 +63,7 @@ func (s *IntegrationTestSuite) writeUpdateRateLimitAmantraProposal(c *chain) {
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "Update Rate Limit on (channel-0, amantra)",
 		"summary": "e2e-test updating an IBC rate limit"
 	   }`
@@ -92,7 +92,7 @@ func (s *IntegrationTestSuite) writeResetRateLimitAmantraProposal(c *chain) {
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "Reset Rate Limit on (channel-0, amantra)",
 		"summary": "e2e-test resetting an IBC rate limit"
 	   }`
@@ -118,7 +118,7 @@ func (s *IntegrationTestSuite) writeRemoveRateLimitAmantraProposal(c *chain) {
 		 }
 		],
 		"metadata": "ipfs://CID",
-		"deposit": "100000000000000amantra",
+		"deposit": "100000000000000esp",
 		"title": "Remove Rate Limit (channel-0, amantra)",
 		"summary": "e2e-test removing an IBC rate limit"
 	   }`
