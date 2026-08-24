@@ -25,14 +25,10 @@ try:
     from eth_account.signers.local import LocalAccount
     import eth_utils
     from web3 import Web3
-except ImportError:
-    print("[-] Missing dependencies. Installing web3 and eth-account...")
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "web3", "eth-account"])
-    from eth_account import Account
-    from eth_account.signers.local import LocalAccount
-    import eth_utils
-    from web3 import Web3
+except ImportError as e:
+    print(f"[-] Missing Python dependencies: {e}")
+    print("[-] Please install required dependencies using: pip install -r scripts/chaos/requirements.txt")
+    sys.exit(1)
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -251,7 +247,8 @@ def run_mempool_flood(
 
 def main():
     parser = argparse.ArgumentParser(description="ArkConstellation Mempool Transaction Flooder")
-    parser.add_argument("--rpc", default=os.getenv("EVM_RPC", "http://127.0.0.1:8545"), help="Target JSON-RPC URL")
+    parser.add_argument("positional_rpc", nargs="?", default=None, help="Optional positional JSON-RPC URL")
+    parser.add_argument("--rpc", default=None, help="Target JSON-RPC URL (overrides positional)")
     parser.add_argument("--chain-id", type=int, default=int(os.getenv("CHAIN_ID", "9000")), help="EVM Chain ID")
     parser.add_argument("--private-key", default=os.getenv("PRIVATE_KEY", "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"), help="Spammer account private key")
     parser.add_argument("--txs", type=int, default=200, help="Number of transactions to flood")
@@ -259,7 +256,9 @@ def main():
     parser.add_argument("--type", default="transfer", choices=["transfer", "contract"], help="Transaction payload type")
     args = parser.parse_args()
 
-    summary = run_mempool_flood(args.rpc, args.chain_id, args.private_key, args.txs, args.concurrency, args.type)
+    rpc_target = args.rpc or args.positional_rpc or os.getenv("EVM_RPC", "http://127.0.0.1:8545")
+
+    summary = run_mempool_flood(rpc_target, args.chain_id, args.private_key, args.txs, args.concurrency, args.type)
     if not summary["pass"]:
         sys.exit(1)
     sys.exit(0)

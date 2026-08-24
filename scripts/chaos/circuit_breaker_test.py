@@ -19,7 +19,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -148,14 +148,19 @@ class CircuitBreakerTester:
 
 def main():
     parser = argparse.ArgumentParser(description="ArkConstellation Circuit Breaker Test")
+    parser.add_argument("positional_cmt_rpc", nargs="?", default=None, help="Optional positional CometBFT RPC endpoint")
+    parser.add_argument("positional_evm_rpc", nargs="?", default=None, help="Optional positional EVM JSON-RPC endpoint")
     parser.add_argument("--bin", default="./build/mantrachaind", help="Path to node binary")
-    parser.add_argument("--cmt-rpc", default=os.getenv("CMT_RPC", "http://127.0.0.1:26657"), help="CometBFT RPC endpoint")
-    parser.add_argument("--evm-rpc", default=os.getenv("EVM_RPC", "http://127.0.0.1:8545"), help="EVM JSON-RPC endpoint")
+    parser.add_argument("--cmt-rpc", default=None, help="CometBFT RPC endpoint (overrides positional)")
+    parser.add_argument("--evm-rpc", default=None, help="EVM JSON-RPC endpoint (overrides positional)")
     parser.add_argument("--chain-id", default=os.getenv("CHAIN_ID", "arkdevnet_9000-1"), help="Chain ID")
     parser.add_argument("--admin-key", default="testadmin", help="Admin account name/address")
     args = parser.parse_args()
 
-    tester = CircuitBreakerTester(args.bin, args.cmt_rpc, args.evm_rpc, args.chain_id, args.admin_key)
+    cmt_rpc = args.cmt_rpc or args.positional_cmt_rpc or os.getenv("CMT_RPC", "http://127.0.0.1:26657")
+    evm_rpc = args.evm_rpc or args.positional_evm_rpc or os.getenv("EVM_RPC", "http://127.0.0.1:8545")
+
+    tester = CircuitBreakerTester(args.bin, cmt_rpc, evm_rpc, args.chain_id, args.admin_key)
     res = tester.execute_suite()
     if not res["all_passed"]:
         sys.exit(1)

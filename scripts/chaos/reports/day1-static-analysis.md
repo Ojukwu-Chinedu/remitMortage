@@ -4,7 +4,7 @@
 **Date:** 2026-08-23  
 **Target:** ArkConstellation (`track/1-state-machine` / `base-genesis`)  
 **Audited Packages:** `app/...`, `x/sanction/...`, `scripts/chaos/contracts/...`  
-**Tooling Used:** GoSec `v2.28.0`, Semgrep `v1.136.0`, Slither `v0.11.4`, Solc `v0.8.20`, Manual State-Machine Security Review  
+**Tooling Used:** GoSec `v2.28.0`, Semgrep `v1.136.0`, Slither `v0.11.4`, Solc `0.8.20`, Manual State-Machine Security Review  
 
 ---
 
@@ -32,7 +32,7 @@ This triage list categorizes all findings by urgency for the `v1.0.0-rc1` releas
 
 1. **[SEC-01] Residual MANTRA Mainnet Contract Address in `app/token_pair.go`**
    - **Severity:** High (Mainnet Hygiene / Genesis Integrity)
-   - **Location:** [`app/token_pair.go:8`](file:///Users/ark/Documents/work/ArkConstellation/app/token_pair.go#L8)
+   - **Location:** `app/token_pair.go:8`
    - **Finding:** `const WTokenContractMainnet = "0xD4949664cD82660AaE99bEdc034a0deA8A0bd517"` hardcodes the upstream MANTRA mainnet wrapped token contract address.
    - **Impact:** Used in `app/test_helpers.go` and `tests/e2e/chain.go` for default genesis ERC20 initialization. While not executed in production `mantrachaind init`, production MANTRA contract addresses should not exist in ArkConstellation.
    - **Remediation:** Replace with an explicit zero address (`0x0000000000000000000000000000000000000000`) or ArkConstellation's dedicated wrapped token address when deployed.
@@ -43,20 +43,20 @@ This triage list categorizes all findings by urgency for the `v1.0.0-rc1` releas
 
 2. **[SEC-02] Signed-to-Unsigned Integer Conversion in `app/config.go`**
    - **Severity:** Medium (GoSec G115, Semgrep CWE-681)
-   - **Location:** [`app/config.go:129-134`](file:///Users/ark/Documents/work/ArkConstellation/app/config.go#L129-L134)
+   - **Location:** `app/config.go:129-134`
    - **Finding:** `ParseChainID` parses chain IDs using `strconv.Atoi(matches[2])` (returning signed `int`) and performs an explicit cast `uint64(chainIDInt)`.
    - **Impact:** Although regex `[1-9][0-9]*` restricts input to positive digits, on 32-bit architectures or on integer overflow scenarios, signed integers can wrap negative, producing a massive `uint64`.
    - **Remediation:** Use `strconv.ParseUint(matches[2], 10, 64)` directly.
 
 3. **[SEC-03] Cosmos SDK `ctx.BlockHeight()` Int64 to Uint64 Cast in DistrClaim Events**
    - **Severity:** Medium (GoSec G115)
-   - **Location:** [`app/precompiles/distrclaim/events.go:53`](file:///Users/ark/Documents/work/ArkConstellation/app/precompiles/distrclaim/events.go#L53)
+   - **Location:** `app/precompiles/distrclaim/events.go:53`
    - **Finding:** `BlockNumber: uint64(ctx.BlockHeight())` casts `int64` to `uint64`.
    - **Remediation:** Ensure non-negative check `if h := ctx.BlockHeight(); h >= 0 { uint64(h) }`.
 
 4. **[SEC-04] Precompile Caller Reentrancy Consideration in Solidity Contracts**
    - **Severity:** Medium (Slither `reentrancy-events`)
-   - **Location:** [`scripts/chaos/contracts/Precompiles.sol:112-128`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/Precompiles.sol#L112-L128)
+   - **Location:** `scripts/chaos/contracts/Precompiles.sol:112-128`
    - **Finding:** Calling stateful precompiles (`IBank.send`, `IStaking.delegate`, `IDistrClaim.claimRewardsAndConvertCoin`) initiates Cosmos state machine execution. If a Solidity contract invokes precompiles before updating its internal state or emitting events, reentrancy vulnerabilities can occur in the caller contract.
    - **Remediation:** Document best practices for Solidity developers building on ArkConstellation: always use OpenZeppelin `ReentrancyGuard` or Follow Checks-Effects-Interactions when interacting with Cosmos precompiles.
 
@@ -66,21 +66,20 @@ This triage list categorizes all findings by urgency for the `v1.0.0-rc1` releas
 
 5. **[SEC-05] Pseudo-Random Number Generator in Test and Simulation Helpers**
    - **Severity:** Low / Informational (GoSec G404, Semgrep CWE-338)
-   - **Locations:** [`app/test_helpers.go:296`](file:///Users/ark/Documents/work/ArkConstellation/app/test_helpers.go#L296), [`x/sanction/module/simulation.go:4`](file:///Users/ark/Documents/work/ArkConstellation/x/sanction/module/simulation.go#L4), [`x/sanction/simulation/*.go`](file:///Users/ark/Documents/work/ArkConstellation/x/sanction/simulation)
+   - **Locations:** `app/test_helpers.go:296`, `x/sanction/module/simulation.go:4`, `x/sanction/simulation/*.go`
    - **Finding:** `math/rand` is used instead of `crypto/rand`.
    - **Analysis:** Intentional for deterministic Cosmos SDK simulation testing and mock transaction generation. Safe in test code.
 
 6. **[SEC-06] Unchecked Close in Test Snapshot Helper**
    - **Severity:** Low (GoSec G104)
-   - **Location:** [`app/test_helpers.go:61`](file:///Users/ark/Documents/work/ArkConstellation/app/test_helpers.go#L61)
+   - **Location:** `app/test_helpers.go:61`
    - **Finding:** `tb.Cleanup(func() { snapshotDB.Close() })` ignores error return.
    - **Analysis:** Test cleanup helper only; no production risk.
 
 7. **[SEC-07] Solc Floating Pragma in Test Fixtures**
    - **Severity:** Low (Slither `solc-version`)
-   - **Location:** [`scripts/chaos/contracts/TestStorage.sol:2`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/TestStorage.sol#L2)
-   - **Finding:** Pragma `^0.8.20` is floating.
-   - **Remediation:** Lock to exact `0.8.20` in production smart contracts.
+   - **Location:** `scripts/chaos/contracts/TestStorage.sol:2`, `scripts/chaos/contracts/Precompiles.sol:2`
+   - **Finding:** Pragma `0.8.20` pinned.
 
 ---
 
@@ -88,7 +87,7 @@ This triage list categorizes all findings by urgency for the `v1.0.0-rc1` releas
 
 8. **[FP-01] Simulation Parameter Keys Flagged as Hardcoded Credentials**
    - **Severity:** False Positive (GoSec G101)
-   - **Location:** [`x/sanction/module/simulation.go:25, 29`](file:///Users/ark/Documents/work/ArkConstellation/x/sanction/module/simulation.go#L25)
+   - **Location:** `x/sanction/module/simulation.go:25, 29`
    - **Reason:** String literals `op_weight_msg_add_blacklist_account` and `op_weight_msg_remove_blacklist_account` are Cosmos simulation operation weights, not passwords or secrets.
 
 ---
@@ -108,13 +107,13 @@ ArkConstellation enables 10 precompiles in `app/app.go`. Each has been assessed 
 | **7** | **Vesting** | `0x...0803` | Clawback Vesting Account Setup | **SAFE:** Creates vesting accounts according to schedule. Sender pays initialization costs. |
 | **8** | **Slashing** | `0x...0806` | Unjail Queries & Actions | **SAFE:** Allows jailed validators to send self-unjail transactions from EVM. |
 | **9** | **P256** | `0x...0100` | RIP-7212 secp256r1 Curve Verification | **SAFE:** Verifies WebAuthn/Passkey signatures. Constant-gas evaluation. |
-| **10** | **`distrclaim`** | `0x...0a01` | Reward Claiming & ERC20 Conversion | **SAFE:** Custom Ark/MANTRA precompile (`app/precompiles/distrclaim/`). Verified: caller checks enforce `msgSender == delegatorAddr` ([`tx.go:74`](file:///Users/ark/Documents/work/ArkConstellation/app/precompiles/distrclaim/tx.go#L74)), withdraw address equality checks prevent redirection ([`tx.go:91`](file:///Users/ark/Documents/work/ArkConstellation/app/precompiles/distrclaim/tx.go#L91)), and gas caps prevent unwrapper griefing ([`evmutil/erc20wrapper.go`](file:///Users/ark/Documents/work/ArkConstellation/app/evmutil/erc20wrapper.go)). |
+| **10** | **`distrclaim`** | `0x...0a01` | Reward Claiming & ERC20 Conversion | **SAFE:** Custom Ark/MANTRA precompile (`app/precompiles/distrclaim/`). Verified: caller checks enforce `msgSender == delegatorAddr` (`tx.go:74`), withdraw address equality checks prevent redirection (`tx.go:91`), and gas caps prevent unwrapper griefing (`app/evmutil/erc20wrapper.go`). |
 
 ---
 
 ## 4. Automated JSON-RPC Test Suite Delivery
 
-The automated test suite has been implemented in [`scripts/chaos/rpc-tests.sh`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/rpc-tests.sh) and [`scripts/chaos/rpc_test_runner.py`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/rpc_test_runner.py), alongside [`scripts/chaos/contracts/TestStorage.sol`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/contracts/TestStorage.sol).
+The automated test suite has been implemented in `scripts/chaos/rpc-tests.sh` and `scripts/chaos/rpc_test_runner.py`, alongside `scripts/chaos/contracts/TestStorage.sol`.
 
 ### Test Capabilities:
 - **`eth_chainId` & `net_version`**: Verifies exact chain ID match (`11199` for mainnet, `9000` for devnet).

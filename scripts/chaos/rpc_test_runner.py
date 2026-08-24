@@ -17,6 +17,7 @@ Automated end-to-end tests for:
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -29,13 +30,10 @@ try:
     from eth_account.signers.local import LocalAccount
     import eth_utils
     from web3 import Web3
-except ImportError:
-    print("[-] Missing dependencies. Installing web3 and eth-account...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "web3", "eth-account"])
-    from eth_account import Account
-    from eth_account.signers.local import LocalAccount
-    import eth_utils
-    from web3 import Web3
+except ImportError as e:
+    print(f"[-] Missing Python dependencies: {e}")
+    print("[-] Please install required dependencies using: pip install -r scripts/chaos/requirements.txt")
+    sys.exit(1)
 
 # Colors for terminal output
 GREEN = "\033[92m"
@@ -78,20 +76,43 @@ class JSONRPCClient:
             raise ConnectionError(f"Failed to connect to RPC at {self.rpc_url}: {e}")
 
 
+def get_default_solc() -> str:
+    """Finds a functional solc compiler binary dynamically."""
+    custom_path = os.path.expanduser("~/.solc-bin/solc")
+    if os.path.isfile(custom_path) and os.access(custom_path, os.X_OK):
+        return custom_path
+    
+    solc_path = shutil.which("solc")
+    if solc_path:
+        # Verify it can execute
+        try:
+            res = subprocess.run([solc_path, "--version"], capture_output=True)
+            if res.returncode == 0:
+                return solc_path
+        except Exception:
+            pass
+
+    return "solc"
+
+
 def compile_test_contract(sol_path: str, solc_bin: str = "solc") -> Tuple[str, list]:
     """Compiles TestStorage.sol and returns (bytecode_hex, abi)."""
+    if not os.path.exists(sol_path):
+        raise FileNotFoundError(f"Solidity file not found: {sol_path}")
+    
     cmd = [solc_bin, "--combined-json", "bin,abi", sol_path]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if res.returncode != 0:
         raise RuntimeError(f"solc compilation failed:\n{res.stderr}")
     
     data = json.loads(res.stdout)
-    contract_key = next((k for k in data["contracts"] if "TestStorage" in k), None)
+    contract_key = next((k for k in data.get("contracts", {}) if "TestStorage" in k), None)
     if not contract_key:
         raise RuntimeError("TestStorage contract not found in compilation output")
     
     bin_hex = data["contracts"][contract_key]["bin"]
-    abi = json.loads(data["contracts"][contract_key]["abi"])
+    raw_abi = data["contracts"][contract_key]["abi"]
+    abi = json.loads(raw_abi) if isinstance(raw_abi, str) else raw_abi
     return "0x" + bin_hex, abi
 
 
@@ -111,7 +132,6 @@ def run_rpc_test_suite(
     account: LocalAccount = Account.from_key(private_key)
     print(f"[*] Tester Address    : {account.address}")
 
-    results = []
     summary = {"total": 0, "passed": 0, "failed": 0, "skipped": 0, "tests": []}
 
     def record_test(name: str, passed: bool, details: str = "", skipped: bool = False):
@@ -195,9 +215,20 @@ def run_rpc_test_suite(
         bytecode, abi = compile_test_contract(sol_path, solc_path)
         record_test("5. TestStorage.sol Contract Compilation", True, f"Bytecode Size: {len(bytecode)//2} bytes")
     except Exception as e:
-        record_test("5. TestStorage.sol Contract Compilation", False, str(e))
+        record_test("5. TestStorage.sol Contract Compilation", False, f"Compilation failed: {e}")
+        bytecode = ""
+        abi = []
 
-    if balance == 0:
+    # Guard dependent tests on bytecode availability
+    if not bytecode or not abi:
+        print(f"\n{YELLOW}[!] Warning: Contract bytecode / ABI unavailable (solc compilation skipped or failed).{RESET}")
+        record_test("6. Contract Deployment via eth_sendRawTransaction", False, "Skipped (no compiled bytecode)", skipped=True)
+        record_test("7. Contract State Modification (setValue(1337))", False, "Skipped (no deployed contract)", skipped=True)
+        record_test("8. Read Query via eth_call (getValue())", False, "Skipped (no deployed contract)", skipped=True)
+        record_test("9. Event Log Filtering (eth_getLogs)", False, "Skipped (no deployed contract)", skipped=True)
+        record_test("10. Revert Verification (testRevert(0))", False, "Skipped (no deployed contract)", skipped=True)
+
+    elif balance == 0:
         print(f"\n{YELLOW}[!] Warning: Tester account {account.address} has 0 balance.{RESET}")
         print(f"{YELLOW}[!] Contract deployment and state modification tests require funded account.{RESET}")
         print(f"{YELLOW}[!] Simulating / verifying offline encoding for deployment and function calls.{RESET}")
@@ -237,8 +268,8 @@ def run_rpc_test_suite(
     else:
         # Live Contract Deployment
         deployed_contract_addr = None
+        w3 = Web3()
         try:
-            w3 = Web3()
             contract = w3.eth.contract(abi=abi, bytecode=bytecode)
             constructor_tx = contract.constructor(42).build_transaction({
                 "from": account.address,
@@ -273,20 +304,18 @@ def run_rpc_test_suite(
 
         if deployed_contract_addr:
             nonce += 1
-            # Test 7: Contract State Mutation (setValue)
+            contract_instance = w3.eth.contract(address=w3.to_checksum_address(deployed_contract_addr), abi=abi)
+
+            # Test 7: Contract State Mutation (setValue) using Web3 function builder
             try:
-                set_val_data = "0x55241077" + eth_utils.encode_hex(eth_utils.to_bytes(primitive=1337)).rjust(64, '0')
-                tx_set = {
-                    "to": deployed_contract_addr,
+                set_tx = contract_instance.functions.setValue(1337).build_transaction({
                     "from": account.address,
                     "nonce": nonce,
                     "gas": 200_000,
                     "gasPrice": max(int(client.call("eth_gasPrice"), 16), 10**9),
-                    "chainId": expected_chain_id,
-                    "data": set_val_data,
-                    "value": 0
-                }
-                signed_set = account.sign_transaction(tx_set)
+                    "chainId": expected_chain_id
+                })
+                signed_set = account.sign_transaction(set_tx)
                 set_tx_hash = client.call("eth_sendRawTransaction", [signed_set.raw_transaction.hex()])
                 print(f"[*] State Modification Tx Broadcasted: {set_tx_hash}")
 
@@ -305,10 +334,10 @@ def run_rpc_test_suite(
             except Exception as e:
                 record_test("7. Contract State Modification (setValue(1337))", False, str(e))
 
-            # Test 8: Contract Read Query (eth_call getValue)
+            # Test 8: Contract Read Query (eth_call getValue) using Web3 call data
             try:
-                get_val_data = "0x20965255"
-                call_res = client.call("eth_call", [{"to": deployed_contract_addr, "data": get_val_data}, "latest"])
+                get_call_data = contract_instance.functions.getValue()._encode_transaction_data()
+                call_res = client.call("eth_call", [{"to": deployed_contract_addr, "data": get_call_data}, "latest"])
                 val = int(call_res, 16)
                 record_test(
                     "8. Read Query via eth_call (getValue())",
@@ -333,9 +362,9 @@ def run_rpc_test_suite(
             except Exception as e:
                 record_test("9. Event Log Filtering (eth_getLogs)", False, str(e))
 
-            # Test 10: Revert Handling (testRevert(0))
+            # Test 10: Revert Handling (testRevert(0)) using Web3 call data
             try:
-                revert_call_data = "0x" + "c6e8e815" + "0" * 64
+                revert_call_data = contract_instance.functions.testRevert(0)._encode_transaction_data()
                 client.call("eth_call", [{"to": deployed_contract_addr, "data": revert_call_data}, "latest"])
                 record_test("10. Revert Verification (testRevert(0))", False, "Expected revert but call succeeded")
             except Exception as e:
@@ -350,7 +379,9 @@ def run_rpc_test_suite(
     print(f" Skipped     : {YELLOW}{summary['skipped']}{RESET}")
     print(f"{BOLD}{BLUE}============================================================{RESET}")
 
-    report_path = os.path.join(script_dir, "reports", "rpc-test-results.json")
+    report_dir = os.path.join(script_dir, "reports")
+    os.makedirs(report_dir, exist_ok=True)
+    report_path = os.path.join(report_dir, "rpc-test-results.json")
     with open(report_path, "w") as f:
         json.dump(summary, f, indent=2)
     print(f"[*] Detailed test report written to: {report_path}\n")
@@ -360,13 +391,16 @@ def run_rpc_test_suite(
 
 def main():
     parser = argparse.ArgumentParser(description="ArkConstellation JSON-RPC Automated Test Suite")
-    parser.add_argument("--rpc", default=os.getenv("EVM_RPC", "http://127.0.0.1:8545"), help="JSON-RPC Endpoint URL")
+    parser.add_argument("positional_rpc", nargs="?", default=None, help="Optional positional JSON-RPC Endpoint URL")
+    parser.add_argument("--rpc", default=None, help="JSON-RPC Endpoint URL (overrides positional)")
     parser.add_argument("--chain-id", type=int, default=int(os.getenv("CHAIN_ID", "11199")), help="EVM Chain ID")
     parser.add_argument("--private-key", default=os.getenv("PRIVATE_KEY", "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"), help="Test account private key")
-    parser.add_argument("--solc", default=os.path.expanduser("~/.solc-bin/solc"), help="Path to solc compiler binary")
+    parser.add_argument("--solc", default=get_default_solc(), help="Path to solc compiler binary")
     args = parser.parse_args()
 
-    summary = run_rpc_test_suite(args.rpc, args.chain_id, args.private_key, args.solc)
+    rpc_target = args.rpc or args.positional_rpc or os.getenv("EVM_RPC", "http://127.0.0.1:8545")
+
+    summary = run_rpc_test_suite(rpc_target, args.chain_id, args.private_key, args.solc)
     if summary["failed"] > 0:
         sys.exit(1)
     sys.exit(0)
