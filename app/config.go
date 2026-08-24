@@ -126,10 +126,10 @@ func ParseChainID(chainID string) (uint64, error) {
 	}
 
 	// verify that the chain-id entered is a base 10 integer
-	chainIDInt, err := strconv.Atoi(matches[2])
+	chainIDUint, err := strconv.ParseUint(matches[2], 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("epoch %s must be base-10 integer format", matches[2])
 	}
 
-	return uint64(chainIDInt), nil
+	return chainIDUint, nil
 }

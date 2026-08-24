@@ -35,7 +35,6 @@ except ImportError as e:
     print("[-] Please install required dependencies using: pip install -r scripts/chaos/requirements.txt")
     sys.exit(1)
 
-# Colors for terminal output
 GREEN = "\033[92m"
 RED = "\033[91m"
 YELLOW = "\033[93m"
@@ -77,14 +76,12 @@ class JSONRPCClient:
 
 
 def get_default_solc() -> str:
-    """Finds a functional solc compiler binary dynamically."""
     custom_path = os.path.expanduser("~/.solc-bin/solc")
     if os.path.isfile(custom_path) and os.access(custom_path, os.X_OK):
         return custom_path
     
     solc_path = shutil.which("solc")
     if solc_path:
-        # Verify it can execute
         try:
             res = subprocess.run([solc_path, "--version"], capture_output=True)
             if res.returncode == 0:
@@ -252,10 +249,12 @@ def run_rpc_test_suite(
                 "data": deploy_data,
                 "value": 0
             })
+            signed_hex = signed_tx.raw_transaction.hex()
+            signed_raw_str = signed_hex if signed_hex.startswith("0x") else f"0x{signed_hex}"
             record_test(
                 "6. EIP-155 Raw Contract Deployment Signing Verification",
                 len(signed_tx.raw_transaction) > 0,
-                f"Generated Signed Raw Tx: {signed_tx.raw_transaction.hex()[:40]}... (Len: {len(signed_tx.raw_transaction)} bytes)"
+                f"Generated Signed Raw Tx: {signed_raw_str[:42]}... (Len: {len(signed_tx.raw_transaction)} bytes)"
             )
         except Exception as e:
             record_test("6. EIP-155 Raw Contract Deployment Signing Verification", False, str(e))
@@ -279,10 +278,11 @@ def run_rpc_test_suite(
                 "chainId": expected_chain_id
             })
             signed_deploy = account.sign_transaction(constructor_tx)
-            tx_hash = client.call("eth_sendRawTransaction", [signed_deploy.raw_transaction.hex()])
+            deploy_raw = signed_deploy.raw_transaction.hex()
+            deploy_raw_tx = deploy_raw if deploy_raw.startswith("0x") else f"0x{deploy_raw}"
+            tx_hash = client.call("eth_sendRawTransaction", [deploy_raw_tx])
             print(f"[*] Deployment Tx Broadcasted: {tx_hash}")
 
-            # Poll for receipt
             receipt = None
             for _ in range(20):
                 time.sleep(1)
@@ -306,7 +306,7 @@ def run_rpc_test_suite(
             nonce += 1
             contract_instance = w3.eth.contract(address=w3.to_checksum_address(deployed_contract_addr), abi=abi)
 
-            # Test 7: Contract State Mutation (setValue) using Web3 function builder
+            # Test 7: Contract State Mutation (setValue)
             try:
                 set_tx = contract_instance.functions.setValue(1337).build_transaction({
                     "from": account.address,
@@ -316,7 +316,9 @@ def run_rpc_test_suite(
                     "chainId": expected_chain_id
                 })
                 signed_set = account.sign_transaction(set_tx)
-                set_tx_hash = client.call("eth_sendRawTransaction", [signed_set.raw_transaction.hex()])
+                set_raw = signed_set.raw_transaction.hex()
+                set_raw_tx = set_raw if set_raw.startswith("0x") else f"0x{set_raw}"
+                set_tx_hash = client.call("eth_sendRawTransaction", [set_raw_tx])
                 print(f"[*] State Modification Tx Broadcasted: {set_tx_hash}")
 
                 set_receipt = None
@@ -334,7 +336,7 @@ def run_rpc_test_suite(
             except Exception as e:
                 record_test("7. Contract State Modification (setValue(1337))", False, str(e))
 
-            # Test 8: Contract Read Query (eth_call getValue) using Web3 call data
+            # Test 8: Contract Read Query (eth_call getValue)
             try:
                 get_call_data = contract_instance.functions.getValue()._encode_transaction_data()
                 call_res = client.call("eth_call", [{"to": deployed_contract_addr, "data": get_call_data}, "latest"])
@@ -356,13 +358,13 @@ def run_rpc_test_suite(
                 }])
                 record_test(
                     "9. Event Log Filtering (eth_getLogs)",
-                    len(logs) >= 2,  # ContractInitialized + ValueSet
+                    len(logs) >= 2,
                     f"Retrieved {len(logs)} event log(s) for contract {deployed_contract_addr}"
                 )
             except Exception as e:
                 record_test("9. Event Log Filtering (eth_getLogs)", False, str(e))
 
-            # Test 10: Revert Handling (testRevert(0)) using Web3 call data
+            # Test 10: Revert Handling (testRevert(0))
             try:
                 revert_call_data = contract_instance.functions.testRevert(0)._encode_transaction_data()
                 client.call("eth_call", [{"to": deployed_contract_addr, "data": revert_call_data}, "latest"])
@@ -393,7 +395,7 @@ def main():
     parser = argparse.ArgumentParser(description="ArkConstellation JSON-RPC Automated Test Suite")
     parser.add_argument("positional_rpc", nargs="?", default=None, help="Optional positional JSON-RPC Endpoint URL")
     parser.add_argument("--rpc", default=None, help="JSON-RPC Endpoint URL (overrides positional)")
-    parser.add_argument("--chain-id", type=int, default=int(os.getenv("CHAIN_ID", "11199")), help="EVM Chain ID")
+    parser.add_argument("--chain-id", type=int, default=int(os.getenv("CHAIN_ID", "9000")), help="EVM Chain ID (default: 9000 devnet)")
     parser.add_argument("--private-key", default=os.getenv("PRIVATE_KEY", "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"), help="Test account private key")
     parser.add_argument("--solc", default=get_default_solc(), help="Path to solc compiler binary")
     args = parser.parse_args()

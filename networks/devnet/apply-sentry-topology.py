@@ -62,6 +62,26 @@ def patch_p2p(data_dir, i, fields):
     path.write_text(tomlkit.dumps(doc))
 
 
+def patch_app_toml(
+    data_dir, i, enable_rpc=False, rpc_port=8545, ws_port=8546, api_port=1317
+):
+    path = data_dir / f"node{i}" / "config" / "app.toml"
+    if not path.is_file():
+        return
+    doc = tomlkit.parse(path.read_text())
+    if "json-rpc" in doc:
+        doc["json-rpc"]["enable"] = enable_rpc
+        if enable_rpc:
+            doc["json-rpc"]["address"] = f"0.0.0.0:{rpc_port}"
+            doc["json-rpc"]["ws-address"] = f"0.0.0.0:{ws_port}"
+            doc["json-rpc"]["api"] = "eth,txpool,personal,net,debug,web3"
+    if "api" in doc:
+        doc["api"]["enable"] = enable_rpc
+        if enable_rpc:
+            doc["api"]["address"] = f"tcp://0.0.0.0:{api_port}"
+    path.write_text(tomlkit.dumps(doc))
+
+
 def main():
     if len(sys.argv) != 4:
         print(__doc__)
@@ -120,6 +140,29 @@ def main():
             f"persistent_peers=[node{validator_i}, node{other_sentry_i}] "
             f"private_peer_ids=[node{validator_i}]"
         )
+
+    print("Configuring JSON-RPC and API endpoints:")
+    for i, role in enumerate(NODE_ROLES):
+        if "sentry" in role:
+            # Sentry-0 on 8545/1317, Sentry-1 on 8555/1327
+            rpc_offset = 0 if i == 0 else 10
+            rpc_port = 8545 + rpc_offset
+            ws_port = 8546 + rpc_offset
+            api_port = 1317 + rpc_offset
+            patch_app_toml(
+                data_dir,
+                i,
+                enable_rpc=True,
+                rpc_port=rpc_port,
+                ws_port=ws_port,
+                api_port=api_port,
+            )
+            print(
+                f"  node{i} ({role}): JSON-RPC on 0.0.0.0:{rpc_port}, API on 0.0.0.0:{api_port}"
+            )
+        else:
+            patch_app_toml(data_dir, i, enable_rpc=False)
+            print(f"  node{i} ({role}): public JSON-RPC/API disabled (signing node)")
 
 
 if __name__ == "__main__":

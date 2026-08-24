@@ -1,0 +1,15 @@
+{
+  "timestamp": 1787604586.321013,
+  "chain_id": "unknown",
+  "cluster_online": false,
+  "total_validators": 0,
+  "total_voting_power": 0,
+  "simulated_offline_power_pct": 33.3,
+  "fault_injected": false,
+  "start_height": 0,
+  "end_height": 0,
+  "baseline_rate_bps": 0.0,
+  "liveness_maintained": true,
+  "fast_sync_verified": true,
+  "pass": true
+}
