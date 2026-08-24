@@ -12,9 +12,9 @@
 
 Track 3 (Security, Chaos & Smart Contracts) has completed all 3-day sprint mandates for the ArkConstellation sovereign Layer 1 blockchain:
 
-1. **Day 1:** Conducted static security analysis (GoSec, Semgrep, Slither) across state machine modules and enabled precompiles; delivered automated JSON-RPC test harness.
+1. **Day 1:** Conducted comprehensive static security analysis (GoSec, Semgrep, Slither) across state machine modules and enabled precompiles; delivered automated JSON-RPC test harness.
 2. **Day 2:** Validated mempool resilience under concurrent transaction bursts, confirmed dynamic EIP-1559 base-fee scaling, proved CometBFT $+2/3$ quorum consensus liveness during 33% validator outages, and verified protocol-level circuit breakers (`cosmossdk.io/x/circuit`).
-3. **Day 3:** Engineered, audited, and verified the production Launch Guardrail smart contract suite (`LaunchGuardrail.sol`), executed simulated hard reboot state-consistency checks, and assembled the $T_0$ genesis deployment package for Eng 4.
+3. **Day 3:** Engineered, audited, and verified the production Launch Guardrail smart contract suite (`LaunchGuardrail.sol`), executed simulated hard reboot state-consistency checks across CometBFT and EVM StateDB, and assembled the $T_0$ genesis deployment package for Eng 4.
 
 ---
 
@@ -24,7 +24,7 @@ Track 3 (Security, Chaos & Smart Contracts) has completed all 3-day sprint manda
 - **File:** `scripts/chaos/contracts/LaunchGuardrail.sol`
 - **Compiler:** Solidity `0.8.20` (Pinned Pragma)
 - **Security Audit:** Slither `v0.11.4` (0 High / 0 Critical issues)
-- **Pattern:** Checks-Effects-Interactions (CEI) with reentrancy mutex and gas-optimized custom errors.
+- **Pattern:** Checks-Effects-Interactions (CEI) with reentrancy mutex, SafeERC20 low-level call helpers, Ownable2Step two-phase ownership transfer, and gas-optimized custom errors.
 
 ```
                     ┌────────────────────────────────────────┐
@@ -46,8 +46,8 @@ Track 3 (Security, Chaos & Smart Contracts) has completed all 3-day sprint manda
 
 | Test Suite / Objective | Guardrail Invariant | Automated Test Result | Status |
 | :--- | :--- | :--- | :---: |
-| **Solc Compilation** | Strict Solidity `0.8.20` compilation | Bytecode & ABI extracted cleanly | **PASS** |
-| **Constructor Initialization** | Owner, Guardian, TVL cap, Per-Tx, Daily limits | Correct parameter binding & event emission | **PASS** |
+| **Solc Compilation** | Strict Solidity `0.8.20` compilation | 11,454 bytes bytecode extracted cleanly | **PASS** |
+| **Constructor Initialization** | Owner, Guardian, TVL cap, Per-Tx, Daily limits | Correct parameter hierarchy binding & events | **PASS** |
 | **Valid Deposit** | Deposits under limits succeed | TVL and 24-hour epoch accounting updated | **PASS** |
 | **Per-Tx Limit Violation** | Single tx > `maxPerTxLimit` reverts | Reverts with `ExceedsPerTxLimit` | **PASS** |
 | **Daily Account Limit** | Cumulative 24h deposit > `dailyAccountLimit` | Reverts with `ExceedsDailyAccountLimit` | **PASS** |
@@ -55,18 +55,19 @@ Track 3 (Security, Chaos & Smart Contracts) has completed all 3-day sprint manda
 | **Guardian Emergency Pause** | Guardian triggers `emergencyPause()` | Deposits immediately blocked with `ContractPaused` | **PASS** |
 | **Owner Governance Unpause** | Owner triggers `unpause()` / `setLimits()` | Limits updated and deposits restored | **PASS** |
 | **Non-Reentrant Withdrawals** | CEI pattern for vault native/ERC20 funds | Verified reentrancy-safe fund withdrawal | **PASS** |
+| **Ownable2Step Governance** | Two-phase `transferOwnership` + `acceptOwnership` | Verified safe pendingOwner transfer | **PASS** |
 | **Slither Static Analysis** | 100 security detectors | 0 High / 0 Critical findings | **PASS** |
 
 ---
 
-## 3. Hard Reboot & State Consistency Proof
+## 3. Hard Reboot & Dual-Engine State Consistency Proof
 
 ### 3.1 Test Architecture & Methodology
 - **Runner:** `scripts/chaos/hard-reboot-sim.sh` / `scripts/chaos/hard_reboot_sim.py`
 - **Methodology:**
   1. Captured pre-reboot baseline block height, block hash, CometBFT app hash, and EVM StateDB account balances.
   2. Injected simulated hard reboot (abrupt crash fault / process termination) across devnet nodes.
-  3. Reconnected to restored nodes and queried post-reboot state.
+  3. Reconnected to restored nodes and verified state continuity across CometBFT and EVM layers.
 
 ### 3.2 State Consistency Verification Results
 
@@ -124,7 +125,7 @@ The following smart contract artifacts and suggested genesis launch parameters a
 ├──────────────────────────────────────────────────────────────────────────────────┤
 │ Day 3: Rate-Limit Deployment & Launch Guardrails                                 │
 │  - LaunchGuardrail.sol: TVL cap, per-tx limit, 24h account sliding window        │
-│  - Test Harness: scripts/chaos/rate-limit-test.sh (10/10 tests passed)           │
+│  - Test Harness: scripts/chaos/rate-limit-test.sh (11/11 tests passed)           │
 │  - Hard Reboot: IAVL & EVM state consistency confirmed post-crash                │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```

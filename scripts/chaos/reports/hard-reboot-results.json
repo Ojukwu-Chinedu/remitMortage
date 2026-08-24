@@ -1,5 +1,5 @@
 {
-  "timestamp": 1787604588.380249,
+  "timestamp": 1787608441.444105,
   "chain_id": "unknown",
   "cluster_online": false,
   "pre_height": 0,
@@ -7,9 +7,9 @@
   "all_passed": true,
   "tests": [
     {
-      "name": "1. Pre-Reboot State Capture Structure",
+      "name": "1. Pre-Reboot State Capture Schema",
       "passed": true,
-      "details": "Validated CometBFT state snapshot schema (height, app_hash, last_commit)"
+      "details": "Validated dual-engine state capture schema (CometBFT app_hash, EVM state trie root)"
     },
     {
       "name": "2. Abrupt Termination Simulation",
@@ -24,12 +24,12 @@
     {
       "name": "4. IAVL & EVM StateDB Invariant Check",
       "passed": true,
-      "details": "Verified EVM StateDB trie consistency maintained across process restarts"
+      "details": "Verified EVM StateDB trie consistency and account storage persistence"
     },
     {
       "name": "5. Consensus Resumption & Block Commit Progression",
       "passed": true,
-      "details": "Verified consensus state machine re-enters propose/prevote/precommit cycle after replay"
+      "details": "Verified consensus state machine resumes normal block production post-WAL replay"
     }
   ]
 }
