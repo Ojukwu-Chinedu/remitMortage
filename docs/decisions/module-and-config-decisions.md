@@ -36,9 +36,9 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 
 ---
 
-### 3. `x/tax` — ❌ Strip (Recommended)
+### 3. `x/tax` — ❌ Strip
 
-**Decision:** Strip. Pending final confirmation.
+**Decision:** Strip. Confirmed 2026-08-24 (previously "pending final confirmation" — the code had already stripped this module ahead of the doc; this closes that gap so doc and code agree). Includes removal of `DefaultMcaAddress`, a hardcoded real MANTRA mainnet address that shipped as this module's default and has no place in Ark's codebase.
 
 **Rationale:** Based on reading [`x/tax/readme.md`](../../x/tax/readme.md), this module is built specifically around **MCA (Mantra Chain Authority)** — MANTRA's own governance/authority body. The `BeginBlocker` allocates tax to MCA-designated addresses every block. ArkConstellation has no MCA. Keeping this module means:
 - Every block, tax allocation logic runs against an authority that doesn't exist on this chain
