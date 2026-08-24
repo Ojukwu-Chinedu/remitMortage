@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# DevSkim: ignore DS162092 -- local devnet tool; the default below is
+# genuinely just a default, override with `explorer.sh <rpc-url>` to point
+# at any node (see `make devnet-explore` in scripts/makefiles/devnet.mk).
 RPC="${1:-http://127.0.0.1:8545}"
 INTERVAL="${2:-2}"
 LAST=""
