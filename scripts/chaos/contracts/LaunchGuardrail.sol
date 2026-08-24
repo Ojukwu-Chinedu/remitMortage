@@ -10,6 +10,8 @@ pragma solidity 0.8.20;
  *      3. Per-account 24-hour sliding window rate limits.
  *      4. Emergency pause / circuit breaker integration for multi-guardian incident response.
  *      5. Checks-Effects-Interactions pattern and non-reentrant state transitions.
+ *      6. SafeERC20 compatibility for standard and non-standard ERC-20 tokens.
+ *      7. Ownable2Step two-phase ownership transfer to protect governance continuity.
  */
 
 interface IERC20 {
@@ -29,10 +31,13 @@ contract LaunchGuardrail {
     // Custom Errors (Gas-Optimized)
     // -------------------------------------------------------------------------
     error Unauthorized();
+    error OnlyPendingOwner();
     error ContractPaused();
     error ContractNotPaused();
     error ZeroDeposit();
     error ZeroAddress();
+    error ZeroLimit();
+    error InvalidLimits(uint256 maxPerTx, uint256 dailyLimit, uint256 globalTvl);
     error ExceedsPerTxLimit(uint256 attempted, uint256 limit);
     error ExceedsDailyAccountLimit(address account, uint256 attempted, uint256 limit);
     error ExceedsGlobalTvlCap(uint256 currentTvl, uint256 attempted, uint256 maxTvl);
@@ -44,6 +49,7 @@ contract LaunchGuardrail {
     // State Variables
     // -------------------------------------------------------------------------
     address public owner;
+    address public pendingOwner;
     address public emergencyGuardian;
     bool public paused;
 
@@ -81,6 +87,7 @@ contract LaunchGuardrail {
     event EmergencyUnpaused(address indexed triggeredBy);
     event LimitsUpdated(uint256 newGlobalTvlCap, uint256 newMaxPerTxLimit, uint256 newDailyAccountLimit);
     event GuardianUpdated(address indexed oldGuardian, address indexed newGuardian);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     // -------------------------------------------------------------------------
@@ -131,6 +138,8 @@ contract LaunchGuardrail {
         uint256 initialDailyAccountLimit
     ) {
         if (initialOwner == address(0) || initialGuardian == address(0)) revert ZeroAddress();
+        _validateLimits(initialGlobalTvlCap, initialMaxPerTxLimit, initialDailyAccountLimit);
+
         owner = initialOwner;
         emergencyGuardian = initialGuardian;
         globalTvlCap = initialGlobalTvlCap;
@@ -203,9 +212,8 @@ contract LaunchGuardrail {
         window.totalCumulative += amount;
         totalDepositedTokens[token] = newTvl;
 
-        // External token transfer
-        bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
-        if (!success) revert TransferFailed();
+        // Safe external token transfer (supports standard and non-standard ERC20)
+        _safeTransferFrom(token, msg.sender, address(this), amount);
 
         emit TokenDeposited(msg.sender, token, amount, newTvl, currentEpoch);
     }
@@ -214,7 +222,7 @@ contract LaunchGuardrail {
     // View Functions
     // -------------------------------------------------------------------------
     /**
-     * @notice Checks remaining deposit capacity for a given user in the current 24-hour epoch.
+     * @notice Checks remaining native deposit capacity for a user in the current 24-hour epoch.
      */
     function getUserRemainingDailyLimit(address user) external view returns (uint256) {
         uint256 currentEpoch = block.timestamp / EPOCH_DURATION;
@@ -225,11 +233,31 @@ contract LaunchGuardrail {
     }
 
     /**
-     * @notice Checks remaining TVL headroom before hitting the global cap.
+     * @notice Checks remaining token deposit capacity for a user in the current 24-hour epoch.
+     */
+    function getTokenUserRemainingDailyLimit(address user, address token) external view returns (uint256) {
+        uint256 currentEpoch = block.timestamp / EPOCH_DURATION;
+        UserDepositWindow memory window = tokenDepositWindows[user][token];
+        uint256 deposited = (window.currentEpoch == currentEpoch) ? window.depositedInEpoch : 0;
+        if (deposited >= dailyAccountLimit) return 0;
+        return dailyAccountLimit - deposited;
+    }
+
+    /**
+     * @notice Checks remaining native TVL headroom before hitting the global cap.
      */
     function getRemainingTvlCapacity() external view returns (uint256) {
         if (totalDepositedNative >= globalTvlCap) return 0;
         return globalTvlCap - totalDepositedNative;
+    }
+
+    /**
+     * @notice Checks remaining token TVL headroom before hitting the global cap.
+     */
+    function getTokenRemainingTvlCapacity(address token) external view returns (uint256) {
+        uint256 currentTvl = totalDepositedTokens[token];
+        if (currentTvl >= globalTvlCap) return 0;
+        return globalTvlCap - currentTvl;
     }
 
     // -------------------------------------------------------------------------
@@ -259,6 +287,7 @@ contract LaunchGuardrail {
         uint256 newMaxPerTxLimit,
         uint256 newDailyAccountLimit
     ) external onlyOwner {
+        _validateLimits(newGlobalTvlCap, newMaxPerTxLimit, newDailyAccountLimit);
         globalTvlCap = newGlobalTvlCap;
         maxPerTxLimit = newMaxPerTxLimit;
         dailyAccountLimit = newDailyAccountLimit;
@@ -286,8 +315,7 @@ contract LaunchGuardrail {
         uint256 tokenBal = IERC20(token).balanceOf(address(this));
         if (amount > tokenBal) revert InsufficientVaultBalance(amount, tokenBal);
 
-        bool success = IERC20(token).transfer(recipient, amount);
-        if (!success) revert TransferFailed();
+        _safeTransfer(token, recipient, amount);
 
         emit TokenWithdrawn(token, recipient, amount);
     }
@@ -302,12 +330,48 @@ contract LaunchGuardrail {
     }
 
     /**
-     * @notice Transfers ownership to a new account.
+     * @notice Initiates two-phase ownership transfer to a new account.
      */
     function transferOwnership(address newOwner) external onlyOwner {
         if (newOwner == address(0)) revert ZeroAddress();
-        emit OwnershipTransferred(owner, newOwner);
-        owner = newOwner;
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /**
+     * @notice Accepts ownership transfer (must be called by pendingOwner).
+     */
+    function acceptOwnership() external {
+        if (msg.sender != pendingOwner) revert OnlyPendingOwner();
+        emit OwnershipTransferred(owner, pendingOwner);
+        owner = pendingOwner;
+        pendingOwner = address(0);
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal Safe Transfer & Validation Helpers
+    // -------------------------------------------------------------------------
+    function _validateLimits(uint256 globalCap, uint256 perTx, uint256 daily) internal pure {
+        if (globalCap == 0 || perTx == 0 || daily == 0) revert ZeroLimit();
+        if (perTx > daily || daily > globalCap) revert InvalidLimits(perTx, daily, globalCap);
+    }
+
+    function _safeTransfer(address token, address to, uint256 amount) internal {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(IERC20.transfer.selector, to, amount)
+        );
+        if (!success || (data.length > 0 && !abi.decode(data, (bool)))) {
+            revert TransferFailed();
+        }
+    }
+
+    function _safeTransferFrom(address token, address from, address to, uint256 amount) internal {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(IERC20.transferFrom.selector, from, to, amount)
+        );
+        if (!success || (data.length > 0 && !abi.decode(data, (bool)))) {
+            revert TransferFailed();
+        }
     }
 
     // Fallback and Receive
