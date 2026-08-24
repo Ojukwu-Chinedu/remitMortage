@@ -47,6 +47,10 @@ def p2p_port(base_port, i):
 
 
 def peer_string(node_ids, base_port, i):
+    # DevSkim: ignore DS162092 -- this is the local 4-node devnet's own p2p
+    # topology, not production code; every node genuinely runs on 127.0.0.1
+    # by design (see networks/devnet/README.md's "config-only on localhost"
+    # note in GAPS.md - real sentry isolation needs actual separate hosts).
     return f"tcp://{node_ids[i]}@127.0.0.1:{p2p_port(base_port, i)}"
 
 

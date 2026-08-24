@@ -49,11 +49,11 @@ rpc_addr = 'http://$MANTRA_A_E2E_VAL_HOST:26657'
 grpc_addr = 'http://$MANTRA_A_E2E_VAL_HOST:9090'
 event_source = { mode = 'pull', interval = '1s', max_retries = 4 }
 rpc_timeout = '10s'
-account_prefix = 'mantra'
+account_prefix = 'ark'
 key_name = 'rly01-mantra-a'
 store_prefix = 'ibc'
 max_gas = 6000000
-gas_price = { price = 10000000000, denom = 'amantra' }
+gas_price = { price = 10000000000, denom = 'esp' }
 gas_multiplier = 1.5
 clock_drift = '1m' # to accommodate docker containers
 trusting_period = '14days'
@@ -66,11 +66,11 @@ rpc_addr = 'http://$MANTRA_B_E2E_VAL_HOST:26657'
 grpc_addr = 'http://$MANTRA_B_E2E_VAL_HOST:9090'
 event_source = { mode = 'pull', interval = '1s', max_retries = 4 }
 rpc_timeout = '10s'
-account_prefix = 'mantra'
+account_prefix = 'ark'
 key_name = 'rly01-mantra-b'
 store_prefix = 'ibc'
 max_gas = 6000000
-gas_price = { price = 10000000000, denom = 'amantra' }
+gas_price = { price = 10000000000, denom = 'esp' }
 gas_multiplier = 1.5
 clock_drift = '1m' # to accommodate docker containers
 trusting_period = '14days'

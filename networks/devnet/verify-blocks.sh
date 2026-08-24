@@ -5,6 +5,9 @@
 # 1-2s window - not a claim that config values imply it.
 set -euo pipefail
 
+# DevSkim: ignore DS162092 -- local devnet tool; the default below is
+# genuinely just a default, override with `verify-blocks.sh <rpc-url>` to
+# point at any node.
 RPC="${1:-http://127.0.0.1:26657}"
 SAMPLES="${2:-15}"
 INTERVAL="${3:-1}"
