@@ -72,11 +72,12 @@ Expected: All 6 targets showing `"health": "up"`.
 ### 6. Query a balance
 
 ```bash
-docker exec ark-sentry-0 arkd q bank balances ark1exaaf50kryrgcy2tcaeeapc27psql3qyp82rlu \
+FAUCET=$(docker logs ark-init 2>&1 | grep "faucet:" | head -n 1 | awk '{print $2}')
+docker exec ark-sentry-0 arkd q bank balances "$FAUCET" \
   --home /home/nonroot/.ark/node-sentry-0 --node tcp://127.0.0.1:26657
 ```
 
-Should return the faucet account balance in `esp`.
+Should return the faucet account balance in `esp` (100,000,000 KASH / `100000000000000000000000000esp`).
 
 ### 7. Check the validator set
 

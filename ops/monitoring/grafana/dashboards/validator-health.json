@@ -58,16 +58,16 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
-          "mappings": [
-            { "options": { "0": { "color": "red", "index": 1, "text": "JAILED" }, "1": { "color": "green", "index": 0, "text": "ACTIVE" } }, "type": "value" }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               { "color": "red", "value": null },
-              { "color": "green", "value": 1 }
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -81,13 +81,14 @@
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
         "textMode": "auto"
       },
-      "title": "Validator Jailed Status",
+      "title": "Active Validators",
+      "description": "Number of active bonded validators participating in consensus. Expected: 2.",
       "type": "stat",
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "cometbft_consensus_validators",
-          "legendFormat": "Jailed Validators",
+          "legendFormat": "Active Validators",
           "refId": "A"
         }
       ]
