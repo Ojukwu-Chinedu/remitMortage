@@ -1,7 +1,7 @@
 {
-  "timestamp": 1787600890.912521,
+  "timestamp": 1787604583.263752,
   "chain_id": "arkdevnet_9000-1",
-  "binary": "/Users/ark/Documents/work/ArkConstellation/build/arkd",
+  "binary": "/Users/Evangel/Desktop/ArkConstellation/build/arkd",
   "node_online": false,
   "total": 6,
   "passed": 6,
@@ -11,19 +11,19 @@
       "name": "1. Circuit Breaker CLI Command Discovery",
       "passed": true,
       "skipped": false,
-      "details": "Binary: /Users/ark/Documents/work/ArkConstellation/build/arkd supports x/circuit CLI commands"
+      "details": "Binary: /Users/Evangel/Desktop/ArkConstellation/build/arkd supports x/circuit CLI commands"
     },
     {
       "name": "2. Initial Circuit Breaker Query Structure",
       "passed": true,
       "skipped": false,
-      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd query circuit disabled-list --node http://127.0.0.1:26657'"
+      "details": "Validated CLI syntax: '/Users/Evangel/Desktop/ArkConstellation/build/arkd query circuit disabled-list --node http://127.0.0.1:26657'"
     },
     {
       "name": "3. Disable MsgSend Transaction Construction",
       "passed": true,
       "skipped": false,
-      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd tx circuit disable /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
+      "details": "Validated CLI syntax: '/Users/Evangel/Desktop/ArkConstellation/build/arkd tx circuit disable /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
     },
     {
       "name": "4. AnteHandler Rejection Logic (Cosmos Path)",
@@ -41,7 +41,7 @@
       "name": "6. Reset Circuit Breaker Transaction Construction",
       "passed": true,
       "skipped": false,
-      "details": "Validated CLI syntax: '/Users/ark/Documents/work/ArkConstellation/build/arkd tx circuit reset /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
+      "details": "Validated CLI syntax: '/Users/Evangel/Desktop/ArkConstellation/build/arkd tx circuit reset /cosmos.bank.v1beta1.MsgSend --from testadmin --chain-id arkdevnet_9000-1'"
     }
   ]
 }
