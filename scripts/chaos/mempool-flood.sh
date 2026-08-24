@@ -6,29 +6,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RPC_URL="${1:-${EVM_RPC:-http://127.0.0.1:8545}}"
-CHAIN_ID="${CHAIN_ID:-9000}"
-TX_COUNT="${TX_COUNT:-200}"
-CONCURRENCY="${CONCURRENCY:-20}"
-
-echo "======================================================================"
-echo " ArkConstellation Mempool Flood & Fee Market Scaling Benchmark"
-echo " RPC URL     : ${RPC_URL}"
-echo " Chain ID    : ${CHAIN_ID}"
-echo " Tx Count    : ${TX_COUNT}"
-echo " Concurrency : ${CONCURRENCY}"
-echo "======================================================================"
+export PATH="${CUSTOM_BIN_DIR:-}${CUSTOM_BIN_DIR:+:}$HOME/Library/Python/3.9/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.solc-bin:$PATH"
 
 PYTHON_EXEC="python3"
 if ! command -v python3 &>/dev/null; then
-    PYTHON_EXEC="python"
+    if command -v python &>/dev/null; then
+        PYTHON_EXEC="python"
+    else
+        echo "[-] Error: python3 is required to run the test suite." >&2
+        exit 1
+    fi
 fi
 
-export PATH="/Users/ark/Library/Python/3.9/bin:$PATH"
-
-"$PYTHON_EXEC" "${SCRIPT_DIR}/mempool_flood_runner.py" \
-    --rpc "${RPC_URL}" \
-    --chain-id "${CHAIN_ID}" \
-    --txs "${TX_COUNT}" \
-    --concurrency "${CONCURRENCY}" \
-    "$@"
+exec "$PYTHON_EXEC" "${SCRIPT_DIR}/mempool_flood_runner.py" "$@"

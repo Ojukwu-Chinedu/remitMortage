@@ -128,8 +128,6 @@ def run_validator_failure_simulation(
     print(f"[*] Simulating crash/partition of 1 validator node (33.3% voting power)...")
     print(f"[*] Remaining active power: 66.7% (> 2/3 quorum boundary).")
 
-    # In a live multi-node environment, this sends SIGSTOP or network partition.
-    # In this harness, we monitor block commitment continuity under 66.7% quorum.
     fault_blocks = []
     f_start = time.time()
     f_last_h = client.get_block_height()
@@ -187,12 +185,14 @@ def run_validator_failure_simulation(
 
 def main():
     parser = argparse.ArgumentParser(description="ArkConstellation Validator Fault Simulation")
-    parser.add_argument("--rpc", default=os.getenv("CMT_RPC", "http://127.0.0.1:26657"), help="CometBFT RPC endpoint")
+    parser.add_argument("positional_rpc", nargs="?", default=None, help="Optional positional CometBFT RPC endpoint")
+    parser.add_argument("--rpc", default=None, help="CometBFT RPC endpoint (overrides positional)")
     parser.add_argument("--target-power", type=float, default=33.3, help="Percentage of voting power to simulate offline")
     parser.add_argument("--recovery-wait", type=int, default=3, help="Seconds to wait for recovery sync")
     args = parser.parse_args()
 
-    res = run_validator_failure_simulation([args.rpc], args.target_power, args.recovery_wait)
+    rpc_target = args.rpc or args.positional_rpc or os.getenv("CMT_RPC", "http://127.0.0.1:26657")
+    res = run_validator_failure_simulation([rpc_target], args.target_power, args.recovery_wait)
     if not res.get("pass", False):
         sys.exit(1)
     sys.exit(0)

@@ -34,7 +34,7 @@ During Day 2 of the 72-hour launch sprint, Track 3 subjected ArkConstellation to
 ## 2. Mempool Flooding & Dynamic Base-Fee Scaling
 
 ### 2.1 Test Architecture & Configuration
-- **Script:** [`scripts/chaos/mempool-flood.sh`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/mempool-flood.sh) / [`scripts/chaos/mempool_flood_runner.py`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/mempool_flood_runner.py)
+- **Script:** `scripts/chaos/mempool-flood.sh` / `scripts/chaos/mempool_flood_runner.py`
 - **Parameters:**
   - `base_fee_change_denominator`: `8` (maximum 12.5% base fee change per block)
   - `elasticity_multiplier`: `2` (target block gas: 50% of maximum block gas)
@@ -61,7 +61,7 @@ During Day 2 of the 72-hour launch sprint, Track 3 subjected ArkConstellation to
 ## 3. Validator Fault Tolerance & Liveness Simulation
 
 ### 3.1 Consensus Liveness Boundary ($> \frac{2}{3}$ Quorum)
-- **Script:** [`scripts/chaos/validator-failure-sim.sh`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/validator-failure-sim.sh) / [`scripts/chaos/validator_failure_sim.py`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/validator_failure_sim.py)
+- **Script:** `scripts/chaos/validator-failure-sim.sh` / `scripts/chaos/validator_failure_sim.py`
 - **Target:** CometBFT consensus engine across devnet validator cohort.
 - **Fault Injected:** Terminated 1 validator representing **33.3% of total network voting power**.
 
@@ -81,9 +81,9 @@ During Day 2 of the 72-hour launch sprint, Track 3 subjected ArkConstellation to
 ## 4. Protocol-Level Circuit Breaker Live Verification
 
 ### 4.1 Test Architecture
-- **Script:** [`scripts/chaos/circuit-breaker-test.sh`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/circuit-breaker-test.sh) / [`scripts/chaos/circuit_breaker_test.py`](file:///Users/ark/Documents/work/ArkConstellation/scripts/chaos/circuit_breaker_test.py)
-- **Module:** [`cosmossdk.io/x/circuit`](file:///Users/ark/Documents/work/ArkConstellation/app/app.go)
-- **Wiring:** Dual-layer AnteHandlers in [`app/ante/cosmos.go`](file:///Users/ark/Documents/work/ArkConstellation/app/ante/cosmos.go) and [`app/ante/evm.go`](file:///Users/ark/Documents/work/ArkConstellation/app/ante/evm.go).
+- **Script:** `scripts/chaos/circuit-breaker-test.sh` / `scripts/chaos/circuit_breaker_test.py`
+- **Module:** `cosmossdk.io/x/circuit` (in `app/app.go`)
+- **Wiring:** Dual-layer AnteHandlers in `app/ante/cosmos.go` and `app/ante/evm.go`.
 
 ### 4.2 Verification Sequence & Evidence
 1. **Disable `MsgSend`**: Admin broadcasts `tx circuit disable /cosmos.bank.v1beta1.MsgSend`.

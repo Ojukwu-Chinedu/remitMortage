@@ -1,0 +1,68 @@
+{
+  "total": 10,
+  "passed": 2,
+  "failed": 4,
+  "skipped": 4,
+  "tests": [
+    {
+      "name": "1. web3_clientVersion Query",
+      "passed": false,
+      "skipped": false,
+      "details": "Failed to connect to RPC at http://127.0.0.1:9999: <urlopen error [Errno 61] Connection refused>"
+    },
+    {
+      "name": "2. eth_chainId Verification",
+      "passed": false,
+      "skipped": false,
+      "details": "Failed to connect to RPC at http://127.0.0.1:9999: <urlopen error [Errno 61] Connection refused>"
+    },
+    {
+      "name": "3. eth_blockNumber & eth_gasPrice Queries",
+      "passed": false,
+      "skipped": false,
+      "details": "Failed to connect to RPC at http://127.0.0.1:9999: <urlopen error [Errno 61] Connection refused>"
+    },
+    {
+      "name": "4. Account Balance & Nonce Retrieval",
+      "passed": false,
+      "skipped": false,
+      "details": "Failed to connect to RPC at http://127.0.0.1:9999: <urlopen error [Errno 61] Connection refused>"
+    },
+    {
+      "name": "5. TestStorage.sol Contract Compilation",
+      "passed": true,
+      "skipped": false,
+      "details": "Bytecode Size: 1214 bytes"
+    },
+    {
+      "name": "6. EIP-155 Raw Contract Deployment Signing Verification",
+      "passed": true,
+      "skipped": false,
+      "details": "Generated Signed Raw Tx: 0xf9053180843b9aca00830f42408080b904dd60a0... (Len: 1332 bytes)"
+    },
+    {
+      "name": "7. Contract Execution (setValue)",
+      "passed": true,
+      "skipped": true,
+      "details": "Skipped live broadcast (insufficient balance for gas)"
+    },
+    {
+      "name": "8. State Read (eth_call getValue)",
+      "passed": true,
+      "skipped": true,
+      "details": "Skipped live broadcast (insufficient balance for gas)"
+    },
+    {
+      "name": "9. Event Filtering (eth_getLogs)",
+      "passed": true,
+      "skipped": true,
+      "details": "Skipped live broadcast (insufficient balance for gas)"
+    },
+    {
+      "name": "10. Revert Verification (testRevert)",
+      "passed": true,
+      "skipped": true,
+      "details": "Skipped live broadcast (insufficient balance for gas)"
+    }
+  ]
+}

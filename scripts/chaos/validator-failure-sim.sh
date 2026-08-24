@@ -6,21 +6,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RPC_URL="${1:-${CMT_RPC:-http://127.0.0.1:26657}}"
-TARGET_POWER="${TARGET_POWER:-33.3}"
-
-echo "======================================================================"
-echo " ArkConstellation Validator Fault Tolerance & Liveness Simulation"
-echo " CometBFT RPC : ${RPC_URL}"
-echo " Fault Power  : ${TARGET_POWER}%"
-echo "======================================================================"
+export PATH="${CUSTOM_BIN_DIR:-}${CUSTOM_BIN_DIR:+:}$HOME/Library/Python/3.9/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.solc-bin:$PATH"
 
 PYTHON_EXEC="python3"
 if ! command -v python3 &>/dev/null; then
-    PYTHON_EXEC="python"
+    if command -v python &>/dev/null; then
+        PYTHON_EXEC="python"
+    else
+        echo "[-] Error: python3 is required to run the test suite." >&2
+        exit 1
+    fi
 fi
 
-"$PYTHON_EXEC" "${SCRIPT_DIR}/validator_failure_sim.py" \
-    --rpc "${RPC_URL}" \
-    --target-power "${TARGET_POWER}" \
-    "$@"
+exec "$PYTHON_EXEC" "${SCRIPT_DIR}/validator_failure_sim.py" "$@"
