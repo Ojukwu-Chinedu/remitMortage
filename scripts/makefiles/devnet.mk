@@ -93,6 +93,10 @@ devnet-info:
 	fi
 
 devnet-log:
+	@if [ ! -f "$(DEVNET_DATA)/devnet.log" ]; then \
+		echo "!!! $(DEVNET_DATA)/devnet.log not found. Start the devnet first with 'make devnet-up'." >&2; \
+		exit 1; \
+	fi
 	@echo "=== Tailing combined devnet log (Ctrl-C to stop) ==="
 	@tail -f $(DEVNET_DATA)/devnet.log
 

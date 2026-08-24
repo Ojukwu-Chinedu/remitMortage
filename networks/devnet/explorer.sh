@@ -14,7 +14,7 @@ while true; do
   BLOCK_HEX=$(curl -sS -m 2 -X POST \
     -H "Content-Type: application/json" \
     --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
-    "$RPC" 2>/dev/null | jq -r '.result // empty' || true)
+    "$RPC" 2>/dev/null | jq -r '.result // empty' 2>/dev/null || true)
 
   if [ -z "$BLOCK_HEX" ]; then
     sleep "$INTERVAL"
