@@ -176,9 +176,11 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 
 ---
 
-### 15. Min Governance Deposit — ⏳ Pending
+### 15. Min Governance Deposit — 🔒 Locked
 
-**Blocked by:** Total supply not yet defined. Once total supply is set by Eng 2 during genesis parameterization, set this proportionally — high enough to deter spam proposals, low enough that non-whale participants can still submit.
+**Decision:** `88,888 KASH` for ordinary proposals (`gov.min_deposit`) and `888,888 KASH` for expedited proposals (`gov.expedited_min_deposit`).
+
+**Rationale:** Locked at the values already in `networks/mainnet/genesis-params.json`. Against the approved 1,000,000,000 KASH total supply, the ordinary deposit is ~0.0089% of supply and the expedited deposit is ~0.0889% of supply — high enough to deter spam, low enough for real participation.
 
 ---
 
@@ -225,15 +227,16 @@ When a decision is made, update the Status column with ✅ Keep, ❌ Strip, or �
 
 ## Token Distribution (Genesis Allocations)
 
-> To be completed by Eng 2 in `networks/mainnet/genesis-draft.json`. **Blocked pending total supply decision.**
+> Approved total supply: **1,000,000,000 KASH** (one billion). All amounts below sum to this total.
 
-| Allocation | Amount | Vesting Schedule | Notes |
-|------------|--------|-----------------|-------|
-| Team | — | — | Document vesting clearly and publish publicly |
-| Foundation reserve | — | — | — |
-| Validator incentives | — | — | — |
-| Community / ecosystem | — | — | — |
-| Initial validator bonds | — | — | Must meet min self-delegation threshold |
+| Category | KASH amount | % of total | Vesting / lockup | Notes |
+|------------|-------------|-----------|------------------|-------|
+| Community / ecosystem | 450,000,000 | 45% | 10% (45M) into `x/gov` community pool at genesis; remaining 405M vests over 8 years in 32 quarterly tranches | Governance-gated; every spend needs a passed proposal |
+| Validator & staking incentives | 220,000,000 | 22% | None — streams over 6 years into `x/distribution` | Never held as a liquid wallet; module-to-module distribution |
+| Foundation reserve | 160,000,000 | 16% | 15-month cliff, then 45-month linear vest | Longest vesting horizon of any category |
+| Team / core contributors | 150,000,000 | 15% | 12-month cliff, then 36-month linear vest (60-month if any single grant >1% of supply) | Size-tiered extension for large grants |
+| Initial validator self-delegation bonds | 20,000,000 | 2% | Immediately liquid and self-bonded (2M × 10 validators) | Subject to standard 21-day unbonding if unbonded |
+| **Total** | **1,000,000,000** | **100%** | | |
 
 > **Lesson from OM crash:** Avoid concentrated allocations. Publish the full vesting schedule before mainnet genesis — not after.
 
