@@ -9,6 +9,11 @@
 #
 set -eu
 
+if [ -f /config/genesis.json ]; then
+  echo "=== Genesis already exists — skipping setup ==="
+  exit 0
+fi
+
 CHAIN_ID="${CHAIN_ID:-arkdevnet_9000-1}"
 OUTPUT_DIR="${OUTPUT_DIR:-/config}"
 VALIDATOR_COUNT="${VALIDATOR_COUNT:-2}"

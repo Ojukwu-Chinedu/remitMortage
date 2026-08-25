@@ -56,6 +56,7 @@ services:
       context: ../../
       dockerfile: ops/docker/Dockerfile.node
     container_name: ark-sentry-0
+    restart: unless-stopped
     environment:
       NODE_ROLE: sentry
       SENTRY_INDEX: "0"
@@ -88,6 +89,7 @@ services:
       context: ../../
       dockerfile: ops/docker/Dockerfile.node
     container_name: ark-validator-0
+    restart: unless-stopped
     environment:
       NODE_ROLE: validator
       VALIDATOR_INDEX: "0"
@@ -112,6 +114,7 @@ services:
       context: ../../
       dockerfile: ops/docker/Dockerfile.node
     container_name: ark-sentry-1
+    restart: unless-stopped
     environment:
       NODE_ROLE: sentry
       SENTRY_INDEX: "1"
@@ -144,6 +147,7 @@ services:
       context: ../../
       dockerfile: ops/docker/Dockerfile.node
     container_name: ark-validator-1
+    restart: unless-stopped
     environment:
       NODE_ROLE: validator
       VALIDATOR_INDEX: "1"
@@ -166,6 +170,7 @@ services:
   node-exporter:
     image: prom/node-exporter:v1.8.1
     container_name: ark-node-exporter
+    restart: unless-stopped
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
@@ -186,6 +191,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.53.0
     container_name: ark-prometheus
+    restart: unless-stopped
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -206,6 +212,7 @@ services:
   grafana:
     image: grafana/grafana:11.1.0
     container_name: ark-grafana
+    restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: arkconstellation
@@ -227,6 +234,7 @@ services:
   alertmanager:
     image: prom/alertmanager:v0.27.0
     container_name: ark-alertmanager
+    restart: unless-stopped
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
