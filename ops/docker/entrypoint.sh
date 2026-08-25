@@ -109,6 +109,8 @@ fi
 # Enable Cosmos LCD/API server
 if [ "$ENABLE_API" = "true" ]; then
     sed -i '/^\[api\]$/,/^enable/{s/^enable = false/enable = true/}' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+    sed -i 's|^address = "tcp://localhost:1317"|address = "tcp://0.0.0.0:1317"|' "${NODE_HOME}/config/app.toml" 2>/dev/null || true
+    echo "  LCD/API enabled on 0.0.0.0:1317"
 fi
 
 # Enable EVM JSON-RPC with metrics endpoint
