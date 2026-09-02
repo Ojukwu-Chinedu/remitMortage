@@ -133,8 +133,20 @@ echo "  PEX:        ${PEX}"
 echo "  Peers:      ${PERSISTENT_PEERS:-none}"
 echo "=========================="
 
+EXTRA_ARGS=""
+
+if [ "$ENABLE_API" = "true" ]; then
+    EXTRA_ARGS="${EXTRA_ARGS} --api.enable"
+fi
+
+if [ "$ENABLE_EVM_RPC" = "true" ]; then
+    EXTRA_ARGS="${EXTRA_ARGS} --json-rpc.enable --json-rpc.address 0.0.0.0:8545 --json-rpc.ws-address 0.0.0.0:8546"
+fi
+
+# shellcheck disable=SC2086
 exec arkd start \
     --home "$NODE_HOME" \
     --minimum-gas-prices "$MIN_GAS_PRICES" \
     --trace \
+    ${EXTRA_ARGS} \
     "$@"
